@@ -1,5 +1,7 @@
 import type { CartItem } from "@/types";
-import { cookies, type ReadonlyRequestCookies } from "next/headers";
+import { cookies } from "next/headers";
+
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
 
 const CART_COOKIE = "fc_cart";
 const CART_MAX_AGE = 60 * 60 * 24 * 14; // 14 days
@@ -23,7 +25,7 @@ function serializeCart(cart: CartItem[]): string {
 }
 
 export async function readCart(
-  cookieStore?: ReadonlyRequestCookies,
+  cookieStore?: CookieStore,
 ): Promise<CartItem[]> {
   const store = cookieStore ?? (await cookies());
   const raw = store.get(CART_COOKIE)?.value;
@@ -32,7 +34,7 @@ export async function readCart(
 
 export async function writeCart(
   cart: CartItem[],
-  cookieStore?: ReadonlyRequestCookies,
+  cookieStore?: CookieStore,
 ) {
   const store = cookieStore ?? (await cookies());
   store.set(CART_COOKIE, serializeCart(cart), {
@@ -44,7 +46,7 @@ export async function writeCart(
   });
 }
 
-export async function clearCart(cookieStore?: ReadonlyRequestCookies) {
+export async function clearCart(cookieStore?: CookieStore) {
   const store = cookieStore ?? (await cookies());
   store.delete(CART_COOKIE);
 }

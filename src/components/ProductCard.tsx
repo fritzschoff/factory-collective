@@ -42,7 +42,14 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
         <span className="text-xs uppercase tracking-widest text-black/50">
           {product.metadata?.tier ?? "Core"}
         </span>
-        <AddToCartButton {...product} />
+        <AddToCartButton
+          productId={product.id}
+          priceId={product.priceId}
+          name={product.name}
+          price={product.price}
+          currency={product.currency}
+          imageUrl={product.imageUrl}
+        />
       </div>
     </article>
   );

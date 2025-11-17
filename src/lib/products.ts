@@ -72,7 +72,9 @@ async function fetchStripeProducts(): Promise<StorefrontProduct[]> {
         currency: price.currency,
         imageUrl: product.images?.[0] ?? FALLBACK_IMAGE,
         metadata: product.metadata,
-        features: product.features?.map((feature) => feature.name ?? "") ?? undefined,
+        features:
+          product.marketing_features?.map((feature) => feature.name ?? "") ??
+          undefined,
       } satisfies StorefrontProduct;
     })
     .filter(Boolean) as StorefrontProduct[];
