@@ -11,7 +11,8 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  const token = cookies().get(SESSION_COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) {
     return null;
   }
@@ -26,7 +27,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     } satisfies SessionUser;
   } catch (error) {
     console.warn("Invalid Firebase session cookie", error);
-    cookies().delete(SESSION_COOKIE_NAME);
+    cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
 }
@@ -39,6 +40,7 @@ export async function requireUser() {
   return user;
 }
 
-export function clearSessionCookie() {
-  cookies().delete(SESSION_COOKIE_NAME);
+export async function clearSessionCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_NAME);
 }

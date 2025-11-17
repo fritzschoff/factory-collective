@@ -10,7 +10,7 @@ export const revalidate = 300;
 export default async function HomePage() {
   const [products, cart] = await Promise.all([
     getStorefrontProducts(),
-    Promise.resolve(readCart()),
+    readCart(),
   ]);
   const summary = getCartSummary(cart);
 

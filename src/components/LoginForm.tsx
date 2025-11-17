@@ -28,6 +28,8 @@ export function LoginForm() {
     );
   }
 
+  const clientAuth = auth;
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -36,8 +38,8 @@ export function LoginForm() {
     try {
       const userCredential =
         mode === "signin"
-          ? await signInWithEmailAndPassword(auth, email, password)
-          : await createUserWithEmailAndPassword(auth, email, password);
+          ? await signInWithEmailAndPassword(clientAuth, email, password)
+          : await createUserWithEmailAndPassword(clientAuth, email, password);
 
       const idToken = await userCredential.user.getIdToken(true);
       const response = await fetch("/api/session", {
@@ -91,14 +93,20 @@ export function LoginForm() {
         disabled={isSubmitting}
         className="w-full rounded-full bg-black px-4 py-3 text-sm font-semibold text-white"
       >
-        {isSubmitting ? "Saving…" : mode === "signin" ? "Sign in" : "Create account"}
+        {isSubmitting
+          ? "Saving…"
+          : mode === "signin"
+          ? "Sign in"
+          : "Create account"}
       </button>
       <button
         type="button"
         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         className="w-full text-center text-xs uppercase tracking-[0.3em] text-black/50"
       >
-        {mode === "signin" ? "Create a new account" : "Already have an account?"}
+        {mode === "signin"
+          ? "Create a new account"
+          : "Already have an account?"}
       </button>
     </form>
   );

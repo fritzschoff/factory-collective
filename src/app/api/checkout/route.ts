@@ -4,7 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { readCart } from "@/lib/cart";
 
 export async function POST() {
-  const cart = readCart();
+  const cart = await readCart();
 
   if (!cart.length) {
     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -18,9 +18,10 @@ export async function POST() {
   }
 
   try {
+    const headerList = await headers();
     const origin =
       process.env.NEXT_PUBLIC_APP_URL ??
-      headers().get("origin") ??
+      headerList.get("origin") ??
       "http://localhost:3000";
 
     const session = await stripe.checkout.sessions.create({

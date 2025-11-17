@@ -22,14 +22,19 @@ function serializeCart(cart: CartItem[]): string {
   return JSON.stringify(cart);
 }
 
-export function readCart(cookieStore?: ReadonlyRequestCookies): CartItem[] {
-  const store = cookieStore ?? cookies();
+export async function readCart(
+  cookieStore?: ReadonlyRequestCookies,
+): Promise<CartItem[]> {
+  const store = cookieStore ?? (await cookies());
   const raw = store.get(CART_COOKIE)?.value;
   return parseCart(raw);
 }
 
-export function writeCart(cart: CartItem[], cookieStore?: ReadonlyRequestCookies) {
-  const store = cookieStore ?? cookies();
+export async function writeCart(
+  cart: CartItem[],
+  cookieStore?: ReadonlyRequestCookies,
+) {
+  const store = cookieStore ?? (await cookies());
   store.set(CART_COOKIE, serializeCart(cart), {
     httpOnly: true,
     sameSite: "lax",
@@ -39,8 +44,8 @@ export function writeCart(cart: CartItem[], cookieStore?: ReadonlyRequestCookies
   });
 }
 
-export function clearCart(cookieStore?: ReadonlyRequestCookies) {
-  const store = cookieStore ?? cookies();
+export async function clearCart(cookieStore?: ReadonlyRequestCookies) {
+  const store = cookieStore ?? (await cookies());
   store.delete(CART_COOKIE);
 }
 
