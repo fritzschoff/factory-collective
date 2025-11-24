@@ -2,54 +2,66 @@ import type { StorefrontProduct } from "@/types";
 import { formatCurrency } from "@/lib/currency";
 import { AddToCartButton } from "./AddToCartButton";
 import Image from "next/image";
+import Link from "next/link";
 
 export function ProductCard({ product }: { product: StorefrontProduct }) {
   return (
-    <article className="flex h-full flex-col justify-between rounded-3xl border border-black/10 bg-white/70 p-6 shadow-sm backdrop-blur">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 overflow-hidden rounded-full border border-black/5 bg-white">
-            <Image
-              src={product.imageUrl ?? "/globe.svg"}
-              alt={product.name}
-              width={48}
-              height={48}
-              className="h-full w-full object-cover"
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-black/10 bg-white transition-all hover:shadow-lg">
+      <Link href={`/shop/${product.id}`} className="block">
+        <div className="relative aspect-square w-full overflow-hidden bg-black/5">
+          <Image
+            src={product.imageUrl ?? "/globe.svg"}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-black/0 transition-all duration-300 group-hover:bg-black/10" />
+        </div>
+      </Link>
+      <div className="flex flex-1 flex-col justify-between p-4">
+        <div className="mb-4">
+          <h3 className="mb-1 text-lg font-semibold transition-colors group-hover:text-black/80">
+            {product.name}
+          </h3>
+          {product.description && (
+            <p className="mb-3 text-sm text-black/60 line-clamp-2">
+              {product.description}
+            </p>
+          )}
+          <p className="text-xl font-semibold">
+            {formatCurrency(product.price, product.currency)}
+          </p>
+        </div>
+        <div className="space-y-3">
+          {product.metadata?.conceptualLayer && (
+            <div className="flex flex-wrap gap-2">
+              {[product.metadata.conceptualLayer]
+                .flat()
+                .filter(Boolean)
+                .map((layer) => (
+                  <span
+                    key={layer}
+                    className="text-xs uppercase tracking-[0.2em] text-black/40"
+                  >
+                    {layer}
+                  </span>
+                ))}
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-black/50">
+              {product.metadata?.tier ?? "Core"}
+            </span>
+            <AddToCartButton
+              productId={product.id}
+              priceId={product.priceId}
+              name={product.name}
+              price={product.price}
+              currency={product.currency}
+              imageUrl={product.imageUrl}
             />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold">{product.name}</h3>
-            <p className="text-sm text-black/60">
-              {product.description ?? "Tailored capability"}
-            </p>
-          </div>
         </div>
-        <p className="text-3xl font-semibold">
-          {formatCurrency(product.price, product.currency)}
-        </p>
-        {product.features && product.features.length > 0 && (
-          <ul className="space-y-1 text-sm text-black/70">
-            {product.features.map((feature) => (
-              <li key={feature} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-black/40" />
-                {feature}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div className="mt-6 flex items-center justify-between">
-        <span className="text-xs uppercase tracking-widest text-black/50">
-          {product.metadata?.tier ?? "Core"}
-        </span>
-        <AddToCartButton
-          productId={product.id}
-          priceId={product.priceId}
-          name={product.name}
-          price={product.price}
-          currency={product.currency}
-          imageUrl={product.imageUrl}
-        />
       </div>
     </article>
   );

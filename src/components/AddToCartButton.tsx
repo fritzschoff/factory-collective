@@ -18,7 +18,7 @@ export function AddToCartButton(props: Props) {
 
   return (
     <button
-      className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/20"
+      className="rounded-full border border-black/20 bg-black px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-all hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:border-black/5 disabled:bg-black/20 disabled:hover:bg-black/20 disabled:hover:text-white"
       onClick={() => {
         startTransition(async () => {
           await addToCart(props);
@@ -28,7 +28,7 @@ export function AddToCartButton(props: Props) {
       }}
       disabled={isPending}
     >
-      {isPending ? "Adding…" : success ?? "Add to cart"}
+      {isPending ? "Adding…" : success ?? "Add"}
     </button>
   );
 }

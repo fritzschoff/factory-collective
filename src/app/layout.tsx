@@ -19,6 +19,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    type: "website",
+  },
 };
 
 export default async function RootLayout({
@@ -34,7 +40,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#f5f2ec] text-black antialiased`}
       >
         <SiteHeader user={user} />
-        <main className="min-h-[70vh] bg-gradient-to-b from-white/80 to-[#f5f2ec]">
+        <main className="min-h-[70vh] bg-[#f5f2ec]">
           {children}
         </main>
         <SiteFooter />
