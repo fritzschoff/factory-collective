@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { ProductCard } from "@/components/ProductCard";
-import { getStorefrontProducts } from "@/lib/products";
-import { readCart, getCartSummary } from "@/lib/cart";
-import { formatCurrency } from "@/lib/currency";
+import Link from 'next/link';
+import { ProductCard } from '@/components/ProductCard';
+import { getStorefrontProducts } from '@/lib/products';
+import { readCart, getCartSummary } from '@/lib/cart';
+import { formatCurrency } from '@/lib/currency';
 
 export const revalidate = 300;
 
@@ -41,12 +41,12 @@ export default async function HomePage() {
           </p>
           <div className="relative mb-8 aspect-[16/9] w-full overflow-hidden rounded-lg bg-gradient-to-br from-black/5 to-black/10">
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-sm text-black/40">Fullscreen image/video placeholder</p>
+              <p className="text-sm text-black/40">
+                Fullscreen image/video placeholder
+              </p>
             </div>
           </div>
-          <h2 className="mb-6 text-4xl font-light md:text-5xl">
-            Cover Shot
-          </h2>
+          <h2 className="mb-6 text-4xl font-light md:text-5xl">Cover Shot</h2>
           <Link
             href="/shop"
             className="inline-block rounded-full border border-black/20 bg-black px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-all hover:bg-white hover:text-black"
@@ -66,7 +66,7 @@ export default async function HomePage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
+          {products.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

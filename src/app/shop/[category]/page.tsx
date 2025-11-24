@@ -1,10 +1,10 @@
-import { ProductCard } from "@/components/ProductCard";
-import { getStorefrontProducts } from "@/lib/products";
-import { notFound } from "next/navigation";
+import { ProductCard } from '@/components/ProductCard';
+import { getStorefrontProducts } from '@/lib/products';
+import { notFound } from 'next/navigation';
 
 export const revalidate = 300;
 
-const validCategories = ["jewellery", "garments", "objects", "art"];
+const validCategories = ['jewellery', 'garments', 'objects', 'art'];
 
 export default async function CategoryPage({
   params,
@@ -13,21 +13,23 @@ export default async function CategoryPage({
 }) {
   const { category: categoryParam } = await params;
   const category = categoryParam.toLowerCase();
-  
+
   if (!validCategories.includes(category)) {
     notFound();
   }
 
   const products = await getStorefrontProducts();
-  const categoryProducts = products.filter((product) =>
-    product.metadata?.category?.toLowerCase() === category
-  );
+  const categoryProducts = products.filter(product => {
+    const productCategory = product.metadata?.category;
+    if (typeof productCategory !== 'string') return false;
+    return productCategory.toLowerCase() === category;
+  });
 
   const categoryLabels: Record<string, string> = {
-    jewellery: "Jewellery",
-    garments: "Garments",
-    objects: "Objects",
-    art: "Art",
+    jewellery: 'Jewellery',
+    garments: 'Garments',
+    objects: 'Objects',
+    art: 'Art',
   };
 
   return (
@@ -43,7 +45,7 @@ export default async function CategoryPage({
 
       {categoryProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {categoryProducts.map((product) => (
+          {categoryProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

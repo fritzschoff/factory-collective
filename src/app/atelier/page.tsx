@@ -1,36 +1,36 @@
 export default function AtelierPage() {
   const categories = [
     {
-      title: "Material / Textur",
-      description: "Material studies and texture exploration",
+      title: 'Material / Textur',
+      description: 'Material studies and texture exploration',
     },
     {
-      title: "Form / Struktur",
-      description: "Form and structural design",
+      title: 'Form / Struktur',
+      description: 'Form and structural design',
     },
     {
-      title: "Oberfläche / Finish",
-      description: "Surface treatments and finishes",
+      title: 'Oberfläche / Finish',
+      description: 'Surface treatments and finishes',
     },
     {
-      title: "Display / Präsentation",
-      description: "Display and presentation methods",
+      title: 'Display / Präsentation',
+      description: 'Display and presentation methods',
     },
     {
-      title: "Kontext / Narrativ",
-      description: "Context and narrative development",
+      title: 'Kontext / Narrativ',
+      description: 'Context and narrative development',
     },
     {
-      title: "Prozess / Technik",
-      description: "Process and technique documentation",
+      title: 'Prozess / Technik',
+      description: 'Process and technique documentation',
     },
     {
-      title: "Funktion / Gebrauch",
-      description: "Function and usage studies",
+      title: 'Funktion / Gebrauch',
+      description: 'Function and usage studies',
     },
     {
-      title: "Wert / Bedeutung",
-      description: "Value and meaning analysis",
+      title: 'Wert / Bedeutung',
+      description: 'Value and meaning analysis',
     },
   ];
 
@@ -71,13 +71,13 @@ export default function AtelierPage() {
         <h2 className="text-xl font-semibold">Core Concepts</h2>
         <div className="flex flex-wrap gap-2">
           {[
-            "System",
-            "Texture",
-            "Substance",
-            "Objects",
-            "Teaching",
-            "Process",
-          ].map((concept) => (
+            'System',
+            'Texture',
+            'Substance',
+            'Objects',
+            'Teaching',
+            'Process',
+          ].map(concept => (
             <span
               key={concept}
               className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm"

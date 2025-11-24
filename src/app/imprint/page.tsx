@@ -1,4 +1,4 @@
-import { siteConfig } from "@/config/site";
+import { siteConfig } from '@/config/site';
 
 export default function ImprintPage() {
   return (
@@ -12,7 +12,9 @@ export default function ImprintPage() {
 
       <div className="space-y-8 text-lg leading-relaxed text-black/70">
         <div>
-          <h2 className="mb-4 text-xl font-semibold">Information according to § 5 TMG</h2>
+          <h2 className="mb-4 text-xl font-semibold">
+            Information according to § 5 TMG
+          </h2>
           <p>{siteConfig.name}</p>
           <p className="mt-2">{siteConfig.footer.address}</p>
         </div>
@@ -24,7 +26,9 @@ export default function ImprintPage() {
         </div>
 
         <div>
-          <h2 className="mb-4 text-xl font-semibold">Responsible for content</h2>
+          <h2 className="mb-4 text-xl font-semibold">
+            Responsible for content
+          </h2>
           <p>{siteConfig.name}</p>
           <p className="mt-2">{siteConfig.footer.address}</p>
         </div>

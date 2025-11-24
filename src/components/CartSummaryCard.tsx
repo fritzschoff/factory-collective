@@ -1,10 +1,10 @@
-import type { CartItem } from "@/types";
-import { formatCurrency } from "@/lib/currency";
-import { CheckoutButton } from "./CheckoutButton";
+import type { CartItem } from '@/types';
+import { formatCurrency } from '@/lib/currency';
+import { CheckoutButton } from './CheckoutButton';
 
 export function CartSummaryCard({ cart }: { cart: CartItem[] }) {
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const currency = cart[0]?.currency ?? "usd";
+  const currency = cart[0]?.currency ?? 'usd';
 
   return (
     <aside className="rounded-3xl border border-black/10 bg-white/70 p-6 shadow-sm backdrop-blur">
@@ -17,7 +17,7 @@ export function CartSummaryCard({ cart }: { cart: CartItem[] }) {
         </p>
       </div>
       <ul className="space-y-3 text-sm text-black/70">
-        {cart.map((item) => (
+        {cart.map(item => (
           <li key={item.productId} className="flex justify-between">
             <span>
               {item.name}
@@ -28,9 +28,7 @@ export function CartSummaryCard({ cart }: { cart: CartItem[] }) {
             </span>
           </li>
         ))}
-        {!cart.length && (
-          <li className="text-black/50">Cart is empty.</li>
-        )}
+        {!cart.length && <li className="text-black/50">Cart is empty.</li>}
       </ul>
       <div className="mt-8">
         <CheckoutButton label="Proceed to Stripe" />

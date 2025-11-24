@@ -1,5 +1,5 @@
-import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
+import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,16 +12,13 @@ const config = {
 
 function hasClientConfig() {
   return Boolean(
-    config.apiKey &&
-      config.authDomain &&
-      config.projectId &&
-      config.appId
+    config.apiKey && config.authDomain && config.projectId && config.appId
   );
 }
 
 export function getFirebaseClientApp(): FirebaseApp | null {
   if (!hasClientConfig()) {
-    console.warn("Missing Firebase client configuration; auth is disabled.");
+    console.warn('Missing Firebase client configuration; auth is disabled.');
     return null;
   }
 

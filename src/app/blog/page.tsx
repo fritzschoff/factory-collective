@@ -1,24 +1,24 @@
 export default function BlogPage() {
   const posts = [
     {
-      title: "Editorial",
-      category: "Expression",
-      description: "Editorial content and stories",
+      title: 'Editorial',
+      category: 'Expression',
+      description: 'Editorial content and stories',
     },
     {
-      title: "Body",
-      category: "Substance",
-      description: "Physical form and materiality",
+      title: 'Body',
+      category: 'Substance',
+      description: 'Physical form and materiality',
     },
     {
-      title: "Display",
-      category: "Function",
-      description: "Presentation and exhibition",
+      title: 'Display',
+      category: 'Function',
+      description: 'Presentation and exhibition',
     },
     {
-      title: "Campaign",
-      category: "Expression",
-      description: "Marketing and communication campaigns",
+      title: 'Campaign',
+      category: 'Expression',
+      description: 'Marketing and communication campaigns',
     },
   ];
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import { addToCart } from "@/app/actions/cart-actions";
+import { useState, useTransition } from 'react';
+import { addToCart } from '@/app/actions/cart-actions';
 
 type Props = {
   productId: string;
@@ -28,7 +28,7 @@ export function AddToCartButton(props: Props) {
       }}
       disabled={isPending}
     >
-      {isPending ? "Adding…" : success ?? "Add"}
+      {isPending ? 'Adding…' : (success ?? 'Add')}
     </button>
   );
 }

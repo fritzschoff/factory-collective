@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-4xl flex-col gap-10 px-6 py-14">
@@ -18,7 +18,7 @@ export default function SearchPage() {
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search products, collections, archive..."
           className="w-full rounded-lg border border-black/10 bg-white px-6 py-4 text-lg focus:border-black focus:outline-none"
         />

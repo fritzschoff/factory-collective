@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { getUserProfile, saveUserProfile } from "@/lib/profile-store";
-import { requireUser } from "@/lib/auth/session";
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { getUserProfile, saveUserProfile } from '@/lib/profile-store';
+import { requireUser } from '@/lib/auth/session';
 
 const profileSchema = z.object({
   fullName: z.string().min(2),
@@ -25,34 +25,34 @@ const profileSchema = z.object({
 });
 
 export type ProfileFormState = {
-  status: "idle" | "error" | "success";
+  status: 'idle' | 'error' | 'success';
   message?: string;
 };
 
 export async function updateProfileAction(
   _prevState: ProfileFormState,
-  formData: FormData,
+  formData: FormData
 ): Promise<ProfileFormState> {
   const user = await requireUser();
 
   try {
     const parsed = profileSchema.parse({
-      fullName: formData.get("fullName"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-      addressLine1: formData.get("addressLine1"),
-      addressLine2: formData.get("addressLine2"),
-      city: formData.get("city"),
-      state: formData.get("state"),
-      postalCode: formData.get("postalCode"),
-      country: formData.get("country"),
-      shippingProvider: formData.get("shippingProvider"),
-      shippingAccount: formData.get("shippingAccount"),
-      shippingInstructions: formData.get("shippingInstructions"),
-      cardBrand: formData.get("cardBrand"),
-      cardLastFour: formData.get("cardLastFour"),
-      expMonth: formData.get("expMonth"),
-      expYear: formData.get("expYear"),
+      fullName: formData.get('fullName'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      addressLine1: formData.get('addressLine1'),
+      addressLine2: formData.get('addressLine2'),
+      city: formData.get('city'),
+      state: formData.get('state'),
+      postalCode: formData.get('postalCode'),
+      country: formData.get('country'),
+      shippingProvider: formData.get('shippingProvider'),
+      shippingAccount: formData.get('shippingAccount'),
+      shippingInstructions: formData.get('shippingInstructions'),
+      cardBrand: formData.get('cardBrand'),
+      cardLastFour: formData.get('cardLastFour'),
+      expMonth: formData.get('expMonth'),
+      expYear: formData.get('expYear'),
     });
 
     const current = await getUserProfile(user);
@@ -70,28 +70,28 @@ export async function updateProfileAction(
         country: parsed.country,
       },
       shipping: {
-        provider: parsed.shippingProvider ?? "",
+        provider: parsed.shippingProvider ?? '',
         accountNumber: parsed.shippingAccount,
         instructions: parsed.shippingInstructions,
       },
       payment: {
-        cardBrand: parsed.cardBrand ?? "",
-        lastFour: parsed.cardLastFour ?? "",
+        cardBrand: parsed.cardBrand ?? '',
+        lastFour: parsed.cardLastFour ?? '',
         expMonth: parsed.expMonth,
         expYear: parsed.expYear,
       },
     });
 
-    revalidatePath("/dashboard");
+    revalidatePath('/dashboard');
 
     return {
-      status: "success",
-      message: "Profile updated",
+      status: 'success',
+      message: 'Profile updated',
     };
   } catch (error) {
     console.error(error);
     return {
-      status: "error",
+      status: 'error',
       message: (error as Error).message,
     };
   }

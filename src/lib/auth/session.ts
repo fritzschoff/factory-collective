@@ -1,9 +1,9 @@
-import type { SessionUser } from "@/types";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { getFirebaseAdminAuth } from "../firebase-admin";
+import type { SessionUser } from '@/types';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { getFirebaseAdminAuth } from '../firebase-admin';
 
-export const SESSION_COOKIE_NAME = "fc_session";
+export const SESSION_COOKIE_NAME = 'fc_session';
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const auth = getFirebaseAdminAuth();
@@ -26,7 +26,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
       photoURL: decoded.picture,
     } satisfies SessionUser;
   } catch (error) {
-    console.warn("Invalid Firebase session cookie", error);
+    console.warn('Invalid Firebase session cookie', error);
     cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
@@ -35,7 +35,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    redirect('/login');
   }
   return user;
 }

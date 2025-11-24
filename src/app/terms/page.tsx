@@ -5,9 +5,7 @@ export default function TermsPage() {
         <p className="mb-2 text-xs uppercase tracking-[0.4em] text-black/40">
           Legal
         </p>
-        <h1 className="text-4xl font-light md:text-5xl">
-          Terms & Conditions
-        </h1>
+        <h1 className="text-4xl font-light md:text-5xl">Terms & Conditions</h1>
       </div>
 
       <div className="space-y-8 text-lg leading-relaxed text-black/70">
@@ -32,9 +30,8 @@ export default function TermsPage() {
           <h2 className="mb-4 text-xl font-semibold">Purchases</h2>
           <p>
             All purchases are subject to availability. We reserve the right to
-            refuse or cancel any order for any reason, including but not
-            limited to product availability, errors in pricing, or errors in
-            your order.
+            refuse or cancel any order for any reason, including but not limited
+            to product availability, errors in pricing, or errors in your order.
           </p>
         </div>
 

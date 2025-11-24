@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { UserProfile } from "@/types";
-import { useFormState } from "react-dom";
-import { updateProfileAction } from "@/app/actions/profile-actions";
+import type { UserProfile } from '@/types';
+import { useFormState } from 'react-dom';
+import { updateProfileAction } from '@/app/actions/profile-actions';
 
 const initialState = {
-  status: "idle" as const,
+  status: 'idle' as const,
   message: undefined,
 };
 
@@ -22,7 +22,7 @@ function Field({
   name,
   defaultValue,
   placeholder,
-  type = "text",
+  type = 'text',
 }: InputProps) {
   return (
     <label className="space-y-2 text-sm">
@@ -78,7 +78,7 @@ export function DashboardForm({ profile }: { profile: UserProfile }) {
           <Field
             label="Line 2"
             name="addressLine2"
-            defaultValue={profile.address.line2 ?? ""}
+            defaultValue={profile.address.line2 ?? ''}
           />
           <Field label="City" name="city" defaultValue={profile.address.city} />
           <Field
@@ -112,7 +112,7 @@ export function DashboardForm({ profile }: { profile: UserProfile }) {
           <Field
             label="Account"
             name="shippingAccount"
-            defaultValue={profile.shipping.accountNumber ?? ""}
+            defaultValue={profile.shipping.accountNumber ?? ''}
           />
           <label className="md:col-span-2">
             <span className="text-xs uppercase tracking-[0.3em] text-black/50">
@@ -120,7 +120,7 @@ export function DashboardForm({ profile }: { profile: UserProfile }) {
             </span>
             <textarea
               name="shippingInstructions"
-              defaultValue={profile.shipping.instructions ?? ""}
+              defaultValue={profile.shipping.instructions ?? ''}
               className="mt-2 w-full rounded-2xl border border-black/10 bg-white/60 px-4 py-3"
               rows={3}
             />
@@ -160,9 +160,9 @@ export function DashboardForm({ profile }: { profile: UserProfile }) {
         {state.message && (
           <p
             className={
-              state.status === "error"
-                ? "text-sm text-red-500"
-                : "text-sm text-green-600"
+              state.status === 'error'
+                ? 'text-sm text-red-500'
+                : 'text-sm text-green-600'
             }
           >
             {state.message}

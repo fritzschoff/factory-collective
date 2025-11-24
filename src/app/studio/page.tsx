@@ -1,36 +1,36 @@
 export default function StudioPage() {
   const categories = [
     {
-      title: "Architektur / Szenografie",
-      description: "Architecture and scenography projects",
+      title: 'Architektur / Szenografie',
+      description: 'Architecture and scenography projects',
     },
     {
-      title: "Grafikdesign / Visuelle Kommunikation",
-      description: "Graphic design and visual communication",
+      title: 'Grafikdesign / Visuelle Kommunikation',
+      description: 'Graphic design and visual communication',
     },
     {
-      title: "Art / Musik / Performance",
-      description: "Art, music, and performance works",
+      title: 'Art / Musik / Performance',
+      description: 'Art, music, and performance works',
     },
     {
-      title: "Text / Sprache",
-      description: "Text and language projects",
+      title: 'Text / Sprache',
+      description: 'Text and language projects',
     },
     {
-      title: "Kontext / Narrativ",
-      description: "Context and narrative development",
+      title: 'Kontext / Narrativ',
+      description: 'Context and narrative development',
     },
     {
-      title: "Prozess / Technik",
-      description: "Process and technique documentation",
+      title: 'Prozess / Technik',
+      description: 'Process and technique documentation',
     },
     {
-      title: "Funktion / Gebrauch",
-      description: "Function and usage studies",
+      title: 'Funktion / Gebrauch',
+      description: 'Function and usage studies',
     },
     {
-      title: "Wert / Bedeutung",
-      description: "Value and meaning analysis",
+      title: 'Wert / Bedeutung',
+      description: 'Value and meaning analysis',
     },
   ];
 
@@ -71,13 +71,13 @@ export default function StudioPage() {
         <h2 className="text-xl font-semibold">Core Concepts</h2>
         <div className="flex flex-wrap gap-2">
           {[
-            "Architecture",
-            "Art",
-            "Presentation",
-            "Graphic Design",
-            "Collaboration",
-            "Performance",
-          ].map((concept) => (
+            'Architecture',
+            'Art',
+            'Presentation',
+            'Graphic Design',
+            'Collaboration',
+            'Performance',
+          ].map(concept => (
             <span
               key={concept}
               className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm"

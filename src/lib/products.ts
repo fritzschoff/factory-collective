@@ -32,7 +32,7 @@ async function fetchStripeProducts(): Promise<StorefrontProduct[]> {
     }
 
     const products = allProducts
-      .map((product) => {
+      .map(product => {
         const price = product.default_price as Stripe.Price | null;
         if (
           !price ||
@@ -52,21 +52,21 @@ async function fetchStripeProducts(): Promise<StorefrontProduct[]> {
           imageUrl: product.images?.[0] ?? FALLBACK_IMAGE,
           metadata: product.metadata,
           features:
-            product.marketing_features?.map((feature) => feature.name ?? '') ??
+            product.marketing_features?.map(feature => feature.name ?? '') ??
             undefined,
         } satisfies StorefrontProduct;
       })
       .filter(Boolean) as StorefrontProduct[];
 
     if (products.length === 0) {
-      console.warn('No products found in Stripe. Using fallback products.');
-      return FALLBACK_PRODUCTS;
+      console.warn('No products found in Stripe.');
+      return [];
     }
 
     return products;
   } catch (error) {
     console.error('Error fetching products from Stripe:', error);
-    return FALLBACK_PRODUCTS;
+    return [];
   }
 }
 

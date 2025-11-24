@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from 'react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-} from "firebase/auth";
-import { getFirebaseClientAuth } from "@/lib/firebase-client";
+} from 'firebase/auth';
+import { getFirebaseClientAuth } from '@/lib/firebase-client';
 
-type Mode = "signin" | "signup";
+type Mode = 'signin' | 'signup';
 
 export function LoginForm() {
   const router = useRouter();
   const auth = getFirebaseClientAuth();
-  const [mode, setMode] = useState<Mode>("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<Mode>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,22 +37,22 @@ export function LoginForm() {
 
     try {
       const userCredential =
-        mode === "signin"
+        mode === 'signin'
           ? await signInWithEmailAndPassword(clientAuth, email, password)
           : await createUserWithEmailAndPassword(clientAuth, email, password);
 
       const idToken = await userCredential.user.getIdToken(true);
-      const response = await fetch("/api/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
       });
 
       if (!response.ok) {
-        throw new Error("Unable to persist session");
+        throw new Error('Unable to persist session');
       }
 
-      router.push("/dashboard");
+      router.push('/dashboard');
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -71,7 +71,7 @@ export function LoginForm() {
           type="email"
           required
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={event => setEmail(event.target.value)}
           className="mt-2 w-full rounded-2xl border border-black/10 bg-white/70 px-4 py-3"
         />
       </div>
@@ -83,7 +83,7 @@ export function LoginForm() {
           type="password"
           required
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={event => setPassword(event.target.value)}
           className="mt-2 w-full rounded-2xl border border-black/10 bg-white/70 px-4 py-3"
         />
       </div>
@@ -94,19 +94,19 @@ export function LoginForm() {
         className="w-full rounded-full bg-black px-4 py-3 text-sm font-semibold text-white"
       >
         {isSubmitting
-          ? "Saving…"
-          : mode === "signin"
-          ? "Sign in"
-          : "Create account"}
+          ? 'Saving…'
+          : mode === 'signin'
+            ? 'Sign in'
+            : 'Create account'}
       </button>
       <button
         type="button"
-        onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+        onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
         className="w-full text-center text-xs uppercase tracking-[0.3em] text-black/50"
       >
-        {mode === "signin"
-          ? "Create a new account"
-          : "Already have an account?"}
+        {mode === 'signin'
+          ? 'Create a new account'
+          : 'Already have an account?'}
       </button>
     </form>
   );

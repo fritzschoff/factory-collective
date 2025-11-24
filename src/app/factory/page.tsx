@@ -1,28 +1,28 @@
 export default function FactoryPage() {
   const categories = [
     {
-      title: "Theorie / Konzept",
-      description: "Theoretical texts, essays, brand manifest & workbook",
+      title: 'Theorie / Konzept',
+      description: 'Theoretical texts, essays, brand manifest & workbook',
     },
     {
-      title: "Forschung / Analyse",
-      description: "Research and analysis documentation",
+      title: 'Forschung / Analyse',
+      description: 'Research and analysis documentation',
     },
     {
-      title: "Produktion / Prozess",
-      description: "Production processes and methodologies",
+      title: 'Produktion / Prozess',
+      description: 'Production processes and methodologies',
     },
     {
-      title: "Archiv / Dokumentation",
-      description: "Archived works and documentation",
+      title: 'Archiv / Dokumentation',
+      description: 'Archived works and documentation',
     },
     {
-      title: "Kommunikation / Vermittlung",
-      description: "Communication and mediation",
+      title: 'Kommunikation / Vermittlung',
+      description: 'Communication and mediation',
     },
     {
-      title: "Präsentation / Display",
-      description: "Presentations and displays",
+      title: 'Präsentation / Display',
+      description: 'Presentations and displays',
     },
   ];
 
@@ -63,13 +63,13 @@ export default function FactoryPage() {
         <h2 className="text-xl font-semibold">Core Concepts</h2>
         <div className="flex flex-wrap gap-2">
           {[
-            "Manifest",
-            "Theory",
-            "Research",
-            "Conservation",
-            "Archive",
-            "Language",
-          ].map((concept) => (
+            'Manifest',
+            'Theory',
+            'Research',
+            'Conservation',
+            'Archive',
+            'Language',
+          ].map(concept => (
             <span
               key={concept}
               className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm"

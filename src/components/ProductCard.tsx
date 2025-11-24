@@ -1,8 +1,8 @@
-import type { StorefrontProduct } from "@/types";
-import { formatCurrency } from "@/lib/currency";
-import { AddToCartButton } from "./AddToCartButton";
-import Image from "next/image";
-import Link from "next/link";
+import type { StorefrontProduct } from '@/types';
+import { formatCurrency } from '@/lib/currency';
+import { AddToCartButton } from './AddToCartButton';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export function ProductCard({ product }: { product: StorefrontProduct }) {
   return (
@@ -10,7 +10,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
       <Link href={`/shop/${product.id}`} className="block">
         <div className="relative aspect-square w-full overflow-hidden bg-black/5">
           <Image
-            src={product.imageUrl ?? "/globe.svg"}
+            src={product.imageUrl ?? '/globe.svg'}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
               {[product.metadata.conceptualLayer]
                 .flat()
                 .filter(Boolean)
-                .map((layer) => (
+                .map(layer => (
                   <span
                     key={layer}
                     className="text-xs uppercase tracking-[0.2em] text-black/40"
@@ -50,7 +50,7 @@ export function ProductCard({ product }: { product: StorefrontProduct }) {
           )}
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-widest text-black/50">
-              {product.metadata?.tier ?? "Core"}
+              {product.metadata?.tier ?? 'Core'}
             </span>
             <AddToCartButton
               productId={product.id}

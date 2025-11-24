@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type { CartItem } from "@/types";
-import Image from "next/image";
-import { useTransition } from "react";
-import { removeFromCart, updateCartQuantity } from "@/app/actions/cart-actions";
-import { formatCurrency } from "@/lib/currency";
+import type { CartItem } from '@/types';
+import Image from 'next/image';
+import { useTransition } from 'react';
+import { removeFromCart, updateCartQuantity } from '@/app/actions/cart-actions';
+import { formatCurrency } from '@/lib/currency';
 
 type Props = {
   items: CartItem[];
@@ -19,13 +19,13 @@ export function CartLineItems({ items }: Props) {
 
   return (
     <div className="space-y-4">
-      {items.map((item) => (
+      {items.map(item => (
         <div
           key={item.productId}
           className="flex flex-wrap items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4"
         >
           <Image
-            src={item.imageUrl ?? "/globe.svg"}
+            src={item.imageUrl ?? '/globe.svg'}
             alt={item.name}
             width={56}
             height={56}
@@ -41,7 +41,10 @@ export function CartLineItems({ items }: Props) {
             <button
               onClick={() =>
                 startTransition(() =>
-                  updateCartQuantity({ productId: item.productId, quantity: item.quantity - 1 })
+                  updateCartQuantity({
+                    productId: item.productId,
+                    quantity: item.quantity - 1,
+                  })
                 )
               }
               disabled={isPending || item.quantity <= 1}
@@ -53,7 +56,10 @@ export function CartLineItems({ items }: Props) {
             <button
               onClick={() =>
                 startTransition(() =>
-                  updateCartQuantity({ productId: item.productId, quantity: item.quantity + 1 })
+                  updateCartQuantity({
+                    productId: item.productId,
+                    quantity: item.quantity + 1,
+                  })
                 )
               }
               disabled={isPending}
@@ -64,7 +70,11 @@ export function CartLineItems({ items }: Props) {
           </div>
           <button
             className="text-xs uppercase tracking-[0.2em] text-black/40"
-            onClick={() => startTransition(() => removeFromCart({ productId: item.productId }))}
+            onClick={() =>
+              startTransition(() =>
+                removeFromCart({ productId: item.productId })
+              )
+            }
             disabled={isPending}
           >
             Remove

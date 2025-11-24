@@ -1,8 +1,8 @@
-import { CartLineItems } from "@/components/CartLineItems";
-import { CartSummaryCard } from "@/components/CartSummaryCard";
-import { readCart } from "@/lib/cart";
+import { CartLineItems } from '@/components/CartLineItems';
+import { CartSummaryCard } from '@/components/CartSummaryCard';
+import { readCart } from '@/lib/cart';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function CartPage() {
   const cart = await readCart();

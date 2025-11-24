@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { siteConfig } from "@/config/site";
+import Link from 'next/link';
+import { siteConfig } from '@/config/site';
 
 export function SiteFooter() {
   return (
@@ -11,13 +11,22 @@ export function SiteFooter() {
               C.I.C
             </p>
             <div className="space-y-2 text-sm">
-              <Link href="/factory" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/factory"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 FACTORY
               </Link>
-              <Link href="/atelier" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/atelier"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 ATELIER
               </Link>
-              <Link href="/studio" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/studio"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 STUDIO
               </Link>
             </div>
@@ -27,13 +36,22 @@ export function SiteFooter() {
               Legal
             </p>
             <div className="space-y-2 text-sm">
-              <Link href="/imprint" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/imprint"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 Imprint
               </Link>
-              <Link href="/privacy" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/privacy"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="block text-black/60 hover:text-black transition-colors">
+              <Link
+                href="/terms"
+                className="block text-black/60 hover:text-black transition-colors"
+              >
                 Terms & Conditions
               </Link>
             </div>

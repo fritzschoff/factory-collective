@@ -1,14 +1,14 @@
-import { ProductCard } from "@/components/ProductCard";
-import { getStorefrontProducts } from "@/lib/products";
-import Link from "next/link";
+import { ProductCard } from '@/components/ProductCard';
+import { getStorefrontProducts } from '@/lib/products';
+import Link from 'next/link';
 
 export const revalidate = 300;
 
 const categories = [
-  { label: "Jewellery", href: "/shop/jewellery" },
-  { label: "Garments", href: "/shop/garments" },
-  { label: "Objects", href: "/shop/objects" },
-  { label: "Art", href: "/shop/art" },
+  { label: 'Jewellery', href: '/shop/jewellery' },
+  { label: 'Garments', href: '/shop/garments' },
+  { label: 'Objects', href: '/shop/objects' },
+  { label: 'Art', href: '/shop/art' },
 ];
 
 export default async function ShopPage() {
@@ -24,7 +24,7 @@ export default async function ShopPage() {
       </div>
 
       <div className="flex flex-wrap gap-4 border-b border-black/10 pb-6">
-        {categories.map((category) => (
+        {categories.map(category => (
           <Link
             key={category.href}
             href={category.href}
@@ -59,7 +59,7 @@ export default async function ShopPage() {
                 <div>
                   <p className="mb-2 font-semibold">Size</p>
                   <div className="flex flex-wrap gap-2">
-                    {["XS", "S", "M", "L", "XL"].map((size) => (
+                    {['XS', 'S', 'M', 'L', 'XL'].map(size => (
                       <button
                         key={size}
                         className="rounded border border-black/10 px-3 py-1 text-xs hover:bg-black hover:text-white transition-colors"
@@ -72,7 +72,7 @@ export default async function ShopPage() {
                 <div>
                   <p className="mb-2 font-semibold">Color</p>
                   <div className="flex flex-wrap gap-2">
-                    {["Black", "White", "Gray", "Blue", "Red"].map((color) => (
+                    {['Black', 'White', 'Gray', 'Blue', 'Red'].map(color => (
                       <button
                         key={color}
                         className="rounded border border-black/10 px-3 py-1 text-xs hover:bg-black hover:text-white transition-colors"
@@ -100,7 +100,7 @@ export default async function ShopPage() {
 
         <div className="flex-1">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
+            {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

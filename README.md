@@ -3,6 +3,7 @@
 Factory Collective is a fully server-rendered commerce starter built on Next.js 16. It couples Stripe-based product management and checkout with Firebase authentication + profile storage so you can launch collectible marketplaces with confidence.
 
 ## Features
+
 - **Latest Next.js 16 app router** with caching (`revalidate: 300`) for the storefront and dynamic rendering where cookies are involved (cart + dashboard).
 - **Stripe integration** for listing products, generating checkout sessions, and graceful fallbacks when API keys are missing.
 - **Cookie-backed shopping cart** implemented with server actions so state persists across devices and is never exposed to the client.
@@ -10,6 +11,7 @@ Factory Collective is a fully server-rendered commerce starter built on Next.js 
 - **Dashboard** for updating address, shipping, and payment metadata using server actions and Zod validation.
 
 ## Getting Started
+
 1. Install dependencies
    ```bash
    npm install
@@ -22,6 +24,7 @@ Factory Collective is a fully server-rendered commerce starter built on Next.js 
 4. Visit `http://localhost:3000` for the storefront, `/cart` for the manifest, `/login` to authenticate, and `/dashboard` for the authenticated profile editor.
 
 ## Environment Variables
+
 Create `.env.local` with the following values:
 
 ```bash
@@ -46,9 +49,11 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n..."
 Stripe + Firebase are optional for local UI testing. Without keys, the app will serve mock products, disable checkout redirection, and keep dashboard data inside the dev runtime.
 
 ## Stripe Webhooks (optional)
+
 If you need to react to checkout events, create a webhook endpoint (e.g., `/api/stripe/webhook`) and point your Stripe CLI to it. This starter keeps checkout creation isolated in `/api/checkout`.
 
 ## Testing Checklist
+
 - `npm run lint` — ensure TypeScript + ESLint pass.
 - Stripe keys present — confirm `/api/checkout` returns a session URL.
 - Firebase client + admin keys present — create an account via `/login` and verify `/dashboard` loads with persisted data in Firestore.

@@ -1,34 +1,34 @@
-import type { SessionUser, UserProfile } from "@/types";
-import { getFirebaseFirestore } from "./firebase-admin";
+import type { SessionUser, UserProfile } from '@/types';
+import { getFirebaseFirestore } from './firebase-admin';
 
-const COLLECTION = "profiles";
+const COLLECTION = 'profiles';
 const inMemoryProfiles = new Map<string, UserProfile>();
 
 function buildDefaultProfile(user: SessionUser): UserProfile {
   const now = new Date().toISOString();
   return {
     uid: user.uid,
-    fullName: user.displayName ?? "Factory Member",
-    email: user.email ?? "member@factory.collective",
-    phone: "",
+    fullName: user.displayName ?? 'Factory Member',
+    email: user.email ?? 'member@factory.collective',
+    phone: '',
     address: {
-      line1: "",
-      line2: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "US",
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'US',
     },
     shipping: {
-      provider: "",
-      accountNumber: "",
-      instructions: "",
+      provider: '',
+      accountNumber: '',
+      instructions: '',
     },
     payment: {
-      cardBrand: "",
-      lastFour: "",
-      expMonth: "",
-      expYear: "",
+      cardBrand: '',
+      lastFour: '',
+      expMonth: '',
+      expYear: '',
     },
     updatedAt: now,
   };

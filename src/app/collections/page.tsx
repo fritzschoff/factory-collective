@@ -1,6 +1,6 @@
-import { ProductCard } from "@/components/ProductCard";
-import { getStorefrontProducts } from "@/lib/products";
-import Link from "next/link";
+import { ProductCard } from '@/components/ProductCard';
+import { getStorefrontProducts } from '@/lib/products';
+import Link from 'next/link';
 
 export const revalidate = 300;
 
@@ -32,7 +32,7 @@ export default async function CollectionsPage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((product) => (
+          {featuredProducts.map(product => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

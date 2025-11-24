@@ -1,42 +1,42 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 const archiveCategories = [
-  { label: "All", href: "/archive" },
-  { label: "Studio", href: "/archive/studio" },
-  { label: "Press", href: "/archive/press" },
-  { label: "Info", href: "/archive/info" },
+  { label: 'All', href: '/archive' },
+  { label: 'Studio', href: '/archive/studio' },
+  { label: 'Press', href: '/archive/press' },
+  { label: 'Info', href: '/archive/info' },
 ];
 
 const communityCards = [
   {
-    title: "Factory",
-    description: "Product Design and Manufacturing",
-    category: "Studio",
+    title: 'Factory',
+    description: 'Product Design and Manufacturing',
+    category: 'Studio',
   },
   {
-    title: "Atelier",
-    description: "Creative Workspace and Collaboration",
-    category: "Studio",
+    title: 'Atelier',
+    description: 'Creative Workspace and Collaboration',
+    category: 'Studio',
   },
   {
-    title: "Studio",
-    description: "Artistic Expression and Innovation",
-    category: "Studio",
+    title: 'Studio',
+    description: 'Artistic Expression and Innovation',
+    category: 'Studio',
   },
   {
-    title: "Press Release",
-    description: "Latest News and Announcements",
-    category: "Press",
+    title: 'Press Release',
+    description: 'Latest News and Announcements',
+    category: 'Press',
   },
   {
-    title: "Community",
-    description: "Join our collective",
-    category: "Info",
+    title: 'Community',
+    description: 'Join our collective',
+    category: 'Info',
   },
   {
-    title: "About Us",
-    description: "Our story and mission",
-    category: "Info",
+    title: 'About Us',
+    description: 'Our story and mission',
+    category: 'Info',
   },
 ];
 
@@ -45,11 +45,11 @@ export default async function ArchivePage({
 }: {
   searchParams: { filter?: string };
 }) {
-  const activeFilter = searchParams.filter || "All";
+  const activeFilter = searchParams.filter || 'All';
   const filteredCards =
-    activeFilter === "All"
+    activeFilter === 'All'
       ? communityCards
-      : communityCards.filter((card) => card.category === activeFilter);
+      : communityCards.filter(card => card.category === activeFilter);
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-7xl flex-col gap-10 px-6 py-14">
@@ -61,14 +61,14 @@ export default async function ArchivePage({
       </div>
 
       <div className="flex flex-wrap gap-4 border-b border-black/10 pb-6">
-        {archiveCategories.map((category) => (
+        {archiveCategories.map(category => (
           <Link
             key={category.href}
-            href={`/archive${category.label === "All" ? "" : `?filter=${category.label}`}`}
+            href={`/archive${category.label === 'All' ? '' : `?filter=${category.label}`}`}
             className={`text-sm uppercase tracking-[0.2em] transition-colors ${
               activeFilter === category.label
-                ? "text-black font-semibold"
-                : "text-black/60 hover:text-black"
+                ? 'text-black font-semibold'
+                : 'text-black/60 hover:text-black'
             }`}
           >
             {category.label}

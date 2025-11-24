@@ -1,10 +1,10 @@
-import { getApps, initializeApp, cert, type App } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
-import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getApps, initializeApp, cert, type App } from 'firebase-admin/app';
+import { getAuth, type Auth } from 'firebase-admin/auth';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL;
-const PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+const PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
 function canInitializeAdmin() {
   return Boolean(PROJECT_ID && CLIENT_EMAIL && PRIVATE_KEY);
