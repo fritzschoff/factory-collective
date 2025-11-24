@@ -9,9 +9,10 @@ const validCategories = ["jewellery", "garments", "objects", "art"];
 export default async function CategoryPage({
   params,
 }: {
-  params: { category: string };
+  params: Promise<{ category: string }>;
 }) {
-  const category = params.category.toLowerCase();
+  const { category: categoryParam } = await params;
+  const category = categoryParam.toLowerCase();
   
   if (!validCategories.includes(category)) {
     notFound();
