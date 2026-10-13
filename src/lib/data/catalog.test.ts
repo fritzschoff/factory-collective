@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PRODUCTS, WORKS } from '@/content/catalog';
 import { createCatalog, demoPriceCents, fromPrice, getCatalog, priceCentsFor } from './catalog';
+
+// The price list is the owner's to edit, so nothing in this file may depend on what is in it.
+vi.mock('@/content/prices.json', () => ({ default: {} }));
 
 const cat = createCatalog(PRODUCTS.map((p) => ({ ...p, priceCents: null })));
 
@@ -33,6 +36,9 @@ describe('catalog', () => {
 
 describe('prices', () => {
   const sh = cat.byId('SH-001')!;
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   it('takes the manual EUR price first', () => {
     expect(priceCentsFor(sh, { 'SH-001': 280 }, true)).toBe(28000);
   });
@@ -50,7 +56,15 @@ describe('prices', () => {
     expect(fromPrice(priced, w)).toBe('from € 45');
   });
   it('getCatalog has no prices without DEMO_PRICES', async () => {
-    delete process.env.DEMO_PRICES;
+    // '0' is a non-empty string: a truthiness check on the variable would wrongly switch demo prices on
+    vi.stubEnv('DEMO_PRICES', '0');
     expect((await getCatalog()).byId('JK-001')?.priceCents).toBeNull();
+  });
+  it('getCatalog gives the demo price with DEMO_PRICES=1', async () => {
+    vi.stubEnv('DEMO_PRICES', '1');
+    const cents = (await getCatalog()).byId('JK-001')?.priceCents;
+    expect(cents).toBe(demoPriceCents(cat.byId('JK-001')!));
+    expect(Number.isInteger(cents)).toBe(true);
+    expect(cents).toBeGreaterThan(0);
   });
 });
