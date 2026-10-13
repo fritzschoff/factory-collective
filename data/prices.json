@@ -1,0 +1,4 @@
+{
+  "_readme": "Optional. Prices in EUR by product id, used by `npm run stripe:seed` to create the Stripe prices. Once the products live in Stripe, Stripe is the source of truth (run `npm run stripe:sync`) and this file can stay empty. Example:  \"JK-001\": 540",
+  "_example": { "JK-001": 540, "SH-001": 280, "BR-A": 4200, "OB-011": 320, "CI-07.P": 45, "CI-07.A": 160 }
+}

@@ -1,0 +1,47 @@
+/* ── marks laid over a picture (positions in % of the picture) ────────────── */
+.over { position: absolute; inset: 0; pointer-events: none; z-index: 3; --mk: var(--axis2); --mk-s: var(--ink); font-size: clamp(9px, .76vw, 11px); line-height: 1.45; }
+.over a, .over button { pointer-events: auto; }
+.mk { position: absolute; }
+.mk.is-light, .is-light .mk { --mk: rgba(255,255,255,.72); --mk-s: rgba(255,255,255,.92); color: #fff; }
+.mk-svg { inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mk-svg line { stroke: var(--mk); stroke-width: .8; }
+.mk-diag line { stroke-dasharray: 5 4; }
+.mk-notin-l line { stroke: var(--red); stroke-width: .8; }
+.mk-dot { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--red); }
+.mk-dot.is-grey { background: var(--mk); }
+
+.mk-axisv { bottom: 0; width: 1px; transform: translateX(-.5px); padding-top: 22px; background: repeating-linear-gradient(to bottom, var(--mk) 0 18px, transparent 18px 22px, var(--mk) 22px 24px, transparent 24px 28px); background-clip: content-box; }
+.mk-axisv i { position: absolute; left: -10px; top: 0; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--mk); border-radius: 50%; font: normal 9.5px/1 var(--text); color: var(--mk); background: transparent; }
+.mk-axish { height: 1px; background: repeating-linear-gradient(to right, var(--mk) 0 18px, transparent 18px 22px, var(--mk) 22px 24px, transparent 24px 28px); }
+.mk-level { display: block; width: var(--len, 150px); height: 0; border-top: 1px solid var(--mk-s); }
+.mk-level svg { position: absolute; left: -6px; top: -9.5px; } .mk-level svg path { fill: none; stroke: var(--mk-s); stroke-width: .9; }
+.mk-level em { position: absolute; left: 12px; bottom: 3px; font-style: normal; white-space: nowrap; color: var(--mk-s); }
+
+.mk-aa { display: flex; align-items: center; gap: 6px; transform: translateY(-50%); color: var(--red); font-family: var(--display); font-size: var(--fs, 19px); line-height: 1; --mk: var(--red); }
+.mk-aa b { font-weight: 400; } .mk-aa b:first-child, .mk-aa b:last-child { font-size: 1.55em; margin-top: -.06em; }
+.mk-aa i { flex: 1; height: 1.1px; background: repeating-linear-gradient(to right, var(--red) 0 18px, transparent 18px 22px, var(--red) 22px 24px, transparent 24px 28px); }
+
+.mk-open { width: var(--w, 11%); aspect-ratio: 100 / 30; min-width: 70px; transform: translate(-50%, -50%); display: block; }
+.mk-open svg { width: 100%; height: 100%; overflow: visible; } .mk-open svg rect, .mk-open svg line { fill: none; stroke: var(--mk-s); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mk-open em { position: absolute; left: 0; top: calc(100% + 8px); font-style: normal; white-space: nowrap; color: var(--mk-s); }
+a.mk-open:hover svg rect { fill: rgba(255,255,255,.14); }
+.mk-notin, .mk-cap { color: var(--ink); line-height: 1.45; }
+.mk-notin { transform: translateY(-50%); width: max-content; max-width: 28%; }
+.mk-notin.is-left { transform: translate(-100%, -50%); text-align: right; }
+.mk-notin small { display: block; color: var(--red); font-size: .93em; }
+.mk-notin.is-light, .mk-cap.is-light { color: #fff; }
+.mk-redact { background: var(--ink); } .mk-redact em { position: absolute; left: 4px; top: calc(100% + 8px); font-style: normal; white-space: nowrap; color: #fff; }
+.mk-dim { height: 0; border-top: .7px solid var(--mk-s); }
+.mk-dim::before, .mk-dim::after { content: ''; position: absolute; top: -5px; width: 0; height: 9px; border-left: .5px solid var(--mk-s); }
+.mk-dim::before { left: 0; } .mk-dim::after { right: 0; }
+.mk-dim em { position: absolute; left: 0; right: 0; bottom: 5px; text-align: center; font-style: normal; color: var(--mk-s); }
+.mk-sp { width: 22px; height: 22px; margin: -11px 0 0 -11px; display: grid; place-items: center; }
+.mk-sp i { width: 9px; height: 9px; border-radius: 50%; border: 1.1px solid #fff; background: transparent; position: relative; } .mk-sp i::after { content: ''; position: absolute; inset: 2.5px; border-radius: 50%; background: #fff; }
+.mk-card { pointer-events: auto; transform: translateY(-50%); background: #fff; border: .7px solid var(--ink); padding: 8px 11px 9px; color: var(--ink); line-height: 1.5; width: max-content; max-width: 30%; font-size: clamp(9.5px, .8vw, 11px); }
+.mk-card.is-left { transform: translate(-100%, -50%); }
+.mk-card b { font-family: var(--display); font-weight: 400; } .mk-card small { display: block; color: var(--grey); font-size: 1em; }
+.mk-card__buy { display: block; margin-top: 1px; } .mk-card__buy button, .mk-card__buy a { text-decoration: underline; text-underline-offset: 2px; }
+.mk-steps b { position: absolute; font-family: var(--display); font-weight: 400; font-size: var(--fs, 150px); color: var(--red); line-height: 1; } .mk-steps b.dot { font-size: 1.1em; }
+.mk-steps { inset: 0; }
+
+.redfade { position: absolute; left: 0; right: 0; bottom: 0; height: var(--h, 140px); background: linear-gradient(to top, var(--red), rgba(210,20,28,0)); pointer-events: none; z-index: 1; }

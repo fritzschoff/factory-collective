@@ -1,0 +1,21 @@
+.ft { max-width: var(--page); margin: clamp(60px, 6vw, 90px) auto 0; padding: 0 var(--gut) 0; border-top: 0; }
+.ft::before { content: ''; display: block; height: 1px; background: var(--hair); margin: 0 calc(-1 * var(--gut)); }
+.ft__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; padding: 30px 0 0; }
+.ft__c h2 { font-weight: 400; font-size: 13px; color: var(--grey); margin-bottom: 22px; }
+.ft__c li { font-size: 13px; line-height: 2; } .ft__c a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ft__news p:first-of-type { font-size: 13px; margin-bottom: 26px; }
+.nl { position: relative; display: flex; border-bottom: 1px solid var(--ink); }
+.nl input[type=email] { flex: 1; min-width: 0; border: 0; padding: 10px 0; font-size: 13px; background: none; outline: none; border-radius: 0; }
+.nl input::placeholder { color: var(--grey); } .nl button { font-size: 13px; padding: 0 0 0 12px; white-space: nowrap; } .nl button:hover { text-decoration: underline; }
+.nl__msg { position: absolute; left: 0; top: calc(100% + 8px); font-size: 12px; color: var(--grey); }
+.ft__base { display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: end; margin-top: clamp(50px, 6vw, 90px); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 26px; font-size: 11.5px; color: var(--grey); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 12px; } .legend .r { color: var(--red); }
+.lg { display: inline-block; width: 36px; height: 0; border-top: 1px solid var(--ink); }
+.lg--hidden { border-top: 1px dashed var(--ink); }
+.lg--axis { border: 0; height: 1px; background: repeating-linear-gradient(to right, var(--ink) 0 14px, transparent 14px 17px, var(--ink) 17px 19px, transparent 19px 22px); }
+.lg--poss { border: 0; height: 1px; background: repeating-linear-gradient(to right, var(--red) 0 12px, transparent 12px 14px, var(--red) 14px 16px, transparent 16px 18px, var(--red) 18px 20px, transparent 20px 22px); }
+.lg--dot { border-top: 1px dotted var(--grey); }
+.tb { border: 1px solid var(--ink); min-width: min(320px, 100%); font-size: 11.5px; } .tb > div { display: grid; grid-template-columns: 1fr 1fr; } .tb > div + div { border-top: .6px solid var(--ink); }
+.tb span { padding: 8px 12px; } .tb span + span { border-left: .6px solid var(--ink); } .tb > div + div span { color: var(--grey); }
+.ft__c2 { font-size: 11.5px; color: var(--grey); padding: 18px 0 34px; }

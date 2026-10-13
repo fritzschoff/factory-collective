@@ -1,0 +1,24 @@
+/* ── the long-form sign ─────────────────────────────────────────────
+   C ONCEPT. ( ATELIER ) C OLLECTIVE .
+   Only the red marks and the window are visible; the words keep their space.
+   Font size = container width / total advance (em), so the sign always spans its box exactly.
+   The box needs  container-type: inline-size.                                         */
+.sign { display: flex; align-items: baseline; white-space: pre; font-family: var(--display); font-weight: 400; line-height: 1; color: var(--red);
+  font-size: calc(100cqw / var(--tot, 19.596)); width: 100%; user-select: none; }
+.sg-h { visibility: hidden; }
+.sg-g { position: relative; display: flex; }
+.sg-word { color: var(--ink); font-size: inherit; }
+.sg-win { position: absolute; left: .19453em; right: .19453em; top: .1em; bottom: .02em; overflow: hidden; background: var(--ink); }
+.sign--open .sg-win { background: transparent; }
+.sign--red .sg-win { background: var(--red); }
+.sign--image .sg-win { background: #1b1b1a; }
+.sg-img { position: absolute; top: 0; bottom: 0; left: calc(-100cqw * var(--wl)); width: 100cqw; background-size: cover; background-repeat: no-repeat; background-position: 50% var(--py, 40%); will-change: background-position; }
+.sign--image .sg-win::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: repeating-linear-gradient(to bottom, rgba(255,255,255,.55) 0 18px, transparent 18px 22px, rgba(255,255,255,.55) 22px 24px, transparent 24px 28px); }
+
+/* the sign as a block in the page */
+.markbar { position: relative; }
+.markbar__in { container-type: inline-size; }
+.markbar--ghost { filter: blur(10px); opacity: .22; pointer-events: none; }
+.markbar__cap { margin-top: 10px; text-transform: none; letter-spacing: .02em; font-size: 11px; }
+.runoff { max-width: var(--page); margin: 0 auto; overflow: hidden; }
+.runoff__in { container-type: inline-size; margin-left: 61.1%; width: 63.9%; }

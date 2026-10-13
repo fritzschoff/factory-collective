@@ -1,0 +1,39 @@
+@font-face { font-family: 'CFC Display'; src: url('/fonts/archivo-black.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'CFC Text'; src: url('/fonts/arimo.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap; }
+
+:root {
+  /* colour — red is only: the sign, empty brackets, "not yet", the A—A cut, the closing fade */
+  --red: #D2141C;
+  --ink: #0B0B0B;
+  --grey: #6B6A66;
+  --text2: #2A2A28;
+  --paper: #F4F3F1;
+  --ground: #EFEEEC;
+  --hair: #E3E2DF;
+  --hair2: #DDDCD8;
+  --axis: #B9B8B4;
+  --axis2: #8E8D89;
+
+  --display: 'CFC Display', 'Arial Black', 'Archivo Black', Arial, sans-serif;
+  --text: 'CFC Text', Arial, Helvetica, sans-serif;
+
+  /* the grid — design width 1440 */
+  --page: 1440px;
+  --gut: clamp(20px, 6.667vw, 96px);      /* quiet pages: 96 at 1440 */
+  --edge: clamp(8px, .7vw, 10px);         /* near-edge pages */
+  /* the four distances, nothing in between */
+  --g-s: clamp(40px, 5vw, 72px);
+  --g-m: clamp(72px, 10.83vw, 156px);
+  --g-l: clamp(120px, 18.89vw, 272px);
+  --g-xl: clamp(190px, 30.56vw, 440px);
+
+  --fs-micro: 10.5px;
+  --fs-s: 12.5px;
+  --fs-m: clamp(14px, 1.04vw, 15px);
+  --fs-l: clamp(17px, 1.46vw, 21px);
+  --fs-xl: clamp(21px, 1.95vw, 28px);
+  --fs-title: clamp(30px, 2.64vw, 38px);
+
+  --btn: 46px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}

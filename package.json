@@ -1,38 +1,33 @@
 {
-  "name": "factory-collective",
-  "version": "0.1.0",
+  "name": "cfc-website",
+  "version": "1.0.0",
   "private": true,
+  "description": "Concept. ( Factory ) Collective — website",
+  "type": "module",
+  "engines": { "node": ">=20.6" },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "type-check": "tsc --noEmit"
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "build:placeholders": "IMAGES=placeholders node scripts/build.mjs",
+    "start": "node dist-server/server.mjs",
+    "typecheck": "tsc --noEmit",
+    "images:report": "node scripts/build.mjs --report-only",
+    "stripe:seed": "node scripts/stripe-seed.mjs",
+    "stripe:sync": "node scripts/stripe-sync.mjs",
+    "test:links": "node scripts/check-links.mjs"
   },
   "dependencies": {
-    "firebase": "^12.6.0",
-    "firebase-admin": "^13.6.0",
-    "lucide-react": "^0.554.0",
-    "next": "16.0.7",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "stripe": "^19.3.1",
-    "zod": "^4.1.12"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.3",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.6.0"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.0"
   }
 }
