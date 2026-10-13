@@ -11,7 +11,7 @@ let md = fs.readFileSync(FILE, 'utf8');
 md = md.replace(/^(?:Generated|Status updated) by .*$/m, `Status updated by \`npm run images:report\` on ${new Date().toISOString().slice(0, 10)}.`);
 const sources: (keyof typeof LABEL)[] = [];
 md = md.replace(/^\| `([^`]+)\.jpg` \|(.*)\| ([^|]+) \|$/gm, (_row, slot: string, middle: string) => {
-  const { source } = resolveSlot(slot);
+  const { source } = resolveSlot(slot, 'local');
   sources.push(source);
   return `| \`${slot}.jpg\` |${middle}| ${LABEL[source]} |`;
 });

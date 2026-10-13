@@ -13,7 +13,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "images:report": "tsx scripts/images-report.ts",
+    "images:report": "node scripts/images-manifest.mjs && tsx scripts/images-report.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
