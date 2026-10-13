@@ -4,7 +4,7 @@ One-off tool. Measures the display font (Archivo Black) so the sign and the brac
 window can be built in pure CSS, in exact proportion:
   - advance widths of the pieces of the long-form sign (em)
   - the inner contour of "(" and ")" (the shape of the window)
-Writes src/lib/font-metrics.json. Re-run only if the display font is replaced.
+Writes src/lib/sign/font-metrics.json. Re-run only if the display font is replaced.
 Needs: python3 + playwright (pip install playwright).
 """
 import json, os, sys
@@ -72,6 +72,6 @@ m = {
     'rows': ys, 'kLeft': kl, 'kRight': kr                # offsets of the inner contour, in units of the ink height
   }
 }
-os.makedirs(os.path.join(ROOT,'src/lib'), exist_ok=True)
-json.dump(m, open(os.path.join(ROOT,'src/lib/font-metrics.json'),'w'), indent=1)
+os.makedirs(os.path.join(ROOT,'src/lib/sign'), exist_ok=True)
+json.dump(m, open(os.path.join(ROOT,'src/lib/sign/font-metrics.json'),'w'), indent=1)
 print(json.dumps({k:m[k] for k in ('advEm','baselineFromTopEm')}, indent=1)); print({k:v for k,v in m['bracket'].items() if k not in('rows','kLeft','kRight')}); print('kLeft',m['bracket']['kLeft'][:6],'...'); print('kRight',m['bracket']['kRight'][:6],'...')

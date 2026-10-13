@@ -14,6 +14,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "images:report": "node scripts/images-manifest.mjs && tsx scripts/images-report.ts",
+    "sign:css": "node scripts/sign-css.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
