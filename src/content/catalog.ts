@@ -1,15 +1,14 @@
-import type { OptionDef, Product } from '../lib/types';
-import { ctx } from '../lib/runtime';
-import { fmtPrice, slugify } from '../lib/format';
+import type { OptionDef, Product } from '@/lib/types';
+import { slugify } from '@/lib/format';
 
 /* ───────────────────────────────────────────────────────────
    THE CATALOGUE
    One entry per product. `id` is the key everywhere:
-     · Stripe product metadata   cfc_code = id
      · image slots               fashion/<id>, fashion/<id>-2 …
      · URL                       /atelier/fashion/<id lower-case>/
-   Prices are NOT here. They come from Stripe (npm run stripe:sync)
-   or, until then, data/prices.json — or show as "€ [price]".
+   Prices are NOT here, and pages never read PRODUCTS for them: they ask
+   getCatalog() in src/lib/data/catalog.ts, which takes the price from
+   src/content/prices.json, or DEMO_PRICES=1, or leaves it at "€ [price]".
    ─────────────────────────────────────────────────────────── */
 
 const SW: Record<string, string> = {
@@ -103,7 +102,7 @@ for (const [id, name, description, dims, slot] of BAGS) {
     options: bagOpts(['black', 'stone', 'walnut']),
     spec: [['Leather', 'Vegetable-tanned'], ['Spine', 'Bonded, 4 mm'], ['Hardware', 'Brass, raw'], ['Chambers', id === 'BG-114' ? '3' : '1'], ['Weight', '[ g ]'], ['Made in', '[ place ]']],
     note: 'Made to order. Delivery in 4 weeks.  ·  Lifetime repair.', lead: 'Made to order · 4 weeks',
-    text: { href: '/factory/bag-profile-series/', label: 'Bag / Profile Series — the text' }, accordions: bagAcc
+    text: { soon: 'bagText', label: 'Bag / Profile Series — the text' }, accordions: bagAcc
   });
 }
 
@@ -216,23 +215,3 @@ for (const w of WORKS) {
 }
 
 export const PRODUCTS = P;
-export const byId = (id: string) => PRODUCTS.find((p) => p.id === id)!;
-export const shop = (kind: Product['kind']) => PRODUCTS.filter((p) => p.kind === kind);
-export const group = (kind: Product['kind'], g: string) => PRODUCTS.filter((p) => p.kind === kind && p.group === g);
-export const printsOf = (workId: string) => PRODUCTS.filter((p) => p.work?.id === workId);
-
-/* ── prices ───────────────────────────────────────────────── */
-const DEMO: Record<string, number> = { jackets: 520, shirts: 260, trousers: 340, vests: 300, bags: 880, totes: 1240, cuffs: 5400, bangles: 3200, bracelets: 3600, vases: 280, 'catch-alls': 190, holders: 240, trays: 210 };
-export function priceCents(p: Product): number | null {
-  const s = ctx.stripe[p.id];
-  if (s && s.unitAmount != null) return s.unitAmount;
-  const m = ctx.manualPrices[p.id];
-  if (typeof m === 'number') return Math.round(m * 100);
-  if (ctx.demoPrices) {
-    if (p.kind === 'print') return p.work?.edition === 'poster' ? 4500 : 16000;
-    return (DEMO[p.group] ?? 300) * 100 + (p.id.charCodeAt(p.id.length - 1) % 5) * 1000;
-  }
-  return null;
-}
-export const price = (p: Product) => fmtPrice(priceCents(p));
-export const hasPrice = (p: Product) => priceCents(p) != null;

@@ -10,3 +10,9 @@ export const word = (n: number) => WORDS[n] ?? String(n);
 export const Word = (n: number) => { const w = word(n); return w[0].toUpperCase() + w.slice(1); };
 export const pad = (n: number, l = 2) => String(n).padStart(l, '0');
 export const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/** '2026-10-13' → '13.10.2026', the date of the title blocks; anything else → ''. */
+export function fmtDate(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
+}
