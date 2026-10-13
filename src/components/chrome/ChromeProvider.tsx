@@ -26,26 +26,36 @@ const TOAST_MS = 4200;
 
 /**
  * Shared state of the page chrome: menu, search, enquiry dialog, toast.
- * Menu and search remember the path they were opened on, so any navigation closes them.
+ * A change of page closes the menu, the search and the enquiry dialog. The reset happens during
+ * render, so no frame shows an overlay on the new page, and going back does not reopen anything.
  */
 export function ChromeProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '/';
-  const [menuState, setMenuState] = useState<{ path: string; tab: WorldId }>({ path: '', tab: 'atelier' });
-  const [searchPath, setSearchPath] = useState('');
+  const [seenPath, setSeenPath] = useState(pathname);
+  const [menu, setMenu] = useState<{ open: boolean; tab: WorldId }>({ open: false, tab: 'atelier' });
+  const [searchOpen, setSearchOpen] = useState(false);
   const [enquiry, setEnquiry] = useState({ open: false, what: '', n: 0 });
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
 
+  // Adjusting state when a prop changes (no effect): remember the page, and close the overlays when it changes.
+  if (pathname !== seenPath) {
+    setSeenPath(pathname);
+    setMenu((m) => (m.open ? { ...m, open: false } : m));
+    setSearchOpen(false);
+    setEnquiry((e) => (e.open ? { ...e, open: false } : e));
+  }
+
   const openMenu = useCallback((tab?: WorldId) => {
-    setSearchPath('');
-    setMenuState({ path: pathname, tab: tab ?? worldOf(pathname) ?? 'atelier' });
+    setSearchOpen(false);
+    setMenu({ open: true, tab: tab ?? worldOf(pathname) ?? 'atelier' });
   }, [pathname]);
-  const closeMenu = useCallback(() => setMenuState((m) => ({ ...m, path: '' })), []);
+  const closeMenu = useCallback(() => setMenu((m) => ({ ...m, open: false })), []);
   const openSearch = useCallback(() => {
-    setMenuState((m) => ({ ...m, path: '' }));
-    setSearchPath(pathname);
-  }, [pathname]);
-  const closeSearch = useCallback(() => setSearchPath(''), []);
+    setMenu((m) => ({ ...m, open: false }));
+    setSearchOpen(true);
+  }, []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
   const openEnquiry = useCallback((what: string) => setEnquiry((e) => ({ open: true, what, n: e.n + 1 })), []);
   const closeEnquiry = useCallback(() => setEnquiry((e) => ({ ...e, open: false })), []);
   const showToast = useCallback((text: string, link?: ToastLink) => {
@@ -55,11 +65,11 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<Chrome>(() => ({
-    menu: { open: menuState.path === pathname, tab: menuState.tab }, openMenu, closeMenu,
-    searchOpen: searchPath === pathname, openSearch, closeSearch,
+    menu, openMenu, closeMenu,
+    searchOpen, openSearch, closeSearch,
     enquiry, openEnquiry, closeEnquiry,
     toast, showToast,
-  }), [menuState, searchPath, pathname, openMenu, closeMenu, openSearch, closeSearch, enquiry, openEnquiry, closeEnquiry, toast, showToast]);
+  }), [menu, searchOpen, openMenu, closeMenu, openSearch, closeSearch, enquiry, openEnquiry, closeEnquiry, toast, showToast]);
 
   return <ChromeContext.Provider value={value}>{children}</ChromeContext.Provider>;
 }

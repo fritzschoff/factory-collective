@@ -29,6 +29,41 @@ describe('ChromeProvider', () => {
     expect(result.current.menu.open).toBe(false);
   });
 
+  it('leaving the page closes the menu; coming back does not reopen it', () => {
+    const { result, rerender } = renderHook(() => useChrome(), { wrapper });
+    act(() => result.current.openMenu());
+    nav.path = '/factory/';
+    rerender();
+    expect(result.current.menu.open).toBe(false);
+    nav.path = '/studio/conceptual-interference/';
+    rerender();
+    expect(result.current.menu.open).toBe(false);
+    act(() => result.current.openMenu());
+    expect(result.current.menu.open).toBe(true);
+  });
+
+  it('leaving the page closes the search; coming back does not reopen it', () => {
+    const { result, rerender } = renderHook(() => useChrome(), { wrapper });
+    act(() => result.current.openSearch());
+    nav.path = '/factory/';
+    rerender();
+    expect(result.current.searchOpen).toBe(false);
+    nav.path = '/studio/conceptual-interference/';
+    rerender();
+    expect(result.current.searchOpen).toBe(false);
+  });
+
+  it('leaving the page closes the enquiry dialog; coming back does not reopen it', () => {
+    const { result, rerender } = renderHook(() => useChrome(), { wrapper });
+    act(() => result.current.openEnquiry('CI / 07'));
+    nav.path = '/factory/';
+    rerender();
+    expect(result.current.enquiry.open).toBe(false);
+    nav.path = '/studio/conceptual-interference/';
+    rerender();
+    expect(result.current.enquiry.open).toBe(false);
+  });
+
   it('search and menu exclude each other', () => {
     const { result } = renderHook(() => useChrome(), { wrapper });
     act(() => result.current.openMenu());
