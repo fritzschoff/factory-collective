@@ -6,11 +6,14 @@
     "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
   },
   "scripts": {
+    "predev": "node scripts/images-manifest.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/images-manifest.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "images:report": "tsx scripts/images-report.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
