@@ -30,7 +30,7 @@
 
 1. **The window must sit exactly on the brackets** at any width (390, 1024, 1440, 1920 px) once the display font has loaded — glyph advances must match `font-metrics.json`, otherwise the hole drifts off the brackets. → Task 10 test "sign glyphs have the measured advances".
 2. **Wider than 1440 px the header margins must stay white** — only the window may show the page. → Task 10 test "outside the 1440 frame the header is white".
-3. **Broken or foreign localStorage** (invalid JSON, old lines, products that no longer exist, storage blocked in private mode) must give an empty or partial bag, never a crash. → Task 8 tests `parseBag` + blocked storage; Task 19 test "unknown products in the bag are skipped".
+3. **Broken or foreign localStorage** (invalid JSON, old lines, products that no longer exist, storage blocked in private mode) must give an empty or partial bag, never a crash. → Task 8 tests `parseBag` + blocked storage; Task 19 `BagView` test "lists lines, changes quantities, skips products that no longer exist".
 4. **Keyboard users**: menu and search open by keyboard, Tab stays inside, Esc closes, focus returns to the trigger; coming-soon rows are not focusable links. → Task 11 test "Tab stays inside the open menu".
 5. **Old links to removed pages** (bookmarks, search engines, our own content) must land on the parent page, no page of ours may link to a coming-soon address — and the day an entry is switched to `live`, it must be linked everywhere again and stop redirecting. → Task 3 redirect and live-switch tests; Task 20 crawler fails on any internal redirect, 404 or missing picture.
 
@@ -686,7 +686,7 @@ export const soonPaths = (registry: SoonRegistry = SOON): string[] =>
 - [ ] **Step 4: Run the unit test**
 
 Run: `npx vitest run src/content/soon.test.ts`
-Expected: PASS (4 tests).
+Expected: PASS (7 tests).
 
 - [ ] **Step 5: Wire the redirects** — `next.config.ts` becomes:
 
@@ -3317,7 +3317,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 - [ ] **Step 8: Run the tests**
 
 Run: `npx playwright test e2e/header.spec.ts && npx vitest run && npm run typecheck && npm run lint`
-Expected: PASS (6 desktop tests + 1 phone test). If "sign glyphs have the measured advances" fails by more than 1 px, the font did not load as `--font-display`: check Task 2.
+Expected: PASS (7 tests in the desktop project — it runs the `@phone` test too — and 1 in the phone project). If "sign glyphs have the measured advances" fails by more than 1 px, the font did not load as `--font-display`: check Task 2.
 
 - [ ] **Step 9: Commit**
 
@@ -4120,6 +4120,12 @@ describe('search', () => {
     expect(searchEntries(index, 'SH / 001')[0]).toMatchObject({ n: 'SH / 001 shirt, grey band', h: '/atelier/fashion/sh-001/', p: '€ [price]' });
     expect(searchEntries(index, 'sh001')[0].h).toBe('/atelier/fashion/sh-001/');
   });
+  it('the typed code comes before pieces that merely contain its words', async () => {
+    const cat = await getCatalog();
+    const hits = searchEntries(buildSearchIndex(allPages(cat), cat), 'SH / 001');
+    expect(hits.map((h) => h.h)).toContain('/atelier/fashion/jk-001/'); // "sh" is in "Fashion", "001" in the code
+    expect(hits[0].h).toBe('/atelier/fashion/sh-001/');
+  });
   it('an empty query finds nothing', async () => {
     const cat = await getCatalog();
     expect(searchEntries(buildSearchIndex(allPages(cat), cat), '   ')).toEqual([]);
@@ -4158,16 +4164,30 @@ export function buildSearchIndex(pages: readonly PageEntry[], cat: Catalog): Sea
   });
 }
 
-/** Every word must appear; or the query without spaces appears in the name without spaces (sh001). */
+/**
+ * Every word must appear (name, sub line or kind), or the query without spaces appears without spaces (sh001).
+ * Codes first: a name that starts with the query ("SH / 001 …") beats a name that only contains its words,
+ * which beats a hit somewhere else ("sh" inside "Fashion"). The old site had no ranking: "SH / 001" showed JK / 001 first.
+ */
 export function searchEntries(index: readonly SearchEntry[], query: string, limit = 40): SearchEntry[] {
   const q = normalize(query);
   if (!q) return [];
   const words = q.split(' ');
   const compact = q.replace(/ /g, '');
-  return index.filter((x) => {
-    const hay = normalize(`${x.n} ${x.s} ${x.k}`);
-    return words.every((w) => hay.includes(w)) || hay.replace(/ /g, '').includes(compact);
-  }).slice(0, limit);
+  const rank = (x: SearchEntry): number => {
+    const name = normalize(x.n);
+    if (name.replace(/ /g, '').startsWith(compact)) return 0;
+    return words.every((w) => name.includes(w)) ? 1 : 2;
+  };
+  return index
+    .filter((x) => {
+      const hay = normalize(`${x.n} ${x.s} ${x.k}`);
+      return words.every((w) => hay.includes(w)) || hay.replace(/ /g, '').includes(compact);
+    })
+    .map((x) => ({ x, r: rank(x) }))
+    .sort((a, b) => a.r - b.r)
+    .slice(0, limit)
+    .map(({ x }) => x);
 }
 
 export function groupByKind(entries: readonly SearchEntry[]): [string, SearchEntry[]][] {
@@ -4180,7 +4200,7 @@ export function groupByKind(entries: readonly SearchEntry[]): [string, SearchEnt
 - [ ] **Step 4: Run it**
 
 Run: `npx vitest run src/lib/search`
-Expected: PASS (4 tests).
+Expected: PASS (5 tests).
 
 - [ ] **Step 5: Write the failing E2E test `e2e/search.spec.ts`**
 
@@ -4239,7 +4259,9 @@ export function Search({ index }: { index: SearchEntry[] }) {
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(-1);
   useDialog(ref, searchOpen, closeSearch, input);
-  const hits = useMemo(() => searchEntries(index, q), [index, q]);
+  const groups = useMemo(() => groupByKind(searchEntries(index, q)), [index, q]);
+  // the order on screen (grouped by kind) — the arrow keys walk it, Enter opens it
+  const flat = useMemo(() => groups.flatMap(([, list]) => list), [groups]);
 
   useEffect(() => {
     const onKey = (e: globalThis.KeyboardEvent) => {
@@ -4252,17 +4274,17 @@ export function Search({ index }: { index: SearchEntry[] }) {
 
   const go = (href: string) => { closeSearch(); router.push(href); };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && hits.length) {
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && flat.length) {
       e.preventDefault();
-      setSel((s) => (s + (e.key === 'ArrowDown' ? 1 : -1) + hits.length) % hits.length);
+      const down = e.key === 'ArrowDown';
+      setSel((s) => (s < 0 ? (down ? 0 : flat.length - 1) : (s + (down ? 1 : -1) + flat.length) % flat.length));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const hit = hits[Math.max(sel, 0)];
+      const hit = flat[Math.max(sel, 0)];
       if (hit) go(hit.h);
     }
   };
 
-  let n = -1;
   return (
     <div ref={ref} id="search" className="search" role="dialog" aria-modal="true" aria-label="Search" hidden={!searchOpen}>
       <div className="search__top"><span className="micro">Search</span><button type="button" onClick={closeSearch}>( Close )</button></div>
@@ -4271,21 +4293,17 @@ export function Search({ index }: { index: SearchEntry[] }) {
         <input ref={input} id="q" type="search" autoComplete="off" placeholder="Search — a piece, a code, a text" value={q} onChange={(e) => { setQ(e.target.value); setSel(-1); }} onKeyDown={onKeyDown} />
       </form>
       <div className="search__res" aria-live="polite">
-        {q.trim() && !hits.length && <p className="sres__none">Nothing drawn under that name. ( )</p>}
-        {groupByKind(hits).map(([kind, list]) => (
+        {q.trim() && !flat.length && <p className="sres__none">Nothing drawn under that name. ( )</p>}
+        {groups.map(([kind, list]) => (
           <section className="sres__g" key={kind}>
             <h3>{kind}</h3>
-            {list.map((x) => {
-              n += 1;
-              const me = n;
-              return (
-                <Link key={x.h + x.n} className={cx('sres__a', sel === me && 'is-sel')} href={x.h} onClick={closeSearch}>
-                  <span className="sres__t">{x.i && <Image src={x.i} alt="" width={54} height={66} />}</span>
-                  <span className="sres__n">{x.n}<br /><span className="sres__m">{x.s}</span></span>
-                  <span className="sres__m">{x.p ?? ''}</span>
-                </Link>
-              );
-            })}
+            {list.map((x) => (
+              <Link key={x.h + x.n} className={cx('sres__a', flat.indexOf(x) === sel && 'is-sel')} href={x.h} onClick={closeSearch}>
+                <span className="sres__t">{x.i && <Image src={x.i} alt="" width={54} height={66} />}</span>
+                <span className="sres__n">{x.n}<br /><span className="sres__m">{x.s}</span></span>
+                <span className="sres__m">{x.p ?? ''}</span>
+              </Link>
+            ))}
           </section>
         ))}
       </div>
@@ -4660,6 +4678,8 @@ Every view file is moved with `git mv legacy/src/pages/<file>.tsx src/views/<fil
 4. **Links** — every internal `<a href="/…">` / `<a href={x.href}>` → `<A href=…>` (keeps the attributes). Anchors without a path (`href="#states"`) stay `<a>`.
 5. **Interactivity** — `data-quickadd={id}` buttons → `<QuickAddButton product={toSummary(p)} />`; `ShopPoint … id="X"` → `product={toSummary(p)}`; the other `data-*` hooks are replaced as listed per task.
 6. **Coming soon** — exactly the replacements listed per task.
+7. **Lint** — the React Compiler rules of `eslint-config-next` apply to the ported code: a component defined inside another component moves to module level (only `EditionForm` in `studio.tsx`, Task 18); the one `any` (the theses tuples in `factory.tsx`, Task 17) becomes a typed array; a straight `'` or `"` in JSX text becomes ’ or “ ” — the copy already uses the typographic ones.
+8. **Editorial picks** — spec §8: a product named in the code that the catalogue does not have is skipped, never shown half. Tiles, plate rows, shop points and openings that need a product render only when `cat.byId` finds it (`cat.pick` already skips).
 
 After each task: `grep -n 'href="/' src/views/<file>.tsx` must print nothing except lines inside `A`, `Pill`, `Coming`, `OutPlate` props.
 
@@ -4699,7 +4719,8 @@ test('home shows the campaign, four fashion pieces and the rooms', async ({ page
   await page.goto('/');
   await expect(page.getByText('Eighteen pieces, cut like a section.')).toBeVisible();
   await expect(page.locator('.home__tiles .tile')).toHaveCount(4);
-  await expect(page.locator('.sech .soon')).toHaveCount(2);
+  // bags head: "Read the text" twice · studio head: Scenography
+  await expect(page.locator('.sech .soon')).toHaveCount(3);
 });
 
 test('quick add from a home tile fills the bag', async ({ page }) => {
@@ -4735,7 +4756,7 @@ Expected: FAIL — the home page is still the scaffold; `/atelier/` answers 404.
   - `const cuff = byId('BR-A')` → `const cuff = cat.byId('BR-A');` and add `const bnew = cat.byId('BG-NEW');`
   - BG-NEW ShopPoint → `{bnew && <ShopPoint px={46} py={44} lx={20} ly={78} code="BG / 0??" name="bag, stitched panels" sub="Leather, bonded seams" price={fmtPrice(bnew.priceCents)} href={bnew.href} product={toSummary(bnew)} />}`
   - cuff ShopPoint → `{cuff && <ShopPoint px={42} py={36} lx={56} ly={17} code="BR / 0??.a" name="cuff" sub="White gold, gold inserts" price={fmtPrice(cuff.priceCents)} href={cuff.href} product={toSummary(cuff)} />}`
-  - Bags `SecHead`: `links={[{ label: 'Bags ( 4 )', href: '/atelier/bags/' }, { label: 'Totes ( 1 )', href: '/atelier/bags/#series' }, { label: 'Read the text', soon: 'bagText' }]}` and `read={{ label: 'All bags', href: '/atelier/bags/' }}`
+  - Bags `SecHead`: `links={[{ label: 'Bags ( 4 )', href: '/atelier/bags/' }, { label: 'Totes ( 1 )', href: '/atelier/bags/#series' }, { label: 'Read the text', soon: 'bagText' }]}` and `read={{ label: 'Read the text', soon: 'bagText' }}` — the old site linked the text twice in this head, so both mentions turn red (and both link again once `bagText` is live)
   - Studio `SecHead` links: `{ label: 'Scenography ( )', href: '/studio/scenography/', coming: true }` → `{ label: 'Scenography', soon: 'scenography' }`
   - `['OB-011', 'OB-021'].map(byId).map(…)` → `cat.pick(['OB-011', 'OB-021']).map(…)`
 
@@ -4856,7 +4877,7 @@ describe('BuyForm', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Chambray' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add to bag' }));
     expect(JSON.parse(localStorage.getItem('cfc.bag.v1')!)[0]).toMatchObject({ id: 'SH-001', opts: { colour: { v: 'chambray', l: 'Chambray' }, size: { v: '50', l: '50' } } });
-    expect(screen.getByRole('button', { name: 'Added ✓' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Added/ })).toBeDisabled();
   });
 
   it('a monogram is optional and kept in capitals', () => {
@@ -5313,10 +5334,11 @@ git commit -m "$(printf 'Port the series pages and the product pages\n\nCo-Autho
 ```ts
 import { expect, test } from '@playwright/test';
 
-test('factory: text 03 and three side rooms are coming soon', async ({ page }) => {
+test('factory: text 03, theses T03 / T04 and three side rooms are coming soon', async ({ page }) => {
   await page.goto('/factory/');
   await expect(page.getByRole('heading', { level: 1, name: 'Factory' })).toBeVisible();
   await expect(page.locator('.rows__r.is-red')).toContainText('Bag / Profile Series');
+  await expect(page.locator('#theses .thesis.is-red .soon')).toHaveCount(2);
   await expect(page.locator('.linkrow .soon')).toHaveCount(3);
   await expect(page.locator('a[href*="bag-profile-series"]')).toHaveCount(0);
 });
@@ -5343,8 +5365,30 @@ Expected: FAIL — 404.
 - [ ] **Step 3: Port `src/views/factory.tsx`** (rules 1–5), plus:
   - `TEXTS[2]`: replace `href: '/factory/bag-profile-series/'` with `soon: 'bagText' as const`; in `FactoryPage` pass it on: `rows={TEXTS.map((x) => ({ no: x.no, title: x.t, meta: x.d, go: <>Text, [ year ] · {x.min}<br />Read&nbsp;&nbsp;→</>, href: x.href, soon: x.soon, img: { slot: x.slot, pos: x.pos } }))}` (add `href?: string; soon?: SoonKey` to the `TEXTS` element type by declaring `const TEXTS: { no: string; t: string; d: string; min: string; href?: string; soon?: SoonKey; slot: string; pos: string }[]`).
   - `came` → `cat.pick(['BR-A', 'OB-011', 'BG-114', 'JK-001'])` and the thesis label by id: `const THESIS: Record<string, string> = { 'BR-A': 'T02', 'OB-011': 'T02', 'BG-114': 'T01', 'JK-001': 'T01' };` → `<span>Thesis {THESIS[p.id]}</span>`.
+  - The theses block (`<div className="theses">`): the inline tuple array typed `any` becomes a typed list, and T03 / T04 get the coming-soon line (spec §6). Put above `FactoryPage`:
+    ```tsx
+    const THESES: { n: string; t: string; d: string; used?: string; href?: string; id?: string }[] = [
+      { n: 'T01', t: '// profile', d: 'The construction profile as a basic form', used: 'Fashion · Bags', href: '/factory/tectonics-without-origin/', id: 't01' },
+      { n: 'T02', t: '// ordinary object', d: 'The found tool, taken at face value', used: 'Jewellery · Scan Series', href: '/factory/ordinary-objects/', id: 't02' },
+      { n: 'T03', t: '( )', d: 'In work' },
+      { n: 'T04', t: '( )', d: 'In work' },
+    ];
+    ```
+    and render it as
+    ```tsx
+    <div className="theses">
+      {THESES.map((x) => (
+        <article key={x.n} id={x.id} className={cx('thesis', !x.href && 'is-red')}>
+          <p><b>{x.n}</b>&nbsp;&nbsp;{x.t}</p>
+          <p className="thesis__d">{x.href ? x.d : <Soon k="theses">{x.d}</Soon>}</p>
+          {x.used && <p className="micro">Used in: {x.used}</p>}
+          {x.href && <A className="link-u" href={x.href}>Read&nbsp;&nbsp;→</A>}
+        </article>
+      ))}
+    </div>
+    ```
   - `LinkRow` links → `[{ label: 'Publishing', soon: 'publishing' }, { label: 'Archive', soon: 'archive' }, { label: 'Glossary', href: '/factory/glossary/' }, { label: 'Lectures', soon: 'lectures' }]`.
-  - `READER[2]` → `{ no: '03', t: 'Bag / Profile Series', m: 'Mobile architecture at the scale of the body', soon: 'bagText' as const }` (type the array with `href?: string; soon?: SoonKey`); `Reader` maps `soon: x.soon` into the rows.
+  - `READER[2]` → `{ no: '03', t: 'Bag / Profile Series', m: 'Mobile architecture at the scale of the body', soon: 'bagText' as const }` (type the array with `href?: string; soon?: SoonKey`, and the `items` prop of `Reader` the same way); `Reader` maps `soon: x.soon` into the rows.
   - `TextT01`: `const sh3 = cat.byId('SH-003');` → `{sh3 && <Opening x={34} y={62} w={12} label="SH / 003  //shirt  →  shop" href={sh3.href} light />}`; `works` → `cat.pick(['BG-114', 'BG-NEW', 'JK-001', 'VT-001'])` and the sub line by id: `const SUB: Record<string, string> = { 'BG-114': 'U, turned on its side', 'BG-NEW': 'A bonded spine', 'JK-001': 'Shoulder as lintel', 'VT-001': 'A diagonal brace' };`; the `tile__b` button → `<QuickAddButton product={toSummary(p)} />`.
   - `TextT02`: `works` → `cat.pick(['BR-A', 'BR-B', 'OB-011', 'OB-021'])`.
   - Delete `TextT03` and drop now-unused imports (`Coming` stays only if still used).
@@ -5426,6 +5470,7 @@ Expected: FAIL — 404.
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import { useBag } from '@/lib/bag/store';
+import { cx } from '@/lib/cx';
 import type { ProductSummary } from '@/lib/products/summary';
 
 interface WorkStateValue { state: string | null; setState: (s: string) => void }
@@ -5471,7 +5516,7 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
   return (
     <>
       <button className="pill pill--ghost" type="button" onClick={onClick}>{needsState ? 'Choose a state · Add' : 'Add to bag'}</button>
-      <p className="buy__msg" role="status">{msg}</p>
+      <p className={cx('buy__msg', msg && 'is-err')} role="status">{msg}</p>
     </>
   );
 }
@@ -5482,18 +5527,21 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
   - `StudioPage` (async): `head6__r` becomes `<A href="/studio/conceptual-interference/">Art ( 2 series )</A> · <Soon k="exhibitions" /> · <Soon k="sound" /> · <Soon k="scenography" /> · <Soon k="architecture" />`; replace the whole Exhibitions `<Sp s="m">…</Sp>` block with `<Sp s="m"><Coming title="Exhibitions&nbsp;&nbsp;( )" text="The show is over. The document stays — the documentation is being prepared." link="Notify me&nbsp;&nbsp;→" href="/contact/?subject=notify-exhibition" /></Sp>` and the Sound block with `<Sp s="m"><Coming title="Sound&nbsp;&nbsp;( )" text="Recordings from the room the work stood in. Not yet published." link="Notify me&nbsp;&nbsp;→" href="/contact/?subject=notify-sound" /></Sp>`.
   - `CIPage`: `ed` → `cat.pick(['CI-05.P', 'CI-09.P', 'CI-14.P'])`.
   - `LPPage`: editions → `ed.map(({ w, s }) => { const p = cat.byId(`${w.id}.A`); return p && <Tile key={w.id} p={p} ratio="2/3" w={390} sub={`state 0${s} · ${p.sub}`} pos="center" />; })`.
-  - `WorkPage({ w, cat }: { w: Work; cat: Catalog })`: `const poster = cat.byId(`${w.id}.P`), arch = cat.byId(`${w.id}.A`);`; wrap the returned JSX in `<WorkStateProvider initial={tri ? '2' : null}>…</WorkStateProvider>`; `EditionForm` becomes
+  - `WorkPage({ w, cat }: { w: Work; cat: Catalog })`: `const poster = cat.byId(`${w.id}.P`), arch = cat.byId(`${w.id}.A`);`; wrap the returned JSX in `<WorkStateProvider initial={tri ? '2' : null}>…</WorkStateProvider>`; `EditionForm` moves out of `WorkPage` to module level (rule 7) and gets `tri` as the prop `needsState`:
     ```tsx
-    const EditionForm = ({ p, no, name, spec, note }: { p: Product; no: string; name: string; spec: ReactNode; note: string }) => (
-      <div className="own__o">
-        <p className="own__n"><b>{no}</b>&nbsp;&nbsp;<span>{name}</span></p>
-        <p className="own__s">{spec}</p><p className="own__d">{note}</p>
-        <p className="own__p">{fmtPrice(p.priceCents)}</p>
-        <EditionAdd product={toSummary(p)} needsState={tri} />
-      </div>
-    );
+    /** One print edition on a work page: number, name, edition and size, price, Add. */
+    function EditionForm({ p, no, name, spec, note, needsState }: { p: Product; no: string; name: string; spec: ReactNode; note: string; needsState: boolean }) {
+      return (
+        <div className="own__o">
+          <p className="own__n"><b>{no}</b>&nbsp;&nbsp;<span>{name}</span></p>
+          <p className="own__s">{spec}</p><p className="own__d">{note}</p>
+          <p className="own__p">{fmtPrice(p.priceCents)}</p>
+          <EditionAdd product={toSummary(p)} needsState={needsState} />
+        </div>
+      );
+    }
     ```
-    and is rendered as `{poster && <EditionForm p={poster} … />}` / `{arch && <EditionForm p={arch} … />}`; the original's `<button className="pill" … data-enquire=…>` → `<EnquireButton what={`${w.code} — ${isCi ? 'the original' : 'the triptych'}`} label={isCi ? 'Enquire about the original' : 'Enquire about the work'} />`; the `<fieldset className="pick">…</fieldset>` →
+    and is rendered as `{poster && <EditionForm p={poster} needsState={tri} … />}` / `{arch && <EditionForm p={arch} needsState={tri} … />}`; the original's `<button className="pill" … data-enquire=…>` → `<EnquireButton what={`${w.code} — ${isCi ? 'the original' : 'the triptych'}`} label={isCi ? 'Enquire about the original' : 'Enquire about the work'} />`; the `<fieldset className="pick">…</fieldset>` →
     ```tsx
     <StatePick options={w.slots.map((s, i) => ({
       value: String(i + 1),
@@ -5704,9 +5752,12 @@ export function BagView({ products }: { products: Record<string, ProductSummary>
   const lines = items.flatMap((i) => (products[i.id] ? [{ i, p: products[i.id] }] : []));
 
   if (!lines.length) {
+    // as on the old site: the list column keeps its place, the summary is not shown
     return (
-      <div className="bag__list">
-        <div className="bag__empty"><p>Your bag is empty.</p><Link className="pill" href="/atelier/">Go to the Atelier&nbsp;&nbsp;→</Link></div>
+      <div className="bag__cols">
+        <div className="bag__list">
+          <div className="bag__empty"><p>Your bag is empty.</p><Link className="pill" href="/atelier/">Go to the Atelier&nbsp;&nbsp;→</Link></div>
+        </div>
       </div>
     );
   }
@@ -5790,7 +5841,7 @@ Expected: PASS.
 
 - [ ] **Step 6: Port `src/views/campaigns.tsx`** (rules 1–5), plus:
   - `CampaignsPage` stays synchronous (no products); its links become `<A>`.
-  - `Campaign01` (async): `shop4` → `cat.pick(['JK-001', 'SH-001', 'TR-002', 'VT-001'])`; `product={byId('X')}` → `product={cat.byId('X')}` (PlateRow accepts `undefined`); `const jk3 = cat.byId('JK-003');` → `{jk3 && <ShopPoint px={46} py={50} lx={48} ly={80} code="JK / 003" name="jacket, black funnel" sub="Bonded wool" price={fmtPrice(jk3.priceCents)} href={jk3.href} product={toSummary(jk3)} />}`; `const jk5 = cat.byId('JK-005');` → `{jk5 && <p className="walk__b">{fmtPrice(jk5.priceCents)}&nbsp;&nbsp;&nbsp;<QuickAddButton product={toSummary(jk5)} /></p>}`; in `linkcol` replace the two `<a href="/journal/">` with `<Soon k="journal">Film</Soon>` and `<Soon k="journal">Behind the set</Soon>`.
+  - `Campaign01` (async): `shop4` → `cat.pick(['JK-001', 'SH-001', 'TR-002', 'VT-001'])`; the five plate rows with `product={byId('X')}` (looks 02, 04, 08, 09, 11) are skipped when their product is missing (rule 8): `const [jk1, sh1, tr3, sh3, tr2] = ['JK-001', 'SH-001', 'TR-003', 'SH-003', 'TR-002'].map((id) => cat.byId(id));` and `{jk1 && <PlateRow product={jk1} slot="campaign-01/look-02" … />}` etc.; `const jk3 = cat.byId('JK-003');` → `{jk3 && <ShopPoint px={46} py={50} lx={48} ly={80} code="JK / 003" name="jacket, black funnel" sub="Bonded wool" price={fmtPrice(jk3.priceCents)} href={jk3.href} product={toSummary(jk3)} />}`; `const jk5 = cat.byId('JK-005');` → `{jk5 && <p className="walk__b">{fmtPrice(jk5.priceCents)}&nbsp;&nbsp;&nbsp;<QuickAddButton product={toSummary(jk5)} /></p>}`; in `linkcol` replace the two `<a href="/journal/">` with `<Soon k="journal">Film</Soon>` and `<Soon k="journal">Behind the set</Soon>`.
   - `Campaign02` (async): `lives.map(…)` → `lives.flatMap((x) => { const p = cat.byId(x.p); return p ? [<PlateRow key={x.slot} product={p} slot={x.slot} ratio="768/900" pos={x.pos} w={768} code={`${p.code}  //${p.name}`} line={x.l} />] : []; })`; tiles → `cat.pick(['OB-011', 'OB-021', 'OB-031', 'OB-034'])`.
 
 - [ ] **Step 7: Port `src/views/info.tsx`** (rules 1–5), plus:
@@ -5803,7 +5854,7 @@ Expected: PASS.
     </div>
     ```
   - `ThankYouPage`: add `<ClearBag />` as its first child.
-  - `AboutPage`: `Register` row 03 → `{ no: '03', name: 'Bag / Profile Series', meta: 'Mobile architecture at the scale of the body', soon: 'bagText' }`.
+  - `AboutPage`: `Register` row 03 → `{ no: '03', name: 'Bag / Profile Series', meta: 'Mobile architecture at the scale of the body', link: 'Read', soon: 'bagText' }` (`link` is the word shown once the text is live).
   - `ContactPage`: replace the `<form className="cform" data-contact …>…</form>` with `<Suspense fallback={<p className="g">Loading the form …</p>}><ContactForm /></Suspense>` (`import { Suspense } from 'react'`).
   - Delete `PressPage`, `JournalPage`, `EmptyRoom`.
 
@@ -5827,7 +5878,6 @@ export default function NotFound() {
 import { expect, test } from '@playwright/test';
 
 test('the bag: list, quantity, remove, checkout not connected', async ({ page }) => {
-  await page.goto('/scan-series-placeholder-not-used/').catch(() => {});
   await page.goto('/atelier/scan-series/ob-011/');
   await page.getByRole('button', { name: 'Add to bag' }).click();
   await page.goto('/bag/');
@@ -5835,7 +5885,8 @@ test('the bag: list, quantity, remove, checkout not connected', async ({ page })
   await page.getByRole('button', { name: 'One more' }).click();
   await expect(page.locator('.bi__q span')).toHaveText('2');
   await page.getByRole('button', { name: 'Checkout' }).click();
-  await expect(page.getByRole('alert')).toHaveText('Checkout is not connected yet.');
+  // not getByRole('alert'): Next adds its own route announcer with that role
+  await expect(page.locator('.sum__e')).toHaveText('Checkout is not connected yet.');
   await page.getByRole('button', { name: 'Remove' }).click();
   await expect(page.getByText('Your bag is empty.')).toBeVisible();
 });
@@ -5867,8 +5918,6 @@ test('the info pages answer; an unknown page is a 404 inside the site', async ({
   await expect(page.getByText('This page is drawn nowhere.')).toBeVisible();
 });
 ```
-
-Remove the first line of the first test (`await page.goto('/scan-series-placeholder-not-used/')…`) — it serves no purpose; the test starts on the product page.
 
 - [ ] **Step 10: Run the tests**
 
@@ -5902,26 +5951,38 @@ import { allPages } from '../src/content/pages';
 import { soonPaths } from '../src/content/soon';
 import { getCatalog } from '../src/lib/data/catalog';
 
+/** href / src values of a page that point into the site — path plus anchor; query strings are dropped. */
+function internalRefs(html: string): { url: string; hash?: string }[] {
+  return [...html.matchAll(/\s(?:href|src)="(\/[^"#?]*)(\?[^"#]*)?(#[^"]*)?"/g)].map((m) => {
+    // next/image: check the picture file itself, not the optimiser
+    if (m[1] === '/_next/image') return { url: new URLSearchParams((m[2] ?? '').slice(1).replace(/&amp;/g, '&')).get('url') ?? '' };
+    return { url: m[1], hash: m[3]?.slice(1) };
+  });
+}
+
 test('every internal link and picture of every page answers 200, no redirects, no coming-soon targets', async ({ request }) => {
   test.setTimeout(600_000);
   const pages = allPages(await getCatalog()).map((p) => p.path);
-  const checked = new Map<string, number>();
+  const status = new Map<string, number>();
+  const html = new Map<string, string>();
   const problems: string[] = [];
+  const get = async (url: string): Promise<number> => {
+    if (!status.has(url)) {
+      const res = await request.get(url, { maxRedirects: 0 });
+      status.set(url, res.status());
+      if (res.status() === 200 && url.endsWith('/')) html.set(url, await res.text());
+    }
+    return status.get(url)!;
+  };
 
   for (const path of pages) {
-    const res = await request.get(path, { maxRedirects: 0 });
-    if (res.status() !== 200) { problems.push(`${path} → ${res.status()}`); continue; }
-    const html = await res.text();
-    const refs = [...html.matchAll(/\s(?:href|src)="(\/[^"#?]*)(#[^"]*)?"/g)].map((m) => ({ url: m[1], hash: m[2]?.slice(1) }));
-    for (const { url, hash } of refs) {
-      if (url.startsWith('/_next/')) continue;
+    if ((await get(path)) !== 200) { problems.push(`${path} → ${status.get(path)}`); continue; }
+    for (const { url, hash } of internalRefs(html.get(path)!)) {
+      if (!url || url.startsWith('/_next/')) continue;
       if (soonPaths().some((s) => url.startsWith(s))) problems.push(`${path} links to coming-soon ${url}`);
-      if (!checked.has(url)) checked.set(url, (await request.get(url, { maxRedirects: 0 })).status());
-      if (checked.get(url) !== 200) problems.push(`${path} → ${url} answers ${checked.get(url)}`);
-      if (hash && url.endsWith('/') && checked.get(url) === 200) {
-        const target = await (await request.get(url)).text();
-        if (!target.includes(`id="${hash}"`)) problems.push(`${path} → ${url}#${hash}: no such anchor`);
-      }
+      const code = await get(url);
+      if (code !== 200) problems.push(`${path} → ${url} answers ${code}`);
+      else if (hash && html.has(url) && !html.get(url)!.includes(`id="${hash}"`)) problems.push(`${path} → ${url}#${hash}: no such anchor`);
     }
   }
   expect(problems).toEqual([]);
@@ -5931,7 +5992,7 @@ test('every internal link and picture of every page answers 200, no redirects, n
 - [ ] **Step 2: Run it and fix what it finds**
 
 Run: `npx playwright test e2e/links.spec.ts`
-Expected: PASS. Every reported line is a real defect (a missed `<A>`, a removed page still linked, a missing anchor id) — fix it in the view it names and re-run until the list is empty.
+Expected: PASS. Every reported line is a real defect (a missed `<A>`, a removed page still linked, a missing anchor id, a sample picture that does not exist) — fix it in the view or slot it names and re-run until the list is empty.
 
 - [ ] **Step 3: Write `e2e/visual.spec.ts`** (screenshots for review, not assertions)
 
@@ -5959,13 +6020,20 @@ Expected: 24 screenshots in `test-results/visual/` (12 pages × desktop 1440 and
 
 ```bash
 git rm -r -q legacy
+rm -rf dist dist-server   # build output of the old site, git-ignored; stop `node dist-server/server.mjs` first if it still runs
 ```
 
-Remove `"legacy"` from `exclude` in `tsconfig.json`, `'legacy/**'` from `eslint.config.mjs` and `vitest.config.mts`.
+Remove `"legacy"` from `exclude` in `tsconfig.json`, `'legacy/**'` from `eslint.config.mjs` and `vitest.config.mts`. In `.gitignore` delete the block that no longer has anything to match:
+
+```
+# runtime data of the old static server
+data/*.jsonl
+data/stripe-catalog.json
+```
 
 - [ ] **Step 5: Rewrite `README.md`**
 
-```markdown
+````markdown
 # Concept. ( ) Collective — Website
 
 Next.js 16 (App Router) auf Vercel. Backend (Checkout, Bestand, Formulare, Admin) kommt in Phase 2/3 als Firebase Functions — siehe `docs/superpowers/specs/2026-10-13-nextjs-firebase-rebuild-design.md`.
@@ -5987,6 +6055,7 @@ npm run dev            # http://localhost:3000
 | `npm run typecheck` · `npm run lint` | TypeScript · ESLint |
 | `npm run images:report` | Status-Spalte von `IMAGE-SLOTS.md` aktualisieren |
 | `npm run sign:css` | Klammerfenster-CSS aus den Schrift-Messdaten neu erzeugen |
+| `python3 scripts/measure-font.py` | Display-Schrift neu vermessen — nur wenn sie ersetzt wird (braucht `pip install playwright`); danach `npm run sign:css` |
 
 ## Inhalte
 
@@ -6003,7 +6072,7 @@ npm run dev            # http://localhost:3000
 ## Deploy
 
 Branch → Pull Request → Vercel-Preview → Merge nach `main`. Umgebungsvariablen siehe `.env.example`; das Repository ist öffentlich — keine Schlüssel einchecken.
-```
+````
 
 - [ ] **Step 6: Full verification**
 
