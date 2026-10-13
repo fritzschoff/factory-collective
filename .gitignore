@@ -35,3 +35,8 @@ ui-debug.log*
 
 # vercel
 .vercel/
+
+# test output
+test-results/
+playwright-report/
+blob-report/
