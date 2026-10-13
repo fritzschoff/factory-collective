@@ -26,6 +26,8 @@ data/stripe-catalog.json
 .superpowers/
 CFC-website-23-pages.pdf
 docs/design/*.pdf
+# written by next dev
+AGENTS.md
 
 # firebase emulator / debug logs
 firebase-debug.log*
