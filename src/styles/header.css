@@ -1,0 +1,56 @@
+/* ── header (variant B): fixed, white — except the window between the brackets ──
+   Sizes follow the 1440 design through container units of .hd__in (max 1440 wide).  */
+:root {
+  --u: min(1vw, 14.4px);
+  --hd-h: calc(max(3.889 * var(--u), 44px) + 98.9 * var(--u) / 19.59640625 + max(3.472 * var(--u), 34px) + 1px);
+  --hd-compact: calc(max(2.9 * var(--u), 40px) + 98.9 * var(--u) / 19.59640625 + 1px);
+}
+main#main { padding-top: var(--hd-h); }
+
+.hd { position: fixed; left: 0; right: 0; top: 0; z-index: 90; pointer-events: none; }
+/* wider than 1440: the margins beside the frame are white too — only the window may show the page */
+.hd::before, .hd::after { content: ''; position: absolute; top: 0; bottom: 0; width: max(0px, (100% - var(--page)) / 2); background: #fff; }
+.hd::before { left: 0; } .hd::after { right: 0; }
+.hd a, .hd button { pointer-events: auto; }
+.hd__in { position: relative; max-width: var(--page); margin: 0 auto; container: hd / inline-size; --sh: calc(98.9cqw / 19.59640625); }
+
+.hd__top { position: relative; z-index: 0; height: max(3.889cqw, 44px); background: #fff; box-shadow: 0 1px 0 #fff; transition: height .4s var(--ease); }
+.hd__bb { position: absolute; top: max(.833cqw, 9px); transform: translateX(-50%); transition: opacity .25s; }
+.hd__bb i { display: grid; place-items: center; width: max(1.389cqw, 16px); height: max(1.389cqw, 16px); border: 1px solid var(--ink); border-radius: 50%; font-style: normal; font-size: clamp(8px, .66cqw, 9.5px); line-height: 1; background: #fff; }
+.hd__bb b { position: absolute; left: 50%; top: 100%; height: max(1.5cqw, 9px); border-left: 1px dashed #9c9b97; }
+.hd__util { position: absolute; right: max(1.67cqw, 12px); top: 0; height: max(3.611cqw, 40px); display: flex; align-items: center; gap: clamp(14px, 2.6cqw, 38px); font-size: clamp(11.5px, .903cqw, 13px); }
+.hd__search { position: relative; min-width: clamp(70px, 15cqw, 220px); text-align: left; padding: 3px 0; }
+.hd__search i { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--ink); }
+.hd__util a:hover, .hd__util button:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* the sign row: an SVG white band with the window cut out; the red glyphs lie on top */
+.hd__sign { position: relative; z-index: 1; display: block; height: var(--sh); }
+.hd__sign:hover { text-decoration: none; }
+.hd__bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hd__axis { position: absolute; top: 4%; bottom: 0; border-left: 1px dashed rgba(120,119,115,.9); }
+.hd__glyphs { position: absolute; left: .55cqw; top: 0; display: flex; white-space: pre; font-family: var(--display); font-size: var(--sh); line-height: 1; color: var(--red); user-select: none; }
+.hd__glyphs .h { visibility: hidden; }
+
+.hd__bot { position: relative; z-index: 0; height: max(3.472cqw, 34px); background: #fff; box-shadow: 0 -1px 0 #fff; overflow: hidden; transition: height .4s var(--ease); }
+.hd__bot > button, .hd__br { position: absolute; top: max(.83cqw, 7px); transform: translateX(-50%); font-size: clamp(11px, .972cqw, 14px); line-height: 1.6; white-space: nowrap; transition: opacity .25s; }
+.hd__bot > .is-first { transform: none; margin-left: -6px; }
+.hd__bot button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.hd__r { position: absolute; right: max(1.1cqw, 10px); top: max(.83cqw, 7px); display: flex; gap: clamp(14px, 2.6cqw, 38px); font-size: clamp(11px, .972cqw, 14px); line-height: 1.6; transition: opacity .25s; }
+.hd__r button { color: var(--grey); } .hd__r button:hover, .hd__r button.is-on { color: var(--ink); }
+.hd__hair { height: 1px; background: var(--hair); }
+
+/* B: after 40 px the circles and the labels fold away; the sign stays at full width */
+.hd.is-compact .hd__top { height: max(2.9cqw, 40px); }
+.hd.is-compact .hd__bb { opacity: 0; }
+.hd.is-compact .hd__bot { height: 0; }
+.hd.is-compact .hd__bot > button, .hd.is-compact .hd__br, .hd.is-compact .hd__r { opacity: 0; pointer-events: none; }
+
+@container hd (max-width: 700px) {
+  .hd__top { height: 74px; } .hd__bb { top: 44px; } .hd__bb b { height: 8px; }
+  .hd.is-compact .hd__top { height: 40px; }
+  .hd__util { gap: 16px; } .hd__search { min-width: 0; } .hd__search i { display: none; }
+  .hd__bot > button { font-size: 11.5px; } .hd__br, .hd__r { display: none; }
+}
+@media (max-width: 700px) {
+  :root { --hd-h: calc(74px + 98.9 * var(--u) / 19.59640625 + 34px + 1px); --hd-compact: calc(40px + 98.9 * var(--u) / 19.59640625 + 1px); }
+}

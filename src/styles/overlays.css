@@ -34,7 +34,7 @@
 .dlg input:not(.hp), .dlg textarea { border: 0; border-bottom: 1px solid var(--ink); padding: 8px 0; font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--ink); background: none; border-radius: 0; outline: none; resize: vertical; }
 .dlg .pill { justify-self: start; }
 .dlg__msg { font-size: 13px; min-height: 1.4em; }
-.toast { position: fixed; right: clamp(12px, 2vw, 28px); top: 70px; z-index: 300; background: var(--ink); color: #fff; padding: 12px 18px; font-size: 13px; display: flex; gap: 18px; align-items: baseline; max-width: calc(100vw - 24px); animation: fadein .2s var(--ease); }
+.toast { position: fixed; right: clamp(12px, 2vw, 28px); top: calc(var(--hd-compact) + 12px); z-index: 300; background: var(--ink); color: #fff; padding: 12px 18px; font-size: 13px; display: flex; gap: 18px; align-items: baseline; max-width: calc(100vw - 24px); animation: fadein .2s var(--ease); }
 .toast a { text-decoration: underline; text-underline-offset: 3px; }
 .qa { position: fixed; z-index: 250; width: min(300px, calc(100vw - 24px)); background: #fff; border: 1px solid var(--ink); padding: 16px 16px 14px; display: grid; gap: 12px; box-shadow: none; }
 .qa__h { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; }

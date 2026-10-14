@@ -123,7 +123,7 @@
 
 /* factory */
 .theses { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 2.1vw, 30px); }
-.thesis { border: 1px solid var(--ink); padding: 20px; min-height: 170px; background: #fff; line-height: 1.6; font-size: var(--fs-m); display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 80px; }
+.thesis { border: 1px solid var(--ink); padding: 20px; min-height: 170px; background: #fff; line-height: 1.6; font-size: var(--fs-m); display: flex; flex-direction: column; gap: 8px; scroll-margin-top: calc(var(--hd-compact) + 24px); }
 .thesis b { font-family: var(--display); font-weight: 400; font-size: 17px; } .thesis__d { color: #333; } .thesis .micro { margin-top: auto; } .thesis .link-u { font-size: var(--fs-s); }
 .dr, .thesis.is-red, .notmade__b > div { background-color: #fff; border: 0;
   background-image: repeating-linear-gradient(to right, var(--red) 0 16px, transparent 16px 19px, var(--red) 19px 21px, transparent 21px 24px, var(--red) 24px 26px, transparent 26px 29px), repeating-linear-gradient(to right, var(--red) 0 16px, transparent 16px 19px, var(--red) 19px 21px, transparent 21px 24px, var(--red) 24px 26px, transparent 26px 29px), repeating-linear-gradient(to bottom, var(--red) 0 16px, transparent 16px 19px, var(--red) 19px 21px, transparent 21px 24px, var(--red) 24px 26px, transparent 26px 29px), repeating-linear-gradient(to bottom, var(--red) 0 16px, transparent 16px 19px, var(--red) 19px 21px, transparent 21px 24px, var(--red) 24px 26px, transparent 26px 29px);
@@ -187,7 +187,7 @@
 .gal__main .over { z-index: 3; } .gal__n { left: 16px; bottom: 14px; background: #fff; padding: 3px 9px; color: var(--ink); }
 .gal__th { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, .7vw, 10px); margin-top: clamp(6px, .7vw, 10px); }
 .gal__th button { display: block; opacity: .75; transition: opacity .2s; } .gal__th button:hover, .gal__th button.is-on { opacity: 1; } .gal__th button.is-on .img { outline: 1px solid var(--ink); outline-offset: -1px; }
-.buy { position: sticky; top: 76px; padding-right: clamp(0px, 1vw, 14px); }
+.buy { position: sticky; top: calc(var(--hd-compact) + 20px); padding-right: clamp(0px, 1vw, 14px); }
 .buy .crumb { margin-bottom: clamp(18px, 2.2vw, 30px); }
 .buy__h { font-weight: 400; font-size: clamp(20px, 1.8vw, 25px); line-height: 1.2; } .buy__code { font-family: var(--display); } .buy__name { font-family: var(--display); }
 .buy__meta { margin-top: 8px; font-size: var(--fs-s); color: var(--grey); } .buy__price { font-size: clamp(16px, 1.3vw, 18px); margin-top: 22px; }
@@ -224,7 +224,7 @@
 .bi__p { text-align: right; font-size: var(--fs-m); } .bi__p small { display: block; color: var(--grey); font-size: 11.5px; margin-top: 4px; }
 .bag__list { border-bottom: 1px solid var(--hair); } .bag__empty { padding: 40px 0 60px; } .bag__empty p { margin-bottom: 18px; color: var(--grey); }
 .bag__back { margin-top: 24px; color: var(--grey); font-size: var(--fs-s); } .bag__back a:hover { color: var(--ink); }
-.sum { border: 1px solid var(--ink); padding: 24px; background: #fff; position: sticky; top: 80px; }
+.sum { border: 1px solid var(--ink); padding: 24px; background: #fff; position: sticky; top: calc(var(--hd-compact) + 20px); }
 .sum__h { font-family: var(--display); font-weight: 400; font-size: 13px; padding-bottom: 14px; border-bottom: .6px solid var(--ink); }
 .sum__rows > div { display: flex; justify-content: space-between; gap: 14px; padding: 11px 0; font-size: var(--fs-m); } .sum__rows dd { color: var(--grey); text-align: right; } .sum__rows { padding: 10px 0 6px; }
 .sum__t { display: flex; justify-content: space-between; font-size: 17px; padding: 16px 0 22px; border-top: .6px solid var(--ink); }
