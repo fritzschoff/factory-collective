@@ -15,3 +15,20 @@ export async function greenUnderneath(page: Page): Promise<void> {
     document.body.appendChild(d);
   });
 }
+
+/**
+ * Like greenUnderneath, but a full-screen button that counts the clicks reaching it.
+ * Returns a function that reads the count — what the page beneath the header has been clicked.
+ */
+export async function clickableUnderneath(page: Page): Promise<() => Promise<number>> {
+  await page.evaluate(() => {
+    const b = document.createElement('button');
+    b.id = 'clicked-beneath';
+    b.type = 'button';
+    b.dataset.clicks = '0';
+    b.style.cssText = 'position:fixed;inset:0;z-index:1;margin:0;padding:0;border:0;background:#00ff00';
+    b.addEventListener('click', () => { b.dataset.clicks = String(Number(b.dataset.clicks) + 1); });
+    document.body.appendChild(b);
+  });
+  return () => page.evaluate(() => Number(document.getElementById('clicked-beneath')?.dataset.clicks));
+}

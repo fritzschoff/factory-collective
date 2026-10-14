@@ -7,11 +7,12 @@
 }
 main#main { padding-top: var(--hd-h); }
 
-.hd { position: fixed; left: 0; right: 0; top: 0; z-index: 90; pointer-events: none; }
+/* The header catches the pointer everywhere — the white rows, the hairline, the margins beyond 1440 and the sign row
+   (a link, window included): no click passes through to the page that scrolls by beneath it. */
+.hd { position: fixed; left: 0; right: 0; top: 0; z-index: 90; }
 /* wider than 1440: the margins beside the frame are white too — only the window may show the page */
 .hd::before, .hd::after { content: ''; position: absolute; top: 0; bottom: 0; width: max(0px, (100% - var(--page)) / 2); background: #fff; }
 .hd::before { left: 0; } .hd::after { right: 0; }
-.hd a, .hd button { pointer-events: auto; }
 .hd__in { position: relative; max-width: var(--page); margin: 0 auto; container: hd / inline-size; --sh: calc(98.9cqw / 19.59640625); }
 
 .hd__top { position: relative; z-index: 0; height: max(3.889cqw, 44px); background: #fff; box-shadow: 0 1px 0 #fff; transition: height .4s var(--ease); }
@@ -39,11 +40,12 @@ main#main { padding-top: var(--hd-h); }
 .hd__r button { color: var(--grey); } .hd__r button:hover, .hd__r button.is-on { color: var(--ink); }
 .hd__hair { height: 1px; background: var(--hair); }
 
-/* B: after 40 px the circles and the labels fold away; the sign stays at full width */
+/* B: after 40 px the circles and the labels fold away; the sign stays at full width.
+   What fades out also leaves the tab order and the accessibility tree: visibility flips when the fade is over
+   (delayed by its .25s) and returns at once on unfolding — the base rules above transition opacity only. */
 .hd.is-compact .hd__top { height: max(2.9cqw, 40px); }
-.hd.is-compact .hd__bb { opacity: 0; }
 .hd.is-compact .hd__bot { height: 0; }
-.hd.is-compact .hd__bot > button, .hd.is-compact .hd__br, .hd.is-compact .hd__r { opacity: 0; pointer-events: none; }
+.hd.is-compact .hd__bb, .hd.is-compact .hd__bot > button, .hd.is-compact .hd__br, .hd.is-compact .hd__r { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s, visibility 0s linear .25s; }
 
 @container hd (max-width: 700px) {
   .hd__top { height: 74px; } .hd__bb { top: 44px; } .hd__bb b { height: 8px; }
