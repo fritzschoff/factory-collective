@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, Suspense, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { worldOf, type WorldId } from '@/lib/nav/world';
 
 export interface ToastLink { href: string; label: string }
@@ -25,26 +25,45 @@ const ChromeContext = createContext<Chrome | null>(null);
 const TOAST_MS = 4200;
 
 /**
+ * Tells the provider which page is showing, and renders nothing. It is the only reader of the address in here, and under
+ * cacheComponents that read suspends on a route whose params are not known at build time: it gets a Suspense boundary of
+ * its own (see ChromeProvider), so that boundary holds this and nothing else.
+ */
+function RouteWatch({ onRoute }: { onRoute: (pathname: string) => void }) {
+  const pathname = usePathname() ?? '/';
+  // a layout effect runs before the browser paints: no frame shows an overlay on the new page
+  useLayoutEffect(() => onRoute(pathname), [pathname, onRoute]);
+  return null;
+}
+
+/**
  * Shared state of the page chrome: menu, search, enquiry dialog, toast.
- * A change of page closes the menu, the search and the enquiry dialog. The reset happens during
- * render, so no frame shows an overlay on the new page, and going back does not reopen anything.
+ * A change of page closes the menu, the search and the enquiry dialog, and going back does not reopen anything.
+ *
+ * The children stay outside any Suspense boundary: a boundary that wraps the page is "outlined" once its HTML passes
+ * about 12.8 KB (React's progressiveChunkSize). It is then sent after the shell and revealed by a script, which React
+ * holds back for about 300 ms after the first paint, so every page would load blank. Only RouteWatch is wrapped.
  */
 export function ChromeProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname() ?? '/';
-  const [seenPath, setSeenPath] = useState(pathname);
+  const [pathname, setPathname] = useState('/');
+  const route = useRef<string | null>(null);
   const [menu, setMenu] = useState<{ open: boolean; tab: WorldId }>({ open: false, tab: 'atelier' });
   const [searchOpen, setSearchOpen] = useState(false);
   const [enquiry, setEnquiry] = useState({ open: false, what: '', n: 0 });
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
 
-  // Adjusting state when a prop changes (no effect): remember the page, and close the overlays when it changes.
-  if (pathname !== seenPath) {
-    setSeenPath(pathname);
-    setMenu((m) => (m.open ? { ...m, open: false } : m));
-    setSearchOpen(false);
-    setEnquiry((e) => (e.open ? { ...e, open: false } : e));
-  }
+  // The first report is the page the visitor came to; every later one is a change of page.
+  const onRoute = useCallback((next: string) => {
+    const moved = route.current !== null && route.current !== next;
+    route.current = next;
+    setPathname(next);
+    if (moved) {
+      setMenu((m) => (m.open ? { ...m, open: false } : m));
+      setSearchOpen(false);
+      setEnquiry((e) => (e.open ? { ...e, open: false } : e));
+    }
+  }, []);
 
   const openMenu = useCallback((tab?: WorldId) => {
     setSearchOpen(false);
@@ -71,7 +90,12 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
     toast, showToast,
   }), [menu, searchOpen, openMenu, closeMenu, openSearch, closeSearch, enquiry, openEnquiry, closeEnquiry, toast, showToast]);
 
-  return <ChromeContext.Provider value={value}>{children}</ChromeContext.Provider>;
+  return (
+    <ChromeContext.Provider value={value}>
+      <Suspense fallback={null}><RouteWatch onRoute={onRoute} /></Suspense>
+      {children}
+    </ChromeContext.Provider>
+  );
 }
 
 export function useChrome(): Chrome {
