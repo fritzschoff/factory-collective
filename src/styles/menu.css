@@ -1,0 +1,54 @@
+/* ── menu (M2): one panel per room, dropped over the header like Loewe ───────── */
+.mp__dim { position: fixed; inset: 0; z-index: 95; background: rgba(11,11,11,.38); opacity: 0; pointer-events: none; transition: opacity .35s var(--ease); }
+.mp__dim.is-open { opacity: 1; pointer-events: auto; }
+.mp { position: fixed; left: 0; right: 0; top: 0; z-index: 100; max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; transform: translateY(-104%); transition: transform .45s var(--ease); }
+.mp.is-open { transform: none; }
+.mp::before, .mp::after { content: ''; position: absolute; top: 0; bottom: 0; width: max(0px, (100% - var(--page)) / 2); background: #fff; }
+.mp::before { left: 0; } .mp::after { right: 0; }
+.mp__in { position: relative; max-width: var(--page); margin: 0 auto; container: mp / inline-size; --sh: calc(98.9cqw / 19.59640625); }
+.mp__top { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: max(3.889cqw, 44px); padding: 0 max(1.67cqw, 12px) 0 max(1.4cqw, 12px); background: #fff; box-shadow: 0 1px 0 #fff; font-size: clamp(11.5px, .972cqw, 14px); }
+/* the tabs scroll sideways where they do not fit, and a scroll box clips outlines: the padding (undone by the margin) is
+   the room the focus ring of a tab needs */
+.mp__tabs { display: flex; gap: clamp(16px, 2.6cqw, 38px); white-space: nowrap; overflow-x: auto; scrollbar-width: none; padding: 6px; margin: -6px; }
+.mp__tabs button { padding: 4px 0; }
+.mp__tabs button.is-quiet { color: var(--grey); }
+.mp__tabs button.is-on { color: var(--ink); }
+.mp__tabs button.is-on::before { content: '( '; } .mp__tabs button.is-on::after { content: ' )'; }
+.mp__util { display: flex; gap: clamp(14px, 2.6cqw, 38px); align-items: center; font-size: clamp(11.5px, .903cqw, 13px); white-space: nowrap; }
+.mp__search { min-width: clamp(70px, 15cqw, 220px); text-align: left; border-bottom: 1px solid var(--ink); padding: 3px 0; }
+.mp__body { background: #fff; padding: max(2.2cqw, 18px) max(1.4cqw, 12px) max(1.6cqw, 14px); }
+.mp__cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 1.55fr); gap: 0 max(2cqw, 16px); }
+.mp__grp + .mp__grp { margin-top: 22px; }
+.mp__h { font-family: var(--display); font-weight: 400; font-size: clamp(13.5px, 1.04cqw, 15px); padding: 0 0 9px; border-bottom: 1px solid var(--ink); display: flex; justify-content: space-between; gap: 8px; }
+.mp__h small { font-family: var(--text); font-size: 11px; color: var(--grey); white-space: nowrap; }
+.mp__h.soon { border-bottom: 0; flex-direction: column; align-items: flex-start; gap: 3px; }
+.mp__h.soon .soon__n { margin-left: 0; }
+.mp__it { display: flex; justify-content: space-between; gap: 8px; padding: 9px 0 8px; border-bottom: 1px solid var(--hair); font-size: clamp(12.5px, .94cqw, 13.5px); line-height: 1.35; }
+.mp__it small { font-size: 11px; color: var(--grey); white-space: nowrap; }
+.mp__it.soon { flex-direction: column; align-items: flex-start; gap: 3px; border-bottom: 0; }
+.mp__it.soon .soon__n { margin-left: 0; }
+a.mp__it:hover, .mp__h a:hover { text-decoration: none; }
+a.mp__it:hover .mp__t::before, a.mp__it:focus-visible .mp__t::before, .mp__h a:hover .mp__t::before, .mp__h a:focus-visible .mp__t::before { content: '( '; }
+a.mp__it:hover .mp__t::after, a.mp__it:focus-visible .mp__t::after, .mp__h a:hover .mp__t::after, .mp__h a:focus-visible .mp__t::after { content: ' )'; }
+.mp__field { padding-left: max(1cqw, 8px); }
+.mp__ft, .mp__fc { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--grey); min-height: 1.4em; }
+.mp__ft { margin-bottom: 12px; } .mp__fc { margin-top: 16px; }
+/* two classes: .bwin (components.css, later in the cascade) sets --h: 100px, and one class would lose to it */
+.mp .mp__win { --h: max(8.3cqw, 72px); }
+.mp__enter { display: inline-block; margin-top: 18px; font-size: 13.5px; }
+.mp__foot { display: flex; justify-content: space-between; gap: 20px; padding: 0 max(1.4cqw, 12px) max(1.6cqw, 12px); background: #fff; box-shadow: 0 1px 0 #fff; font-size: 13px; color: var(--grey); }
+.mp__foot a { color: var(--ink); }
+.mp__sign { position: relative; z-index: 1; height: var(--sh); }
+.mp__sigb { height: max(1.2cqw, 10px); background: #fff; box-shadow: 0 -1px 0 #fff; }
+
+/* Phone: a full screen. As in the header, the layout switches on the viewport (@media), not on the width of the panel
+   (@container): beside a classic scrollbar the panel is up to 17 px narrower than the viewport, and a container query
+   would stack the columns while the panel is still the dropped desktop one. The container stays: the sizes use cqw. */
+@media (max-width: 700px) {
+  .mp { bottom: 0; max-height: none; background: #fff; }
+  .mp__top { flex-wrap: wrap; height: auto; padding-top: 10px; padding-bottom: 10px; row-gap: 10px; }
+  .mp__tabs { order: 2; width: calc(100% + 12px); } .mp__util { order: 1; width: 100%; justify-content: space-between; }
+  .mp__search { min-width: 0; border: 0; }
+  .mp__cols { grid-template-columns: minmax(0, 1fr); } .mp__col + .mp__col { margin-top: 22px; } .mp__field { order: -1; padding: 0 0 18px; }
+  .mp__foot { flex-direction: column; gap: 6px; }
+}
