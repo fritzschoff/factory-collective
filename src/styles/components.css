@@ -98,3 +98,8 @@
 .g5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(10px, 2.1vw, 30px); row-gap: clamp(36px, 4.4vw, 64px); }
 .g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2.5vw, 36px); row-gap: clamp(36px, 4.4vw, 64px); }
 .g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 1.7vw, 24px); }
+
+/* ── coming soon: drawn, not built — red, never a link ─────────────────────── */
+.soon { color: var(--red); cursor: default; }
+.soon__t { background: repeating-linear-gradient(to right, var(--red) 0 16px, transparent 16px 19px, var(--red) 19px 21px, transparent 21px 24px, var(--red) 24px 26px, transparent 26px 29px) bottom / 100% 1px no-repeat; padding-bottom: 2px; }
+.soon__n { margin-left: .7em; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
