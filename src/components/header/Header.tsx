@@ -53,7 +53,8 @@ export function Header() {
       {world === id ? `( ${text} )` : text}
     </button>
   );
-  const brackets = !world || world === 'atelier';
+  // The ( ) of the sign beside Atelier show on every page but the Factory and Studio rooms, which bracket their own label.
+  const brackets = world !== 'factory' && world !== 'studio';
   return (
     <header className={cx('hd', compact && 'is-compact')} data-header>
       <div className="hd__in">

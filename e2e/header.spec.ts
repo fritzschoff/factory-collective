@@ -154,6 +154,25 @@ test.describe('header', () => {
     expect(main.y).toBeGreaterThanOrEqual(header.y + header.height - 1);
   });
 
+  test('the phone layout and the offset under the header switch at the same width, also beside a scrollbar', async ({ page }) => {
+    // The media queries (and --hd-h with them) see the whole viewport; the header only what a classic scrollbar leaves of it,
+    // up to 17 px less. Headless Chromium hides scrollbars, so a gutter on the header's right edge stands in for one.
+    // The widths straddle the 700 px switch: if the header went phone-sized sooner than the offset, the page would slide under it.
+    const cases: [width: number, gutter: number][] = [[390, 0], [700, 15], [701, 15], [705, 15], [715, 15], [1024, 15]];
+    for (const [width, gutter] of cases) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      if (gutter) await page.addStyleTag({ content: `.hd { right: ${gutter}px !important; }` });
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished))); // the gutter may start a height transition: measure after it
+      const header = (await page.locator('header[data-header]').boundingBox())!;
+      const h1 = (await page.locator('main#main h1').first().boundingBox())!;
+      const bottom = header.y + header.height;
+      expect(header.width, `${width} px wide: the gutter is in place`).toBe(width - gutter);
+      expect(h1.y, `${width} px wide, ${gutter} px gutter: the content starts below the header`).toBeGreaterThanOrEqual(bottom - 1);
+      expect(h1.y, `${width} px wide, ${gutter} px gutter: and right under it, with no gap`).toBeLessThan(bottom + 3); // vw is a little wider than the header
+    }
+  });
+
   test('@phone the header keeps its window on a phone', async ({ page }) => {
     await page.goto('/');
     await greenUnderneath(page);

@@ -47,12 +47,14 @@ main#main { padding-top: var(--hd-h); }
 .hd.is-compact .hd__bot { height: 0; }
 .hd.is-compact .hd__bb, .hd.is-compact .hd__bot > button, .hd.is-compact .hd__br, .hd.is-compact .hd__r { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s, visibility 0s linear .25s; }
 
-@container hd (max-width: 700px) {
+/* Phone. The layout and the offset under the header (--hd-h, --hd-compact) switch on one and the same condition, the
+   viewport. A container query would see the header's own width — the viewport less a classic scrollbar — and flip up to
+   15 px of width before the variables do, leaving the header taller than the offset the page starts at. It also made the
+   top row grow from 44 to 74 px on every phone load: the first container-query match started the height transition. */
+@media (max-width: 700px) {
+  :root { --hd-h: calc(74px + 98.9 * var(--u) / 19.59640625 + 34px + 1px); --hd-compact: calc(40px + 98.9 * var(--u) / 19.59640625 + 1px); }
   .hd__top { height: 74px; } .hd__bb { top: 44px; } .hd__bb b { height: 8px; }
   .hd.is-compact .hd__top { height: 40px; }
   .hd__util { gap: 16px; } .hd__search { min-width: 0; } .hd__search i { display: none; }
   .hd__bot > button { font-size: 11.5px; } .hd__br, .hd__r { display: none; }
-}
-@media (max-width: 700px) {
-  :root { --hd-h: calc(74px + 98.9 * var(--u) / 19.59640625 + 34px + 1px); --hd-compact: calc(40px + 98.9 * var(--u) / 19.59640625 + 1px); }
 }
