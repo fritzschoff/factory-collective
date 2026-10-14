@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSyncExternalStore } from 'react';
+import { Suspense, useSyncExternalStore, type ReactNode } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import { BagCount } from '@/components/shop/BagCount';
 import { cx } from '@/lib/cx';
@@ -41,20 +41,44 @@ export function SignRow() {
 }
 
 /**
+ * What reads the address waits in a Suspense boundary: on a dynamic route whose params are not known at build time
+ * (cacheComponents) reading it suspends. The boundaries have to stay small. Once the shell passes about 12.8 KB, React
+ * sends every boundary of more than 500 bytes after it and reveals it some 300 ms late; a label is about 200 bytes and
+ * stays in the shell. So wrap each label, never the row or the header.
+ */
+const Small = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>;
+
+/** A room label: Factory, Atelier or Studio, bracketed on the page of its room. */
+function Room({ id, text, x, first = false }: { id: WorldId; text: string; x: number; first?: boolean }) {
+  const world = worldOf(usePathname());
+  const { menu, openMenu } = useChrome();
+  return (
+    <button type="button" className={cx(first && 'is-first', world === id && 'is-on')} style={at(x)} aria-haspopup="dialog" aria-controls="menu" aria-expanded={menu.open && menu.tab === id} onClick={() => openMenu(id)}>
+      {world === id ? `( ${text} )` : text}
+    </button>
+  );
+}
+
+/** Campaigns and About, grey, on the right. */
+function Side({ id, text }: { id: 'campaigns' | 'about'; text: string }) {
+  const world = worldOf(usePathname());
+  const { openMenu } = useChrome();
+  return <button type="button" className={cx(world === id && 'is-on')} aria-haspopup="dialog" aria-controls="menu" onClick={() => openMenu(id)}>{text}</button>;
+}
+
+/** The ( or ) of the sign beside Atelier: on every page but the Factory and Studio rooms, which bracket their own label. */
+function Bracket({ x, glyph }: { x: number; glyph: string }) {
+  const world = worldOf(usePathname());
+  return world === 'factory' || world === 'studio' ? null : <span className="hd__br" style={at(x)} aria-hidden="true">{glyph}</span>;
+}
+
+/**
  * The header (variant B): fixed, white — except between the brackets, where the page scrolls by.
  * After 40 px the circles F · A · S and the room labels fold away; the sign stays at full width.
  */
 export function Header() {
   const compact = useCompact();
-  const world = worldOf(usePathname());
   const { menu, openMenu, openSearch } = useChrome();
-  const room = (id: WorldId, text: string, x: number, first = false) => (
-    <button key={id} type="button" className={cx(first && 'is-first', world === id && 'is-on')} style={at(x)} aria-haspopup="dialog" aria-controls="menu" aria-expanded={menu.open && menu.tab === id} onClick={() => openMenu(id)}>
-      {world === id ? `( ${text} )` : text}
-    </button>
-  );
-  // The ( ) of the sign beside Atelier show on every page but the Factory and Studio rooms, which bracket their own label.
-  const brackets = world !== 'factory' && world !== 'studio';
   return (
     <header className={cx('hd', compact && 'is-compact')} data-header>
       <div className="hd__in">
@@ -74,14 +98,14 @@ export function Header() {
           <SignGlyphs />
         </Link>
         <nav className="hd__bot" aria-label="Rooms">
-          {room('factory', 'Factory', G.xF, true)}
-          {brackets && <span className="hd__br" style={at(G.brL)} aria-hidden="true">(</span>}
-          {room('atelier', 'Atelier', G.xA)}
-          {brackets && <span className="hd__br" style={at(G.brR)} aria-hidden="true">)</span>}
-          {room('studio', 'Studio', G.xS)}
+          <Small><Room id="factory" text="Factory" x={G.xF} first /></Small>
+          <Small><Bracket x={G.brL} glyph="(" /></Small>
+          <Small><Room id="atelier" text="Atelier" x={G.xA} /></Small>
+          <Small><Bracket x={G.brR} glyph=")" /></Small>
+          <Small><Room id="studio" text="Studio" x={G.xS} /></Small>
           <span className="hd__r">
-            <button type="button" className={cx(world === 'campaigns' && 'is-on')} aria-haspopup="dialog" aria-controls="menu" onClick={() => openMenu('campaigns')}>Campaigns</button>
-            <button type="button" className={cx(world === 'about' && 'is-on')} aria-haspopup="dialog" aria-controls="menu" onClick={() => openMenu('about')}>About</button>
+            <Small><Side id="campaigns" text="Campaigns" /></Small>
+            <Small><Side id="about" text="About" /></Small>
           </span>
         </nav>
         <div className="hd__hair" />

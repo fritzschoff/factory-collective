@@ -40,9 +40,10 @@ function RouteWatch({ onRoute }: { onRoute: (pathname: string) => void }) {
  * Shared state of the page chrome: menu, search, enquiry dialog, toast.
  * A change of page closes the menu, the search and the enquiry dialog, and going back does not reopen anything.
  *
- * The children stay outside any Suspense boundary: a boundary that wraps the page is "outlined" once its HTML passes
- * about 12.8 KB (React's progressiveChunkSize). It is then sent after the shell and revealed by a script, which React
- * holds back for about 300 ms after the first paint, so every page would load blank. Only RouteWatch is wrapped.
+ * The children stay outside any Suspense boundary. Once the shell passes about 12.8 KB (React's progressiveChunkSize),
+ * React sends every boundary of more than 500 bytes after it and reveals it by a script that it holds back for about
+ * 300 ms after the first paint: what sits in such a boundary shows up late, and round the page it would load blank.
+ * Only RouteWatch is wrapped, and it renders nothing.
  */
 export function ChromeProvider({ children }: { children: ReactNode }) {
   const [pathname, setPathname] = useState('/');

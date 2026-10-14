@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithChrome } from '@/test/chrome';
 
-const nav = vi.hoisted(() => ({ path: '/' }));
-vi.mock('next/navigation', async (importOriginal) => ({ ...(await importOriginal<typeof import('next/navigation')>()), usePathname: () => nav.path }));
+// `pending` makes the address suspend, as it does under cacheComponents on a route whose params are not known at build time
+const nav = vi.hoisted(() => ({ path: '/', pending: false, never: new Promise<string>(() => {}) }));
+vi.mock('next/navigation', async (importOriginal) => {
+  const { use } = await import('react');
+  return { ...(await importOriginal<typeof import('next/navigation')>()), usePathname: () => (nav.pending ? use(nav.never) : nav.path) };
+});
 import { Header } from './Header';
 
 /** The ( and ) beside Atelier in the room row of the header, on the page at `path`. */
@@ -24,5 +28,22 @@ describe('Header: the ( ) beside Atelier', () => {
   it.each([['/factory/', '( Factory )'], ['/studio/', '( Studio )'], ['/studio/conceptual-interference/', '( Studio )']])('%s has none: the room carries them in its label', (path, label) => {
     expect(bracketsOn(path)).toEqual([]);
     expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+  });
+});
+
+// What reads the address waits in a boundary of its own, and the boundaries are small (see Small in Header.tsx): a
+// boundary around the header would be sent after the shell on a big page and revealed some 300 ms late.
+describe('Header: while the address is pending', () => {
+  afterEach(() => { nav.pending = false; });
+
+  it('stays on show: only the room labels and the brackets wait', async () => {
+    nav.pending = true;
+    const { container } = renderWithChrome(<Header />);
+    await act(async () => {}); // a component that suspends inside act needs an awaited act, or the effects of the others do not run
+    expect(screen.getByRole('button', { name: 'Menu' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Bag/ })).toBeInTheDocument();
+    expect(container.querySelector('.hd__sign')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: /Factory|Atelier|Studio|Campaigns|About/ })).toBeNull();
+    expect(container.querySelectorAll('.hd__br')).toHaveLength(0);
   });
 });
