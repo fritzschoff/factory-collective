@@ -25,9 +25,19 @@ function Probe() {
     </>
   );
 }
+const renders = vi.fn();
+/** Counts how often a consumer of the chrome renders. */
+function Consumer() {
+  useChrome();
+  renders();
+  return null;
+}
+const page = () => <ChromeProvider><Probe /></ChromeProvider>; // a new element each time: the same one would not render again
+const press = (name: string) => act(async () => { fireEvent.click(screen.getByRole('button', { name })); });
+const shows = (text: string) => expect(screen.getByRole('status')).toHaveTextContent(text);
 
 describe('ChromeProvider', () => {
-  afterEach(() => { nav.path = '/studio/conceptual-interference/'; nav.pending = false; vi.useRealTimers(); });
+  afterEach(() => { nav.path = '/studio/conceptual-interference/'; nav.pending = false; window.history.replaceState(null, '', '/'); vi.useRealTimers(); });
 
   it('opens the menu on the room of the page and closes it', () => {
     const { result } = renderHook(() => useChrome(), { wrapper });
@@ -37,7 +47,7 @@ describe('ChromeProvider', () => {
     expect(result.current.menu.open).toBe(false);
   });
 
-  it('a navigation closes the menu without any effect', () => {
+  it('a navigation closes the menu before the next paint', () => {
     const { result, rerender } = renderHook(() => useChrome(), { wrapper });
     act(() => result.current.openMenu('factory'));
     nav.path = '/factory/';
@@ -80,6 +90,13 @@ describe('ChromeProvider', () => {
     expect(result.current.enquiry.open).toBe(false);
   });
 
+  // The page is not kept in state: telling the provider which page is showing changes nothing that a consumer reads.
+  it('reporting the page does not render the consumers of the chrome again', () => {
+    renders.mockClear();
+    render(<ChromeProvider><Consumer /></ChromeProvider>);
+    expect(renders).toHaveBeenCalledTimes(1);
+  });
+
   // A Suspense boundary around the page is sent after the shell once its HTML passes about 12.8 KB, and revealed late:
   // the page would load blank. So the only thing that waits for the address is the part that reads it.
   // (A component that suspends inside act needs an awaited act, or React does not flush the effects of the others.)
@@ -89,19 +106,28 @@ describe('ChromeProvider', () => {
     expect(screen.getByText('the page')).toBeInTheDocument();
   });
 
-  it('works while the address is pending: opens on Atelier, then on the room of the page once it is known', async () => {
-    const page = () => <ChromeProvider><Probe /></ChromeProvider>; // a new element each time: the same one would not render again
-    const press = (name: string) => act(async () => { fireEvent.click(screen.getByRole('button', { name })); });
+  // The route watcher sits in a Suspense boundary that hydrates after the shell, so the Menu button can be pressed before it
+  // has reported. The room is then the one of the address of the window.
+  it('opens on the room of the window address while the route watcher has not reported yet', async () => {
+    window.history.replaceState(null, '', '/factory/');
     nav.pending = true;
     const view = render(<div />);
     await act(async () => view.rerender(page()));
     await press('open');
-    expect(screen.getByRole('status')).toHaveTextContent('atelier');
+    shows('factory');
+  });
+
+  it('while the address is pending a page without a room opens on Atelier; once it is known, the room of the page wins', async () => {
+    nav.pending = true; // the window is on the home page
+    const view = render(<div />);
+    await act(async () => view.rerender(page()));
+    await press('open');
+    shows('atelier');
     await press('close');
     nav.pending = false;
     await act(async () => view.rerender(page()));
     await press('open');
-    expect(screen.getByRole('status')).toHaveTextContent('studio');
+    shows('studio'); // the window is still on the home page: what the route watcher reported is used
   });
 
   it('search and menu exclude each other', () => {

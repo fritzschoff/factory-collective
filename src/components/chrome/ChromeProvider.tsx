@@ -46,8 +46,7 @@ function RouteWatch({ onRoute }: { onRoute: (pathname: string) => void }) {
  * Only RouteWatch is wrapped, and it renders nothing.
  */
 export function ChromeProvider({ children }: { children: ReactNode }) {
-  const [pathname, setPathname] = useState('/');
-  const route = useRef<string | null>(null);
+  const route = useRef<string | null>(null); // the page RouteWatch reported last; null until it has
   const [menu, setMenu] = useState<{ open: boolean; tab: WorldId }>({ open: false, tab: 'atelier' });
   const [searchOpen, setSearchOpen] = useState(false);
   const [enquiry, setEnquiry] = useState({ open: false, what: '', n: 0 });
@@ -58,7 +57,6 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
   const onRoute = useCallback((next: string) => {
     const moved = route.current !== null && route.current !== next;
     route.current = next;
-    setPathname(next);
     if (moved) {
       setMenu((m) => (m.open ? { ...m, open: false } : m));
       setSearchOpen(false);
@@ -66,10 +64,13 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // The room is worked out when Menu is pressed, not kept in state: from the page RouteWatch reported or, until it has
+  // (its boundary hydrates after the shell, so Menu can be pressed first), from the address of the window. An event
+  // handler, so nothing reads window while rendering.
   const openMenu = useCallback((tab?: WorldId) => {
     setSearchOpen(false);
-    setMenu({ open: true, tab: tab ?? worldOf(pathname) ?? 'atelier' });
-  }, [pathname]);
+    setMenu({ open: true, tab: tab ?? worldOf(route.current ?? window.location.pathname) ?? 'atelier' });
+  }, []);
   const closeMenu = useCallback(() => setMenu((m) => ({ ...m, open: false })), []);
   const openSearch = useCallback(() => {
     setMenu((m) => ({ ...m, open: false }));
