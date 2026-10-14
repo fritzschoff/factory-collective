@@ -1,3 +1,4 @@
+import { optimizedSrc } from '@/lib/image-url';
 import { slotSrc } from '@/lib/images';
 
 /** Wall elevation 1 : 10 with a 1.75 m figure; all measures in cm. */
@@ -12,7 +13,8 @@ export function Elevation({ slots, cw, ch, centre = 145, n = 1, gap = 0, label, 
         {Array.from({ length: n }).map((_, i) => {
           const x = cx0 + i * (pw + gap * k);
           const slot = slots[Math.min(i, slots.length - 1)];
-          const src = slotSrc(slot);
+          const file = slotSrc(slot);
+          const src = file && optimizedSrc(file, 640);
           return (
             <g key={i}>
               <rect x={x} y={cy - phh / 2} width={pw} height={phh} className="e-work" />

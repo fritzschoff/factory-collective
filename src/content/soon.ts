@@ -48,10 +48,14 @@ export function soonHref(key: SoonKey, registry: SoonRegistry = SOON): string | 
   return e.status === 'live' ? e.path : undefined;
 }
 
+/** "Furniture" → "Furniture ( )" — any text with the empty brackets after it, unless it already shows them. */
+export function withBrackets(text: string): string {
+  return /\(\s\)/.test(text) ? text : `${text} ( )`;
+}
+
 /** "Furniture ( )" — the label with the empty brackets, unless it already has them. */
 export function soonLabel(key: SoonKey): string {
-  const { label } = SOON[key];
-  return /\(\s\)/.test(label) ? label : `${label} ( )`;
+  return withBrackets(SOON[key].label);
 }
 
 /** Old addresses of pages that are 'soon' — fed to next.config `redirects()`. */

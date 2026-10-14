@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { SOON, isSoon, soonHref, soonLabel, soonPaths, soonRedirects } from './soon';
+import { SOON, isSoon, soonHref, soonLabel, soonPaths, soonRedirects, withBrackets } from './soon';
 
 describe('coming-soon registry', () => {
   it('adds the empty brackets exactly once', () => {
     expect(soonLabel('furniture')).toBe('Furniture ( )');
     expect(soonLabel('theses')).toBe('T03 ( )  T04 ( )');
     expect(soonLabel('campaign03')).toBe('( 03 ) ( )');
+  });
+
+  it('puts the empty brackets after any text, unless it already shows them', () => {
+    expect(withBrackets('Read the text')).toBe('Read the text ( )');
+    expect(withBrackets('Read the text ( )')).toBe('Read the text ( )');
+    expect(withBrackets('( )')).toBe('( )');
   });
 
   it('redirects every removed page to its parent while it is soon', () => {

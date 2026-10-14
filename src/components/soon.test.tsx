@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 // The registry with two entries switched on: bagText has a page, outerwear has none. Every other entry is still coming soon.
@@ -31,6 +32,12 @@ describe('coming-soon entries once one of them is live', () => {
     expect(hrefs(container)).toEqual([PAGE]);
     expect(container.querySelector('a')).toHaveClass('x');
     expect(container).toHaveTextContent('Bag / Profile SeriesCoats');
+  });
+
+  it('the link text of a live entry carries no brackets', () => {
+    const way = { label: 'Read the text', soon: 'bagText' as const };
+    const { container } = render(<><Soon k="bagText">Read the text</Soon><LinkRow links={[way]} /><SecHead kick="k" title="t" text="x" read={way} /></>);
+    expect([...container.querySelectorAll('a')].map((a) => a.textContent)).toEqual(['Read the text', 'Read the text', 'Read the text']);
   });
 
   it('an entry that is not live yet stays red and unlinked beside it', () => {
@@ -65,5 +72,33 @@ describe('coming-soon entries once one of them is live', () => {
     expect(container.querySelector('a')).toBeNull();
     expect(container.querySelector('li')).toHaveClass('is-red');
     expect(container.querySelector('.soon')).toHaveAttribute('data-soon', 'sound');
+  });
+});
+
+describe('the text of an entry that is coming soon', () => {
+  const textOf = (ui: ReactElement) => render(ui).container.querySelector('.soon__t')?.textContent;
+
+  it('a plain label gets the empty brackets after it, then "coming soon"', () => {
+    const { container } = render(<Soon k="sound">Film</Soon>);
+    expect(container).toHaveTextContent('Film ( )coming soon');
+  });
+
+  it('the registry label stands in when there is no text, brackets included', () => {
+    expect(textOf(<Soon k="sound" />)).toBe('Sound ( )');
+  });
+
+  it('text that already shows the brackets does not get a second pair', () => {
+    expect(textOf(<Soon k="sound">Film ( )</Soon>)).toBe('Film ( )');
+    expect(textOf(<Soon k="sound">( )</Soon>)).toBe('( )');
+    expect(textOf(<Soon k="theses" />)).toBe('T03 ( )  T04 ( )');
+  });
+
+  it('brackets={false} leaves the text as it is: the markup around it draws them', () => {
+    expect(textOf(<Soon k="sound" brackets={false}>Film</Soon>)).toBe('Film');
+    expect(textOf(<Soon k="sound" brackets={false} />)).toBe('Sound');
+  });
+
+  it('only plain text gets brackets: an element is left as it is', () => {
+    expect(textOf(<Soon k="sound"><b>Film</b></Soon>)).toBe('Film');
   });
 });
