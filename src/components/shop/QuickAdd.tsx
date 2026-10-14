@@ -59,6 +59,9 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
     el.style.left = `${Math.max(12, Math.min(window.innerWidth - w - 12, a.right - w))}px`;
     el.style.top = `${a.bottom + h + 12 > window.innerHeight ? Math.max(12, a.top - h - 8) : a.bottom + 8}px`;
     el.style.visibility = 'visible';
+    // The box sits at the end of the page in tab order, so it takes focus when it opens: its first choice. A hidden
+    // element cannot be focused, so this has to come after the line above; and it must not scroll, any scroll closes the box.
+    el.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
   }, [anchor]);
 
   useEffect(() => {
@@ -67,20 +70,33 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
       if (!box.current?.contains(t) && !anchor.current?.contains(t)) onClose();
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { onClose(); anchor.current?.focus(); } };
+    // Focus moved to another control, outside the box and its button: close. No related target means focus went to
+    // no element at all (a press on the box's padding or on a button the browser does not focus on press, the window
+    // losing focus, Tab leaving the page): that is not a move to another control, so the box stays.
+    const onFocusOut = (e: FocusEvent) => {
+      const to = e.relatedTarget;
+      if (to instanceof Node && !box.current?.contains(to) && !anchor.current?.contains(to)) onClose();
+    };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
+    document.addEventListener('focusout', onFocusOut);
     window.addEventListener('scroll', onClose, { passive: true });
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
+      document.removeEventListener('focusout', onFocusOut);
       window.removeEventListener('scroll', onClose);
     };
   }, [anchor, onClose]);
 
-  const submit = () => onAdd(Object.fromEntries(choices.map((o) => {
-    const v = o.values![picked[o.id]];
-    return [o.id, { v: v.id, l: v.label }];
-  })));
+  const submit = () => {
+    onAdd(Object.fromEntries(choices.map((o) => {
+      const v = o.values![picked[o.id]];
+      return [o.id, { v: v.id, l: v.label }];
+    })));
+    // the box goes away with the focused button in it: hand focus back to where the buyer came from
+    anchor.current?.focus();
+  };
 
   return createPortal(
     <div ref={box} className="qa" role="dialog" aria-label={`Choose and add ${product.code}`} style={{ visibility: 'hidden' }}>
