@@ -1,10 +1,21 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+/**
+ * The shortcut listener is attached when the page hydrates, which can come after the load event (above all on a cold
+ * server): press `/` until the search has taken focus instead of guessing how long to wait.
+ */
+async function openWithSlash(page: Page) {
+  const input = page.getByRole('searchbox', { name: 'Search the site' });
+  await expect(async () => {
+    await page.keyboard.press('/');
+    await expect(input).toBeFocused({ timeout: 500 });
+  }).toPass();
+  return input;
+}
 
 test('slash opens the search; a code finds its piece; Enter goes there', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('/');
-  const input = page.getByRole('searchbox', { name: 'Search the site' });
-  await expect(input).toBeFocused();
+  const input = await openWithSlash(page);
   await input.fill('SH / 001');
   await expect(page.locator('.sres__a').first()).toContainText('SH / 001 shirt, grey band');
   await page.keyboard.press('ArrowDown');
@@ -14,8 +25,13 @@ test('slash opens the search; a code finds its piece; Enter goes there', async (
 
 test('nothing found says so; Esc closes', async ({ page }) => {
   await page.goto('/');
-  await page.locator('.hd__util').getByRole('button', { name: 'Search' }).click();
-  await page.getByRole('searchbox', { name: 'Search the site' }).fill('zzzz');
+  // the button does nothing until the page has hydrated: click until the search is open (an open search covers it)
+  const input = page.getByRole('searchbox', { name: 'Search the site' });
+  await expect(async () => {
+    if (!(await input.isVisible())) await page.locator('.hd__util').getByRole('button', { name: 'Search' }).click({ timeout: 1000 });
+    await expect(input).toBeFocused({ timeout: 500 });
+  }).toPass();
+  await input.fill('zzzz');
   await expect(page.getByText('Nothing drawn under that name. ( )')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#search')).toBeHidden();
@@ -23,8 +39,7 @@ test('nothing found says so; Esc closes', async ({ page }) => {
 
 test('the arrow keys keep the selected row in view, however far down the list goes', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('/');
-  const input = page.getByRole('searchbox', { name: 'Search the site' });
+  const input = await openWithSlash(page);
   await input.fill('fashion');
   // more rows than fit the window: the list scrolls inside the search
   const rows = page.locator('.sres__a');
