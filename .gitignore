@@ -16,10 +16,6 @@ next-env.d.ts
 !.env.example
 service-account*.json
 
-# runtime data of the old static server
-data/*.jsonl
-data/stripe-catalog.json
-
 # local working files
 .DS_Store
 .playwright-mcp/
