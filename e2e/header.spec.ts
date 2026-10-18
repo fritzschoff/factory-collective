@@ -6,6 +6,10 @@ const G = signGeometry();
 const GREEN: [number, number, number] = [0, 255, 0];
 const WHITE: [number, number, number] = [255, 255, 255];
 
+/** Where the content of the page starts: the top of main's content box, below the padding that clears the header. */
+const contentTop = (page: import('@playwright/test').Page) =>
+  page.locator('main#main').evaluate((main) => main.getBoundingClientRect().top + parseFloat(getComputedStyle(main).paddingTop));
+
 /** centre of the window and a point of the white row, in page pixels */
 async function points(page: import('@playwright/test').Page) {
   const row = (await page.locator('.hd__sign').boundingBox())!;
@@ -150,8 +154,7 @@ test.describe('header', () => {
   test('page content starts below the header', async ({ page }) => {
     await page.goto('/');
     const header = (await page.locator('header[data-header]').boundingBox())!;
-    const main = (await page.locator('main#main h1').first().boundingBox())!;
-    expect(main.y).toBeGreaterThanOrEqual(header.y + header.height - 1);
+    expect(await contentTop(page)).toBeGreaterThanOrEqual(header.y + header.height - 1);
   });
 
   test('the phone layout and the offset under the header switch at the same width, also beside a scrollbar', async ({ page }) => {
@@ -165,11 +168,11 @@ test.describe('header', () => {
       if (gutter) await page.addStyleTag({ content: `.hd { right: ${gutter}px !important; }` });
       await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished))); // the gutter may start a height transition: measure after it
       const header = (await page.locator('header[data-header]').boundingBox())!;
-      const h1 = (await page.locator('main#main h1').first().boundingBox())!;
+      const top = await contentTop(page);
       const bottom = header.y + header.height;
       expect(header.width, `${width} px wide: the gutter is in place`).toBe(width - gutter);
-      expect(h1.y, `${width} px wide, ${gutter} px gutter: the content starts below the header`).toBeGreaterThanOrEqual(bottom - 1);
-      expect(h1.y, `${width} px wide, ${gutter} px gutter: and right under it, with no gap`).toBeLessThan(bottom + 3); // vw is a little wider than the header
+      expect(top, `${width} px wide, ${gutter} px gutter: the content starts below the header`).toBeGreaterThanOrEqual(bottom - 1);
+      expect(top, `${width} px wide, ${gutter} px gutter: and right under it, with no gap`).toBeLessThan(bottom + 3); // vw is a little wider than the header
     }
   });
 

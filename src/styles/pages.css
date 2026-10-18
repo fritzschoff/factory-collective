@@ -242,3 +242,8 @@
 .flag { color: var(--grey); font-size: var(--fs-s); }
 .rooms__i { display: block; } .rooms__i:hover { text-decoration: none; } .rooms__i p { margin-top: 6px; font-size: var(--fs-m); color: #333; } .rooms__t { margin-top: 14px !important; } .rooms__t b { font-family: var(--display); font-size: 20px; font-weight: 400; }
 .practice { row-gap: 30px; }
+
+/* fashion filter: one group at a time */
+[data-filter]:not([data-filter="all"]) .fgrp { display: none; }
+[data-filter="jackets"] .fgrp[data-group="jackets"], [data-filter="shirts"] .fgrp[data-group="shirts"],
+[data-filter="trousers"] .fgrp[data-group="trousers"], [data-filter="vests"] .fgrp[data-group="vests"] { display: block; }
