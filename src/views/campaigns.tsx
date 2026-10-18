@@ -1,10 +1,14 @@
 import type { ReactNode } from 'react';
-import { byId } from '../content/catalog';
-import { AxisH, AxisV, Coming, Diag, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, OutPlate, Plate, Redact, SectionAA, ShopPoint, Steps, TitleBlock, Kick } from '../components/ui';
-import { PlateRow, Tile } from '../components/shop';
-import { Rows } from '../components/blocks';
-import { QCap, QEnd, QOpen, Sp } from '../components/quiet';
-import { price } from '../content/catalog';
+import { Rows } from '@/components/blocks';
+import { A } from '@/components/link';
+import { QCap, QEnd, QOpen, Sp } from '@/components/quiet';
+import { QuickAddButton } from '@/components/shop/QuickAdd';
+import { Soon } from '@/components/soon';
+import { PlateRow, Tile } from '@/components/tiles';
+import { AxisH, AxisV, Coming, Diag, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, OutPlate, Plate, Redact, SectionAA, ShopPoint, Steps, TitleBlock, Kick } from '@/components/ui';
+import { getCatalog } from '@/lib/data/catalog';
+import { fmtPrice } from '@/lib/format';
+import { toSummary } from '@/lib/products/summary';
 
 const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
@@ -27,7 +31,7 @@ export function CampaignsPage() {
         </Plate>
         <div className="camp-cap">
           <div><Kick>( 01 )&nbsp;&nbsp;Autumn 2026</Kick><h2 className="title title--m">[ campaign title ]</h2></div>
-          <div><p className="camp-cap__p">Eighteen pieces, cut like a section, worn against concrete, glass and steel.</p><p className="camp-cap__l"><a href="/campaigns/01/">Enter the campaign&nbsp;&nbsp;→</a><br /><a href="/atelier/fashion/">Shop the 18 pieces&nbsp;&nbsp;→</a></p></div>
+          <div><p className="camp-cap__p">Eighteen pieces, cut like a section, worn against concrete, glass and steel.</p><p className="camp-cap__l"><A href="/campaigns/01/">Enter the campaign&nbsp;&nbsp;→</A><br /><A href="/atelier/fashion/">Shop the 18 pieces&nbsp;&nbsp;→</A></p></div>
         </div>
       </Sp>
       <Sp s="l">
@@ -47,14 +51,14 @@ export function CampaignsPage() {
         </Plate>
         <div className="camp-cap">
           <div><Kick>( 02 )&nbsp;&nbsp;Scan Series</Kick><h2 className="title title--m">The objects, at home</h2></div>
-          <div><p className="camp-cap__p">Fifteen ceramic objects, photographed where they are used rather than where they were made.</p><p className="camp-cap__l"><a href="/campaigns/02/">Enter the campaign&nbsp;&nbsp;→</a></p></div>
+          <div><p className="camp-cap__p">Fifteen ceramic objects, photographed where they are used rather than where they were made.</p><p className="camp-cap__l"><A href="/campaigns/02/">Enter the campaign&nbsp;&nbsp;→</A></p></div>
         </div>
       </Sp>
       <Sp s="l">
         <Hair left="Editorials" right="From the Studio · art, not product" />
         <div className="g2 q-idx edit">
           {[['art/CI-detail', 'Conceptual Interference', '15 plates — chance treated as a layer of authorship', '/studio/conceptual-interference/'], ['art/LP-detail', 'Layer Paintings', '4 triptychs — three states of the same set of layers', '/studio/layer-paintings/']].map(([s, t, d, h]) => (
-            <article key={t}><a href={h}><Img slot={s} ratio="612/600" w={612} sizes="(min-width:1440px) 612px, 50vw" /></a><p className="tile__t"><b>{t}</b></p><p className="tile__s">{d} &nbsp; <a className="link-u" href={h}>View&nbsp;&nbsp;→</a></p></article>
+            <article key={t}><A href={h}><Img slot={s} ratio="612/600" w={612} sizes="(min-width:1440px) 612px, 50vw" /></A><p className="tile__t"><b>{t}</b></p><p className="tile__s">{d} &nbsp; <A className="link-u" href={h}>View&nbsp;&nbsp;→</A></p></article>
           ))}
         </div>
       </Sp>
@@ -75,9 +79,13 @@ export function CampaignsPage() {
 }
 
 /** CAMPAIGN 01 (sheet 19) */
-export function Campaign01() {
-  const shop4 = ['JK-001', 'SH-001', 'TR-002', 'VT-001'].map(byId);
-  const jk5 = byId('JK-005');
+export async function Campaign01() {
+  const cat = await getCatalog();
+  const shop4 = cat.pick(['JK-001', 'SH-001', 'TR-002', 'VT-001']);
+  // the looks that sell a piece: skipped when the catalogue does not have it
+  const [jk1, sh1, tr3, sh3, tr2] = ['JK-001', 'SH-001', 'TR-003', 'SH-003', 'TR-002'].map((id) => cat.byId(id));
+  const jk3 = cat.byId('JK-003');
+  const jk5 = cat.byId('JK-005');
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
@@ -94,14 +102,14 @@ export function Campaign01() {
         </Plate>
         <div className="camp1__tb">
           <TitleBlock rows={[[['Project', 'Campaign 01'], ['Sheet', 'Look 01']], [['Scale', '1 : 10'], ['Index', 'a']], [['Contents', 'VT / 001 · TR / 002'], ['Date', '08.10.2026']]]} />
-          <p className="linkcol"><a href="/atelier/fashion/">Shop the campaign&nbsp;&nbsp;→</a><br /><a href="/journal/">Film&nbsp;&nbsp;→</a><br /><a href="/journal/">Behind the set&nbsp;&nbsp;→</a></p>
+          <p className="linkcol"><A href="/atelier/fashion/">Shop the campaign&nbsp;&nbsp;→</A><br /><Soon k="journal">Film</Soon><br /><Soon k="journal">Behind the set</Soon></p>
         </div>
       </Sp>
       <Sp s="l"><Hair left="Looks 02 – 04" right="One location · one day" /></Sp>
       <div className="q-rows">
-        <PlateRow product={byId('JK-001')} slot="campaign-01/look-02" ratio="768/1100" pos="50% 24%" w={768} code="Look 02  //JK / 001" line="The shoulder is cut to behave like a lintel: it carries the sleeve instead of hanging from it." />
-        <PlateRow product={byId('SH-001')} slot="campaign-01/look-04" ratio="768/1100" pos="50% 34%" w={768} code="Look 04  //SH / 001" line="The band across the chest is bonded, not stitched down, so no seam reads through it." mark={<MarkBar w="78%" win="red" caption="the sign, at the height of the band" />} />
-        <PlateRow product={byId('TR-003')} slot="campaign-01/look-08" ratio="768/1100" pos="50% 40%" w={768} code="Look 08  //TR / 003" line="Nothing was moved for the picture. The sill was already at that height." />
+        {jk1 && <PlateRow product={jk1} slot="campaign-01/look-02" ratio="768/1100" pos="50% 24%" w={768} code="Look 02  //JK / 001" line="The shoulder is cut to behave like a lintel: it carries the sleeve instead of hanging from it." />}
+        {sh1 && <PlateRow product={sh1} slot="campaign-01/look-04" ratio="768/1100" pos="50% 34%" w={768} code="Look 04  //SH / 001" line="The band across the chest is bonded, not stitched down, so no seam reads through it." mark={<MarkBar w="78%" win="red" caption="the sign, at the height of the band" />} />}
+        {tr3 && <PlateRow product={tr3} slot="campaign-01/look-08" ratio="768/1100" pos="50% 40%" w={768} code="Look 08  //TR / 003" line="Nothing was moved for the picture. The sill was already at that height." />}
       </div>
       <Sp s="xl"><Narrate size="l">The grey band is not styling.<br /><span className="g">It is whatever the building offered at that height.</span></Narrate></Sp>
       <Sp s="l"><MarkBar word="ATELIER" win="ink" w="66%" style={{ marginLeft: '34%' }} /></Sp>
@@ -109,13 +117,13 @@ export function Campaign01() {
         <Plate slot="campaign-01/look-03" ratio="1248/980" pos="50% 38%" w={1248} sizes="(min-width:1440px) 1248px, 92vw">
           <Redact x={5} y={7} w={30} h={6.5} label="the doorway" light />
           <Redact x={68} y={55} w={27} h={5.5} label="the bench" light />
-          <ShopPoint px={46} py={50} lx={48} ly={80} code="JK / 003" name="jacket, black funnel" sub="Bonded wool" price={price(byId('JK-003'))} href={byId('JK-003').href} id="JK-003" />
+          {jk3 && <ShopPoint px={46} py={50} lx={48} ly={80} code="JK / 003" name="jacket, black funnel" sub="Bonded wool" price={fmtPrice(jk3.priceCents)} href={jk3.href} product={toSummary(jk3)} />}
         </Plate>
         <Sp s="s"><QCap l="Look 03  —  only what is named is for sale" r="The brand advertises what it does not sell" /></Sp>
       </Sp>
       <div className="q-rows">
-        <PlateRow product={byId('SH-003')} slot="campaign-01/look-09" ratio="768/1100" pos="50% 44%" w={768} code="Look 09  //SH / 003" line="Shot from below, so the stair does the work the studio light would otherwise do." />
-        <PlateRow product={byId('TR-002')} slot="campaign-01/look-11" ratio="768/1100" pos="50% 46%" w={768} code="Look 11  //TR / 002" line="The only colour in eighteen looks, and it belongs to the building." />
+        {sh3 && <PlateRow product={sh3} slot="campaign-01/look-09" ratio="768/1100" pos="50% 44%" w={768} code="Look 09  //SH / 003" line="Shot from below, so the stair does the work the studio light would otherwise do." />}
+        {tr2 && <PlateRow product={tr2} slot="campaign-01/look-11" ratio="768/1100" pos="50% 46%" w={768} code="Look 11  //TR / 002" line="The only colour in eighteen looks, and it belongs to the building." />}
       </div>
       <Sp s="xl">
         <div className="walk">
@@ -123,14 +131,14 @@ export function Campaign01() {
           <div className="walk__t">
             <Micro>Look 10&nbsp;&nbsp;//JK / 005</Micro>
             <p className="walk__p">Read diagonally, the name crosses the picture: the letter, the brackets, the dot — three steps, one sign.</p>
-            <p className="walk__b">{price(jk5)}&nbsp;&nbsp;&nbsp;<button type="button" data-quickadd="JK-005">Add</button></p>
+            {jk5 && <p className="walk__b">{fmtPrice(jk5.priceCents)}&nbsp;&nbsp;&nbsp;<QuickAddButton product={toSummary(jk5)} /></p>}
           </div>
         </div>
       </Sp>
       <Sp s="l" id="shop">
         <Hair left="Shop the campaign" right="18 pieces · ships in 5 days" />
         <div className="g4 q-idx">{shop4.map((p) => <Tile key={p.id} p={p} ratio="1/1.42" w={290} />)}</div>
-        <p className="viewall"><a href="/atelier/fashion/">View all 18&nbsp;&nbsp;→</a></p>
+        <p className="viewall"><A href="/atelier/fashion/">View all 18&nbsp;&nbsp;→</A></p>
       </Sp>
       <Sp s="l"><Ghost><Narrate size="l">The window is laid over the body.<br /><span className="g">The body does not move for it.</span></Narrate></Ghost></Sp>
       <Sp s="xl"><OutPlate slot="campaign-02/cover" pos="50% 56%" title="Campaign ( 02 ) — the objects, at home" line="Enter  →" href="/campaigns/02/" ratio="1248/620" /></Sp>
@@ -140,7 +148,8 @@ export function Campaign01() {
 }
 
 /** CAMPAIGN 02 */
-export function Campaign02() {
+export async function Campaign02() {
+  const cat = await getCatalog();
   const lives = [
     { slot: 'campaign-02/life-1', p: 'OB-011', l: 'Windowsill, single stem.', pos: '50% 45%' },
     { slot: 'campaign-02/life-2', p: 'OB-012', l: 'Shelf, dried flowers.', pos: '50% 42%' },
@@ -161,13 +170,13 @@ export function Campaign02() {
         <Sp s="s"><QCap l="OB / 034  //tray" r="Only what is named is for sale" /></Sp>
       </Sp>
       <div className="q-rows">
-        {lives.map((x) => { const p = byId(x.p); return <PlateRow key={x.slot} product={p} slot={x.slot} ratio="768/900" pos={x.pos} w={768} code={`${p.code}  //${p.name}`} line={x.l} />; })}
+        {lives.flatMap((x) => { const p = cat.byId(x.p); return p ? [<PlateRow key={x.slot} product={p} slot={x.slot} ratio="768/900" pos={x.pos} w={768} code={`${p.code}  //${p.name}`} line={x.l} />] : []; })}
       </div>
       <Sp s="xl"><Narrate size="l">Identical was the promise.<br /><span className="g">Identical is now the cheapest thing we own.</span></Narrate></Sp>
       <Sp s="l">
         <Hair left="Shop the campaign" right="Scan Series · 15 objects" />
-        <div className="g4 q-idx">{['OB-011', 'OB-021', 'OB-031', 'OB-034'].map(byId).map((p) => <Tile key={p.id} p={p} ratio="1/1.2" w={290} ground sub={p.name} />)}</div>
-        <p className="viewall"><a href="/atelier/scan-series/">All fifteen&nbsp;&nbsp;→</a></p>
+        <div className="g4 q-idx">{cat.pick(['OB-011', 'OB-021', 'OB-031', 'OB-034']).map((p) => <Tile key={p.id} p={p} ratio="1/1.2" w={290} ground sub={p.name} />)}</div>
+        <p className="viewall"><A href="/atelier/scan-series/">All fifteen&nbsp;&nbsp;→</A></p>
       </Sp>
       <Sp s="xl"><OutPlate slot="campaign-01/cover" pos="50% 22%" title="Campaign ( 01 )" line="Autumn 2026  →" href="/campaigns/01/" ratio="1248/620" /></Sp>
       <Sp s="s"><QEnd sheet="Campaign ( 02 )" index="a" thesis="T02" crumb={[{ label: 'Campaigns', href: '/campaigns/' }, { label: '( 02 ) The objects, at home' }]} /></Sp>

@@ -28,6 +28,12 @@ describe('Footer', () => {
     expect(container.querySelector('.tb')).toHaveTextContent('Atelier / Fashion');
   });
 
+  it('names an address that no page answers "404"', () => {
+    nav.path = '/nowhere/';
+    const { container } = renderWithChrome(<Footer sheets={SHEETS} />);
+    expect(container.querySelector('.tb')).toHaveTextContent('404');
+  });
+
   it('shows Journal as coming soon, never as a link', () => {
     const { container } = renderWithChrome(<Footer sheets={SHEETS} />);
     expect(screen.queryByRole('link', { name: /Journal/ })).toBeNull();

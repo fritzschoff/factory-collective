@@ -1,39 +1,30 @@
-import type { ReactNode } from 'react';
-import { byId } from '../content/catalog';
-import { ABOUT } from '../content/texts';
-import { Coming, Crumb, Img, Museum, Pill, Register, Rule, Sign } from '../components/ui';
-import { Prose, Statement } from '../components/blocks';
-import { Tile } from '../components/shop';
-import { QEnd, QOpen, Sp } from '../components/quiet';
-import { SITE } from '../content/site';
+import { Suspense, type ReactNode } from 'react';
+import { Prose, Statement } from '@/components/blocks';
+import { ContactForm } from '@/components/forms/ContactForm';
+import { A } from '@/components/link';
+import { QEnd, QOpen, Sp } from '@/components/quiet';
+import { BagCount } from '@/components/shop/BagCount';
+import { BagView } from '@/components/shop/BagView';
+import { ClearBag } from '@/components/shop/ClearBag';
+import { Tile } from '@/components/tiles';
+import { Crumb, Img, Museum, Pill, Register, Rule, Sign } from '@/components/ui';
+import { SITE } from '@/content/site';
+import { ABOUT } from '@/content/texts';
+import { getCatalog } from '@/lib/data/catalog';
+import { toSummary } from '@/lib/products/summary';
 
-/** BAG (sheet 20) — the list itself is drawn in the browser from localStorage; this is the frame. */
-export function BagPage() {
-  const rail = ['BR-B', 'OB-021', 'BG-114', 'TR-002'].map(byId);
+/** BAG (sheet 20) — the frame is built here; the list itself is drawn in the browser from localStorage (BagView). */
+export async function BagPage() {
+  const cat = await getCatalog();
+  const rail = cat.pick(['BR-B', 'OB-021', 'BG-114', 'TR-002']);
   return (
     <div className="q bagpage">
       <Sp s="s" className="q-top" />
       <Crumb items={[{ label: 'Bag' }]} />
-      <div className="bag" data-bag-root>
-        <header className="bag__h"><h1 className="title">Bag <span className="sub">( <span data-bag-n>0</span> )</span></h1><p className="sub">Everything is made in a small series. Your pieces are not held until you check out.</p></header>
-        <div className="bag__cols">
-          <div className="bag__list" data-bag-list aria-live="polite"><p className="bag__noscript">Loading your bag …</p></div>
-          <aside className="sum" aria-label="Summary" data-bag-sum hidden>
-            <h2 className="sum__h">Summary</h2>
-            <dl className="sum__rows">
-              <div><dt>Subtotal ( <span data-bag-n>0</span> )</dt><dd data-sum-sub>€ [price]</dd></div>
-              <div><dt>Shipping</dt><dd>Calculated at checkout</dd></div>
-              <div><dt>Duties</dt><dd>Calculated at checkout</dd></div>
-            </dl>
-            <p className="sum__t"><span>Total</span><b data-sum-total>€ [price]</b></p>
-            <button className="pill pill--block" type="button" data-checkout>Checkout</button>
-            <p className="sum__n">Secure payment via Stripe&nbsp;&nbsp;·&nbsp;&nbsp;Free returns within 30 days</p>
-            <p className="sum__e" role="alert" data-checkout-msg />
-            <div className="tb sum__tb" role="group" aria-label="Order slate"><div><span>Order</span><span>not yet</span></div><div><span>Pieces</span><span data-bag-n>0</span></div><div><span>Ships from</span><span>[ place ]</span></div><div><span>Repair</span><span>lifetime</span></div></div>
-            <p className="sum__r"><span className="r">( )</span>&nbsp; Everything here is made after you order it.</p>
-          </aside>
-        </div>
-        <p className="bag__back"><a href="/atelier/">◂&nbsp;&nbsp;Continue shopping</a></p>
+      <div className="bag">
+        <header className="bag__h"><h1 className="title">Bag <span className="sub">( <BagCount /> )</span></h1><p className="sub">Everything is made in a small series. Pieces are held for 30 minutes once you check out.</p></header>
+        <BagView products={Object.fromEntries(cat.products.map((p) => [p.id, toSummary(p)]))} />
+        <p className="bag__back"><A href="/atelier/">◂&nbsp;&nbsp;Continue shopping</A></p>
       </div>
       <Sp s="m"><div className="g4 q-idx"><div className="g4__h"><Rule title="Cf." note="— others also looked at" /></div>{rail.map((p) => <Tile key={p.id} p={p} ratio="1/1.2" w={290} ground={p.ground} />)}</div></Sp>
     </div>
@@ -43,6 +34,7 @@ export function BagPage() {
 export function ThankYouPage() {
   return (
     <div className="q">
+      <ClearBag />
       <Sp s="l" className="q-top" />
       <QOpen kick="Bag / Order" meta="Thank you" title="Thank you">Your order is placed.<br /><span className="g">A receipt from Stripe is on its way to your inbox; we write again when the piece leaves the workshop.</span></QOpen>
       <Sp s="l"><div className="pills"><Pill href="/atelier/">Continue shopping&nbsp;&nbsp;→</Pill><Pill href="/campaigns/" ghost>Campaigns&nbsp;&nbsp;→</Pill></div></Sp>
@@ -72,7 +64,7 @@ export function AboutPage() {
       <Sp s="m"><Prose a={ABOUT.a} b={ABOUT.b} /></Sp>
       <Sp s="l">
         <div className="g3 rooms">{rooms.map((r) => (
-          <a key={r.t} href={r.href} className="rooms__i"><Img slot={r.slot} ratio="400/520" pos={r.pos} w={400} sizes="(min-width:1440px) 400px, 32vw" /><p className="rooms__t"><b>{r.t}</b>&nbsp;&nbsp;<span className="sub">{r.k}</span></p><p>{r.d}</p><p>Enter&nbsp;&nbsp;→</p></a>
+          <A key={r.t} href={r.href} className="rooms__i"><Img slot={r.slot} ratio="400/520" pos={r.pos} w={400} sizes="(min-width:1440px) 400px, 32vw" /><p className="rooms__t"><b>{r.t}</b>&nbsp;&nbsp;<span className="sub">{r.k}</span></p><p>{r.d}</p><p>Enter&nbsp;&nbsp;→</p></A>
         ))}</div>
       </Sp>
       <Sp s="xl"><Statement w="1000px">An object should be able to name the sentence it came out of.</Statement></Sp>
@@ -90,7 +82,7 @@ export function AboutPage() {
         <Register rows={[
           { no: '01', name: 'Tectonics without origin', meta: 'Objects from a world that was never built', href: '/factory/tectonics-without-origin/', link: 'Read' },
           { no: '02', name: 'Ordinary Objects', meta: 'On reproduction, the hand, and what a found form owes to nobody', href: '/factory/ordinary-objects/', link: 'Read' },
-          { no: '03', name: 'Bag / Profile Series', meta: 'Mobile architecture at the scale of the body', href: '/factory/bag-profile-series/', link: 'Read' }
+          { no: '03', name: 'Bag / Profile Series', meta: 'Mobile architecture at the scale of the body', link: 'Read', soon: 'bagText' }
         ]} />
       </Sp>
       <Sp s="m"><QEnd sheet="About" index="—" crumb={[{ label: 'About' }]} /></Sp>
@@ -106,15 +98,7 @@ export function ContactPage() {
       <QOpen kick="About / Contact" meta="We answer within two working days" title="Contact">Write to us about an order, an original, a fitting, or a piece that is not yet made.</QOpen>
       <Sp s="l">
         <div className="contact">
-          <form className="cform" data-contact noValidate>
-            <label>Name<input name="name" required autoComplete="name" /></label>
-            <label>E-mail<input name="email" type="email" required autoComplete="email" /></label>
-            <label>Subject<select name="subject" data-subject><option value="general">General</option><option value="order">An order</option><option value="original">An original</option><option value="fitting">A fitting</option><option value="studio">Studio visit</option><option value="press">Press</option><option value="wholesale">Wholesale</option><option value="notify">Notify me when it exists</option></select></label>
-            <label>Message<textarea name="message" rows={6} required /></label>
-            <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
-            <button className="pill" type="submit">Send</button>
-            <p className="dlg__msg" role="status" data-msg />
-          </form>
+          <Suspense fallback={<p className="g">Loading the form …</p>}><ContactForm /></Suspense>
           <Museum rows={[['General', SITE.email], ['Press', 'press@[ domain ]'], ['Wholesale', 'trade@[ domain ]']]} className="contact__m" />
         </div>
       </Sp>
@@ -183,35 +167,6 @@ export const TermsPage = () => (
     <H>Withdrawal</H><p>[ Right of withdrawal and the exceptions for made-to-order goods to be inserted. ]</p>
   </Doc>
 );
-export const PressPage = () => (
-  <Doc kick="About / Press" title="Press" sheet="Press" lead="Images and texts on request.">
-    <p>Press enquiries: press@[ domain ]. A press kit with images, the three texts and a fact sheet is being prepared.</p>
-  </Doc>
-);
-export function JournalPage() {
-  return (
-    <div className="q">
-      <Sp s="l" className="q-top" />
-      <QOpen kick="Company / Journal" title="Journal" meta="not yet">Notes from the workshop, once there is something to say.</QOpen>
-      <Sp s="l"><Coming title="Journal&nbsp;&nbsp;( )" text="The first entry is not written." link="Notify me&nbsp;&nbsp;→" href="/contact/?subject=notify" /></Sp>
-      <Sp s="m"><QEnd sheet="Journal" index="—" crumb={[{ label: 'Journal' }]} /></Sp>
-    </div>
-  );
-}
-
-/** a room that is still empty: Furniture, Scenography, Architecture, Publishing, Archive, Lectures */
-export function EmptyRoom({ kick, title, line, sheet, back }: { kick: string; title: string; line: string; sheet: string; back: { label: string; href: string } }) {
-  return (
-    <div className="q">
-      <Sp s="l" className="q-top" />
-      <QOpen kick={kick} title={<>{title} <span className="r">( )</span></>} meta="in work">{line}</QOpen>
-      <Sp s="l"><Coming title={`${title}&nbsp;&nbsp;( )`} text="Drawn, not yet made. Kept visible on purpose." link="Notify me&nbsp;&nbsp;→" href={`/contact/?subject=notify-${title.toLowerCase()}`} /></Sp>
-      <Sp s="m"><Pill href={back.href} ghost>{back.label}&nbsp;&nbsp;→</Pill></Sp>
-      <Sp s="m"><QEnd sheet={sheet} index="—" crumb={[{ label: kick.split(' / ')[0], href: back.href }, { label: title }]} /></Sp>
-    </div>
-  );
-}
-
 export function NotFoundPage() {
   return (
     <div className="q">
