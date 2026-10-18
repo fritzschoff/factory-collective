@@ -1,13 +1,14 @@
 import { expect, test } from '@playwright/test';
+import { gotoReady } from './ready';
 
 test('studio: exhibitions, sound, scenography, architecture are coming soon', async ({ page }) => {
-  await page.goto('/studio/');
+  await gotoReady(page, '/studio/');
   await expect(page.locator('.head6__r .soon')).toHaveCount(4);
   await expect(page.locator('a[href*="/studio/exhibitions/"], a[href*="/studio/sound/"]')).toHaveCount(0);
 });
 
 test('a layer painting: choose a state, add the archival print', async ({ page }) => {
-  await page.goto('/studio/layer-paintings/lp-02/');
+  await gotoReady(page, '/studio/layer-paintings/lp-02/');
   await page.locator('#states').getByText('State 03').click();
   await page.locator('.own__o').nth(2).getByRole('button', { name: 'Choose a state · Add' }).click();
   await expect(page.locator('.hd__util')).toContainText('Bag ( 1 )');
@@ -16,7 +17,7 @@ test('a layer painting: choose a state, add the archival print', async ({ page }
 });
 
 test('a double click on Add puts the print in the bag once', async ({ page }) => {
-  await page.goto('/studio/conceptual-interference/ci-07/');
+  await gotoReady(page, '/studio/conceptual-interference/ci-07/');
   await page.locator('.own__o').nth(1).getByRole('button', { name: 'Add to bag' }).dblclick();
   await expect(page.locator('.hd__util')).toContainText('Bag ( 1 )');
   const bag = await page.evaluate(() => JSON.parse(localStorage.getItem('cfc.bag.v1')!));
@@ -25,7 +26,7 @@ test('a double click on Add puts the print in the bag once', async ({ page }) =>
 });
 
 test('enquiring about an original says it is not connected yet', async ({ page }) => {
-  await page.goto('/studio/conceptual-interference/ci-07/');
+  await gotoReady(page, '/studio/conceptual-interference/ci-07/');
   await page.getByRole('button', { name: 'Enquire about the original' }).click();
   const dialog = page.getByRole('dialog', { name: 'Enquire' });
   await expect(dialog).toContainText('CI / 07 — the original');
@@ -36,7 +37,7 @@ test('enquiring about an original says it is not connected yet', async ({ page }
 });
 
 test('Esc closes the enquiry dialog and focus returns to the button', async ({ page }) => {
-  await page.goto('/studio/layer-paintings/lp-02/');
+  await gotoReady(page, '/studio/layer-paintings/lp-02/');
   const button = page.getByRole('button', { name: 'Enquire about the work' });
   await button.click();
   const dialog = page.getByRole('dialog', { name: 'Enquire' });
@@ -48,12 +49,12 @@ test('Esc closes the enquiry dialog and focus returns to the button', async ({ p
 
 test('the series pages answer', async ({ page }) => {
   for (const path of ['/studio/conceptual-interference/', '/studio/layer-paintings/', '/studio/layer-paintings/lp-04/']) {
-    expect((await page.goto(path))?.status(), path).toBe(200);
+    expect((await gotoReady(page, path))?.status(), path).toBe(200);
   }
 });
 
 test('an unknown work is a 404', async ({ page }) => {
   for (const path of ['/studio/layer-paintings/lp-99/', '/studio/conceptual-interference/ci-99/']) {
-    expect((await page.goto(path))?.status(), path).toBe(404);
+    expect((await gotoReady(page, path))?.status(), path).toBe(404);
   }
 });

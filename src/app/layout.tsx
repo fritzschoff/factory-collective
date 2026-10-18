@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
+import { HydrationMark } from '@/components/chrome/HydrationMark';
 import { SITE } from '@/content/site';
 import { siteUrl } from '@/lib/seo';
 import '@/styles/index.css';
@@ -23,7 +24,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   // data-scroll-behavior: base.css scrolls smoothly; Next 16 only suspends that during route changes when asked to
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${display.variable} ${text.variable}`}>
-      <body>{children}</body>
+      <body>
+        <HydrationMark />
+        {children}
+      </body>
     </html>
   );
 }
