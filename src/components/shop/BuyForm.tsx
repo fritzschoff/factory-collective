@@ -45,6 +45,8 @@ export function BuyForm({ product, note }: { product: ProductSummary; note: stri
       {product.options.map((o) => <OptionField key={o.id} o={o} />)}
       <button className="pill pill--block" type="submit" disabled={added}>{added ? 'Added  ✓' : 'Add to bag'}</button>
       <p className="buy__note">{note}</p>
+      {/* kept empty: the buy box spacing of the design counts this line (min-height 1.3em) */}
+      <p className="buy__msg" role="status" />
     </form>
   );
 }

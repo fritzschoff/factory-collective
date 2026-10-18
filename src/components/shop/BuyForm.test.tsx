@@ -39,4 +39,14 @@ describe('BuyForm', () => {
     expect(bag).toHaveLength(1);
     expect(bag[0].qty).toBe(1);
   });
+
+  it('keeps the empty status line after the note, as the layout counts it in the spacing', () => {
+    const p = toSummary({ ...PRODUCTS.find((x) => x.id === 'SH-001')!, priceCents: 26000 });
+    const { container } = renderWithChrome(<BuyForm product={p} note="Ships in 5 days." />);
+    const form = container.querySelector('form')!;
+    const status = form.querySelector('p.buy__msg')!;
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toBeEmptyDOMElement();
+    expect(form.querySelector('p.buy__note')!.nextElementSibling).toBe(status);
+  });
 });
