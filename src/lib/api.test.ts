@@ -29,4 +29,36 @@ describe('postApi', () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
     await expect(postApi('enquire', {})).rejects.toThrow('No connection. Please try again in a moment.');
   });
+
+  // AbortSignal.timeout runs on Node's own timers, which fake timers do not reach: the test hands out a signal it controls
+  function stalledSignal() {
+    const controller = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal);
+    const stop = () => controller.abort(new DOMException('The operation timed out.', 'TimeoutError'));
+    return { timeout, stop };
+  }
+  const whenAborted = (signal: AbortSignal) => new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
+
+  it('gives up after 15 seconds and says there is no connection', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    const { timeout, stop } = stalledSignal();
+    const fetchMock = vi.fn((_url: string, init: RequestInit) => whenAborted(init.signal!));
+    vi.stubGlobal('fetch', fetchMock);
+    const pending = postApi('enquire', {});
+    const settled = expect(pending).rejects.toThrow('No connection. Please try again in a moment.');
+    expect(timeout).toHaveBeenCalledWith(15000);
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+    stop();
+    await settled;
+  });
+
+  it('a body that stalls after the headers also ends in the same sentence, not in an empty answer', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    const { stop } = stalledSignal();
+    vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => ({ ok: true, json: () => whenAborted(init.signal!) })));
+    const settled = expect(postApi('newsletter', {})).rejects.toThrow('No connection. Please try again in a moment.');
+    await Promise.resolve();
+    stop();
+    await settled;
+  });
 });

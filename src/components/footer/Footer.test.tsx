@@ -57,7 +57,7 @@ describe('Footer', () => {
 });
 
 describe('Newsletter form', () => {
-  afterEach(() => { vi.unstubAllEnvs(); });
+  afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
   it('asks for a valid address before it sends anything', () => {
     renderWithChrome(<Footer sheets={SHEETS} />);
@@ -72,5 +72,40 @@ describe('Newsletter form', () => {
     fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'someone@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: '( Subscribe )' }));
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('The newsletter is not connected yet.'));
+  });
+
+  it('ignores a second submit while the first is on its way, then takes the next one', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    let answer!: (r: Response) => void;
+    const fetchMock = vi.fn(() => new Promise<Response>((resolve) => { answer = resolve; }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = renderWithChrome(<Footer sheets={SHEETS} />);
+    const form = container.querySelector('form.nl') as HTMLFormElement;
+    const button = screen.getByRole('button', { name: '( Subscribe )' });
+    fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'someone@example.com' } });
+    fireEvent.click(button);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(button).toBeDisabled();
+    expect(form).toHaveAttribute('aria-busy', 'true');
+    fireEvent.submit(form); // Enter in the field, or a click that got through
+    fireEvent.click(button);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
+    expect(screen.getByRole('status')).toHaveTextContent('Subscribed. One letter a month.');
+    expect(button).toBeEnabled();
+    expect(form).toHaveAttribute('aria-busy', 'false');
+    fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'again@example.com' } });
+    fireEvent.click(button);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('opens the button again when the request fails', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
+    renderWithChrome(<Footer sheets={SHEETS} />);
+    fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'someone@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: '( Subscribe )' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No connection. Please try again in a moment.'));
+    expect(screen.getByRole('button', { name: '( Subscribe )' })).toBeEnabled();
   });
 });

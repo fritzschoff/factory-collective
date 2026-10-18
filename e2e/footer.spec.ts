@@ -15,7 +15,12 @@ test('Journal is coming soon in the footer', async ({ page }) => {
 
 test('the newsletter says it is not connected yet', async ({ page }) => {
   await page.goto('/');
-  await page.getByPlaceholder('E-mail').fill('someone@example.com');
-  await page.getByRole('button', { name: '( Subscribe )' }).click();
-  await expect(page.locator('.nl__msg')).toHaveText('The newsletter is not connected yet.');
+  // Before the page has hydrated, the click submits the form natively (a GET with the address in the query) and the
+  // page reloads: start again from the plain address until the message appears.
+  await expect(async () => {
+    if (new URL(page.url()).search) await page.goto('/');
+    await page.getByPlaceholder('E-mail').fill('someone@example.com');
+    await page.getByRole('button', { name: '( Subscribe )' }).click();
+    await expect(page.locator('.nl__msg')).toHaveText('The newsletter is not connected yet.', { timeout: 1000 });
+  }).toPass();
 });

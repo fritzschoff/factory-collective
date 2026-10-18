@@ -27,7 +27,7 @@ function Page() {
 }
 
 describe('EnquireDialog', () => {
-  afterEach(() => { nav.path = '/'; vi.unstubAllEnvs(); });
+  afterEach(() => { nav.path = '/'; vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
   it('is shut until a button asks, then names the work', () => {
     const { container } = renderWithChrome(<Page />);
@@ -89,5 +89,46 @@ describe('EnquireDialog', () => {
     open();
     await act(async () => {});
     expect(screen.getByRole('status')).toHaveTextContent('');
+  });
+
+  it('ignores a second submit while the first is on its way, then takes the next one', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    let answer!: (r: Response) => void;
+    const fetchMock = vi.fn(() => new Promise<Response>((resolve) => { answer = resolve; }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { container } = renderWithChrome(<Page />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enquire about this piece' }));
+    const form = container.querySelector('form.dlg__f') as HTMLFormElement;
+    const send = screen.getByRole('button', { name: 'Send enquiry' });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
+    fireEvent.click(send);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(send).toBeDisabled();
+    expect(form).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: '( Close )' })).toBeEnabled(); // closing stays possible
+    fireEvent.submit(form);
+    fireEvent.click(send);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
+    expect(screen.getByRole('status')).toHaveTextContent('Thank you. We write back within two working days.');
+    expect(send).toBeEnabled();
+    expect(form).toHaveAttribute('aria-busy', 'false');
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
+    fireEvent.click(send);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('opens the button again when the request fails', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
+    renderWithChrome(<Page />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enquire about this piece' }));
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No connection. Please try again in a moment.'));
+    expect(screen.getByRole('button', { name: 'Send enquiry' })).toBeEnabled();
   });
 });
