@@ -247,3 +247,5 @@
 [data-filter]:not([data-filter="all"]) .fgrp { display: none; }
 [data-filter="jackets"] .fgrp[data-group="jackets"], [data-filter="shirts"] .fgrp[data-group="shirts"],
 [data-filter="trousers"] .fgrp[data-group="trousers"], [data-filter="vests"] .fgrp[data-group="vests"] { display: block; }
+.gal__main .gal__i > .img { width: 100%; height: 100%; aspect-ratio: auto !important; }
+.gal__main .gal__n { z-index: 4; }
