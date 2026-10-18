@@ -43,6 +43,8 @@
   .rows__r { grid-template-columns: 34px minmax(0, 1fr); } .rows__m { grid-column: 2; } .rows__go { grid-column: 2; text-align: left; }
   .rows__r.has-img { grid-template-columns: minmax(0, 1fr); } .rows__r.has-img .rows__img { grid-row: auto; max-width: 240px; }
   .theses { grid-template-columns: minmax(0, 1fr); }
+  /* museum labels: one block per row, so three cells have room; a long value (the e-mail address) breaks instead of running into the next cell */
+  .museum-grid { grid-template-columns: minmax(0, 1fr); } .museum dt, .museum dd { overflow-wrap: anywhere; }
   .hero__pics { grid-template-columns: minmax(0, 1fr); } .hero__b, .hero2__b { display: none !important; } .hero__a { aspect-ratio: 4 / 5 !important; } .hero2 { grid-template-columns: minmax(0, 1fr); } .hero2__a { aspect-ratio: 4 / 5 !important; } .hero2__k2, .hero2__k1 { display: none; }
   .hero__t { right: 16px; bottom: 70px; } .hero__go { left: calc(var(--edge) + 16px); right: auto; bottom: 28px; }
   .triptych { grid-template-columns: minmax(0, 1fr); } .triptych .tri__b, .tri__l2, .tri__l1 { display: none; } .triptych .tri__a { aspect-ratio: 4 / 5 !important; }

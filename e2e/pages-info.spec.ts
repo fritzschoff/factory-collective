@@ -80,6 +80,26 @@ test('about: the Bag / Profile Series text is coming soon, not a link', async ({
   await expect(page.locator('a[href*="bag-profile-series"]')).toHaveCount(0);
 });
 
+test.describe('about on a 390 px screen', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('the museum labels stack, none of them runs out of its box or off the screen', async ({ page }) => {
+    await gotoReady(page, '/about/');
+    await expect(page.locator('.museum dd')).toHaveCount(12);
+    const out = await page.evaluate(() => {
+      const width = document.documentElement.clientWidth;
+      return [...document.querySelectorAll('.museum dt, .museum dd')]
+        .filter((el) => el.getBoundingClientRect().right > width || el.scrollWidth > el.clientWidth + 1)
+        .map((el) => el.textContent);
+    });
+    expect(out).toEqual([]);
+    // the two columns of the grid became one: every block spans the width
+    const blocks = await page.locator('.museum-grid > .museum').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().width)));
+    expect(new Set(blocks).size).toBe(1);
+    expect(blocks[0]).toBeGreaterThan(300);
+  });
+});
+
 test('the info pages answer; an unknown page is a 404 inside the site', async ({ page }) => {
   for (const path of ['/campaigns/', '/campaigns/02/', '/about/', '/shipping/', '/returns/', '/faq/', '/imprint/', '/privacy/', '/terms/']) {
     expect((await gotoReady(page, path))?.status(), path).toBe(200);
