@@ -1,25 +1,39 @@
 import type { ReactNode } from 'react';
-import { byId } from '../content/catalog';
-import { T01, T02, GLOSSARY } from '../content/texts';
-import { AxisV, Coming, Crumb, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, Opening, Pill, Plate, Rule, SectionAA, Kick, Register, cx } from '../components/ui';
-import { Prose, Rows, LinkRow, Statement } from '../components/blocks';
-import { Tile } from '../components/shop';
-import { QEnd, QOpen, Sp, QCap } from '../components/quiet';
-import { SourceDrawing, SOURCES } from '../components/source';
-import { price } from '../content/catalog';
+import { Prose, Rows, LinkRow, Statement } from '@/components/blocks';
+import { A } from '@/components/link';
+import { QEnd, QOpen, Sp, QCap } from '@/components/quiet';
+import { QuickAddButton } from '@/components/shop/QuickAdd';
+import { Soon } from '@/components/soon';
+import { SourceDrawing, SOURCES } from '@/components/source';
+import { Tile } from '@/components/tiles';
+import { AxisV, Crumb, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, Opening, Pill, Plate, Rule, SectionAA, Kick, Register, cx } from '@/components/ui';
+import { T01, T02, GLOSSARY } from '@/content/texts';
+import type { SoonKey } from '@/content/soon';
+import { getCatalog } from '@/lib/data/catalog';
+import { fmtPrice } from '@/lib/format';
+import { toSummary } from '@/lib/products/summary';
 
 const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
-const TEXTS = [
+const TEXTS: { no: string; t: string; d: string; min: string; href?: string; soon?: SoonKey; slot: string; pos: string }[] = [
   { no: '01', t: 'Tectonics without origin', d: 'Objects from a world that was never built. The invented fragment is not part of a whole — it is the place where the whole is missing.', min: '7 min', href: '/factory/tectonics-without-origin/', slot: 'factory/section-1', pos: 'center' },
   { no: '02', t: 'Ordinary Objects', d: 'A found tool, reforged or reproduced, is not a quotation. It is the thing itself, in another material.', min: '6 min', href: '/factory/ordinary-objects/', slot: 'jewellery/hero', pos: '50% 42%' },
-  { no: '03', t: 'Bag / Profile Series', d: 'Not an accessory — mobile architecture at the scale of the body. Carrying read as a spatial problem.', min: '5 min', href: '/factory/bag-profile-series/', slot: 'bags/hero', pos: '50% 46%' }
+  { no: '03', t: 'Bag / Profile Series', d: 'Not an accessory — mobile architecture at the scale of the body. Carrying read as a spatial problem.', min: '5 min', soon: 'bagText', slot: 'bags/hero', pos: '50% 46%' }
 ];
 
+const THESES: { n: string; t: string; d: string; used?: string; href?: string; id?: string }[] = [
+  { n: 'T01', t: '// profile', d: 'The construction profile as a basic form', used: 'Fashion · Bags', href: '/factory/tectonics-without-origin/', id: 't01' },
+  { n: 'T02', t: '// ordinary object', d: 'The found tool, taken at face value', used: 'Jewellery · Scan Series', href: '/factory/ordinary-objects/', id: 't02' },
+  { n: 'T03', t: '( )', d: 'In work' },
+  { n: 'T04', t: '( )', d: 'In work' },
+];
+const THESIS: Record<string, string> = { 'BR-A': 'T02', 'OB-011': 'T02', 'BG-114': 'T01', 'JK-001': 'T01' };
+
 /** FACTORY hub (sheet 12) */
-export function FactoryPage() {
-  const came = ['BR-A', 'OB-011', 'BG-114', 'JK-001'].map(byId);
+export async function FactoryPage() {
+  const cat = await getCatalog();
+  const came = cat.pick(['BR-A', 'OB-011', 'BG-114', 'JK-001']);
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
@@ -32,55 +46,59 @@ export function FactoryPage() {
       </Sp>
       <Sp s="l" id="texts">
         <Hair left="Texts" right="( 3 )" />
-        <Rows rows={TEXTS.map((x) => ({ no: x.no, title: x.t, meta: x.d, go: <>Text, [ year ] · {x.min}<br />Read&nbsp;&nbsp;→</>, href: x.href, img: { slot: x.slot, pos: x.pos } }))} />
+        <Rows rows={TEXTS.map((x) => ({ no: x.no, title: x.t, meta: x.d, go: <>Text, [ year ] · {x.min}<br />Read&nbsp;&nbsp;→</>, href: x.href, soon: x.soon, img: { slot: x.slot, pos: x.pos } }))} />
       </Sp>
       <Sp s="l"><Ghost><Narrate size="l">The invented fragment is not part of a whole.<br /><span className="g">It is the place where the whole is missing.</span></Narrate></Ghost></Sp>
       <Sp s="xl" id="theses">
         <Hair left="Theses" right="( 2 of n )&nbsp;&nbsp;·&nbsp;&nbsp;binding until withdrawn" />
         <div className="theses">
-          {[['T01', '// profile', 'The construction profile as a basic form', 'Fashion · Bags', false, '/factory/tectonics-without-origin/', 't01'], ['T02', '// ordinary object', 'The found tool, taken at face value', 'Jewellery · Scan Series', false, '/factory/ordinary-objects/', 't02'], ['T03', '( )', 'In work', '', true, '', ''], ['T04', '( )', 'In work', '', true, '', '']].map(([n, t, d, u, red, href, id]: any) => (
-            <article key={n} id={id || undefined} className={cx('thesis', red && 'is-red')}>
-              <p><b>{n}</b>&nbsp;&nbsp;{t}</p><p className="thesis__d">{d}</p>{u && <p className="micro">Used in: {u}</p>}
-              {href && <a className="link-u" href={href}>Read&nbsp;&nbsp;→</a>}
+          {THESES.map((x) => (
+            <article key={x.n} id={x.id} className={cx('thesis', !x.href && 'is-red')}>
+              <p><b>{x.n}</b>&nbsp;&nbsp;{x.t}</p>
+              <p className="thesis__d">{x.href ? x.d : <Soon k="theses" brackets={false}>{x.d}</Soon>}</p>
+              {x.used && <p className="micro">Used in: {x.used}</p>}
+              {x.href && <A className="link-u" href={x.href}>Read&nbsp;&nbsp;→</A>}
             </article>
           ))}
         </div>
       </Sp>
       <Sp s="l">
-        <Hair left="What came out of it" right={<a href="/atelier/">All works&nbsp;&nbsp;→</a>} />
+        <Hair left="What came out of it" right={<A href="/atelier/">All works&nbsp;&nbsp;→</A>} />
         <div className="g4 q-idx">
-          {came.map((p, i) => (
+          {came.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <a className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></a>
-              <p className="micro tile__c"><b>{p.code}</b><span>Thesis {i === 0 || i === 1 ? 'T02' : 'T01'}</span></p>
-              <p className="tile__s">{p.name} &nbsp; {price(p)}</p>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
+              <p className="micro tile__c"><b>{p.code}</b><span>Thesis {THESIS[p.id]}</span></p>
+              <p className="tile__s">{p.name} &nbsp; {fmtPrice(p.priceCents)}</p>
             </article>
           ))}
         </div>
       </Sp>
-      <Sp s="l"><LinkRow links={[{ label: 'Publishing', href: '/factory/publishing/' }, { label: 'Archive', href: '/factory/archive/' }, { label: 'Glossary', href: '/factory/glossary/' }, { label: 'Lectures', href: '/factory/lectures/' }]} /></Sp>
+      <Sp s="l"><LinkRow links={[{ label: 'Publishing', soon: 'publishing' }, { label: 'Archive', soon: 'archive' }, { label: 'Glossary', href: '/factory/glossary/' }, { label: 'Lectures', soon: 'lectures' }]} /></Sp>
       <Sp s="m"><QEnd sheet="Factory" index="T01 – T04" thesis="T01 · T02" crumb={[{ label: 'Factory' }]} /></Sp>
     </div>
   );
 }
 
-const Reader = ({ items }: { items: { no: string; t: string; m: string; href: string; here?: boolean }[] }) => (
+const Reader = ({ items }: { items: { no: string; t: string; m: string; href?: string; soon?: SoonKey; here?: boolean }[] }) => (
   <>
     <Sp s="l"><Hair left="Texts" right="( 3 )" /></Sp>
-    <Rows rows={items.map((x) => ({ no: x.no, title: x.t, meta: x.m, go: x.here ? 'You are here' : <>Read&nbsp;&nbsp;→</>, href: x.href, here: x.here }))} />
+    <Rows rows={items.map((x) => ({ no: x.no, title: x.t, meta: x.m, go: x.here ? 'You are here' : <>Read&nbsp;&nbsp;→</>, href: x.href, soon: x.soon, here: x.here }))} />
   </>
 );
-const READER = [
+const READER: { no: string; t: string; m: string; href?: string; soon?: SoonKey }[] = [
   { no: '01', t: 'Tectonics without origin', m: 'Objects from a world that was never built', href: '/factory/tectonics-without-origin/' },
   { no: '02', t: 'Ordinary Objects', m: 'Found tools, reforged and reproduced', href: '/factory/ordinary-objects/' },
-  { no: '03', t: 'Bag / Profile Series', m: 'Mobile architecture at the scale of the body', href: '/factory/bag-profile-series/' }
+  { no: '03', t: 'Bag / Profile Series', m: 'Mobile architecture at the scale of the body', soon: 'bagText' }
 ];
 
+const SUB: Record<string, string> = { 'BG-114': 'U, turned on its side', 'BG-NEW': 'A bonded spine', 'JK-001': 'Shoulder as lintel', 'VT-001': 'A diagonal brace' };
+
 /** TEXT T01 (sheet 13) */
-export function TextT01() {
-  const works = ['BG-114', 'BG-NEW', 'JK-001', 'VT-001'].map(byId);
-  const sub = ['U, turned on its side', 'A bonded spine', 'Shoulder as lintel', 'A diagonal brace'];
-  const sh3 = byId('SH-003');
+export async function TextT01() {
+  const cat = await getCatalog();
+  const works = cat.pick(['BG-114', 'BG-NEW', 'JK-001', 'VT-001']);
+  const sh3 = cat.byId('SH-003');
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
@@ -91,7 +109,7 @@ export function TextT01() {
           <SectionAA y={56} inset={5.6} />
           <LevelMark x={31} y={30} label="+ 2.40  landing" len={170} light />
           <NotIn x={86} y={40} lx={96} ly={20} label="the stair" side={-1} light />
-          <Opening x={34} y={62} w={12} label="SH / 003  //shirt  →  shop" href={sh3.href} light />
+          {sh3 && <Opening x={34} y={62} w={12} label="SH / 003  //shirt  →  shop" href={sh3.href} light />}
         </Plate>
         <div className="pills pills--after"><Pill href="/atelier/fashion/">Discover the collection&nbsp;&nbsp;→</Pill><Pill href="/campaigns/01/" ghost>Shop this look&nbsp;&nbsp;→</Pill><Micro className="pills__n">Every piece named in this text is one click from the shop</Micro></div>
       </Sp>
@@ -107,12 +125,12 @@ export function TextT01() {
       <Sp s="l">
         <Hair left="Works from this text" right="Thesis T01 // profile" />
         <div className="g4 q-idx">
-          {works.map((p, i) => (
+          {works.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <a className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></a>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
               <p className="micro tile__c"><b>{p.code}</b></p>
-              <p className="tile__s">{p.name} &nbsp; {sub[i]}</p>
-              <p className="tile__b"><span>{price(p)}</span><button type="button" data-quickadd={p.id}>Add</button></p>
+              <p className="tile__s">{p.name} &nbsp; {SUB[p.id]}</p>
+              <p className="tile__b"><span>{fmtPrice(p.priceCents)}</span><QuickAddButton product={toSummary(p)} /></p>
             </article>
           ))}
         </div>
@@ -125,8 +143,9 @@ export function TextT01() {
 }
 
 /** TEXT T02 (sheet 14) */
-export function TextT02() {
-  const works = ['BR-A', 'BR-B', 'OB-011', 'OB-021'].map(byId);
+export async function TextT02() {
+  const cat = await getCatalog();
+  const works = cat.pick(['BR-A', 'BR-B', 'OB-011', 'OB-021']);
   return (
     <div className="q">
       <Sp s="m" className="q-top" />
@@ -158,21 +177,7 @@ export function TextT02() {
         <Rule title="Source objects" note="( 5 )  // jewellery" />
         <Register rows={SOURCES.map((s, i) => ({ no: String(i + 1).padStart(2, '0'), name: s.name, meta: <>{s.de} → {s.code} {s.made}</>, href: `/atelier/jewellery/${['br-c', 'br-b', 'br-e', 'br-d', 'br-a'][i]}/`, link: 'View' }))} />
       </Sp>
-      <Sp s="m"><QEnd sheet="Text T02" index="a" thesis="T02 // ordinary object" cf={<>Cf.&nbsp;&nbsp;<span>Tectonics without origin</span>&nbsp;&nbsp;<a href="/factory/tectonics-without-origin/">Read&nbsp;&nbsp;→</a>&nbsp;&nbsp;&nbsp;<span>Layer Paintings — repetition and variation, in the Studio</span>&nbsp;&nbsp;<a href="/studio/layer-paintings/">View&nbsp;&nbsp;→</a></>} crumb={[{ label: 'Factory', href: '/factory/' }, { label: 'Texts' }, { label: 'Ordinary Objects' }]} /></Sp>
-    </div>
-  );
-}
-
-/** TEXT T03 — announced, not written yet */
-export function TextT03() {
-  return (
-    <div className="q">
-      <Sp s="l" className="q-top" />
-      <QOpen kick="Factory / Texts / T03" meta="in work" title={<>Bag / Profile Series <span className="r">( )</span></>}>Not yet written.<br /><span className="g">The bags are already for sale; the sentence they came out of is still being drawn.</span></QOpen>
-      <Sp s="l"><Coming title="T03&nbsp;&nbsp;( )&nbsp;&nbsp;in work" text="Mobile architecture at the scale of the body. Carrying, read as a spatial problem." link="Notify me when it is published&nbsp;&nbsp;→" href="/contact/?subject=notify-t03" /></Sp>
-      <Sp s="m"><Pill href="/atelier/bags/">The bags&nbsp;&nbsp;( 4 )&nbsp;&nbsp;→</Pill></Sp>
-      <Reader items={READER.map((x, i) => ({ ...x, here: i === 2 }))} />
-      <Sp s="m"><QEnd sheet="Text T03" index="—" thesis="T01" crumb={[{ label: 'Factory', href: '/factory/' }, { label: 'Texts' }, { label: 'Bag / Profile Series' }]} /></Sp>
+      <Sp s="m"><QEnd sheet="Text T02" index="a" thesis="T02 // ordinary object" cf={<>Cf.&nbsp;&nbsp;<span>Tectonics without origin</span>&nbsp;&nbsp;<A href="/factory/tectonics-without-origin/">Read&nbsp;&nbsp;→</A>&nbsp;&nbsp;&nbsp;<span>Layer Paintings — repetition and variation, in the Studio</span>&nbsp;&nbsp;<A href="/studio/layer-paintings/">View&nbsp;&nbsp;→</A></>} crumb={[{ label: 'Factory', href: '/factory/' }, { label: 'Texts' }, { label: 'Ordinary Objects' }]} /></Sp>
     </div>
   );
 }
