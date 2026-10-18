@@ -15,6 +15,27 @@ test('the bag: list, quantity, remove, checkout not connected', async ({ page })
   await expect(page.getByText('Your bag is empty.')).toBeVisible();
 });
 
+test('a visitor with items never sees "Your bag is empty." while the bag loads', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('cfc.bag.v1', JSON.stringify([{ id: 'OB-011', qty: 1, opts: {} }]));
+    const w = window as unknown as { __sawEmpty: boolean };
+    w.__sawEmpty = false;
+    // every change of the page, from the first byte of HTML on
+    new MutationObserver(() => { if (document.body?.textContent?.includes('Your bag is empty.')) w.__sawEmpty = true; })
+      .observe(document, { childList: true, subtree: true, characterData: true });
+  });
+  await gotoReady(page, '/bag/');
+  await expect(page.getByText('Your bag is empty.')).toHaveCount(0);
+  await expect(page.locator('.bi')).toHaveCount(1);
+  expect(await page.evaluate(() => (window as unknown as { __sawEmpty: boolean }).__sawEmpty)).toBe(false);
+});
+
+test('an empty bag says so once it has been read', async ({ page }) => {
+  await gotoReady(page, '/bag/');
+  await expect(page.getByText('Your bag is empty.')).toBeVisible();
+  await expect(page.getByText('Loading your bag …')).toHaveCount(0);
+});
+
 test('a stored line whose product no longer exists is dropped from the bag and from the header count', async ({ page }) => {
   await gotoReady(page, '/');
   await page.evaluate(() => localStorage.setItem('cfc.bag.v1', JSON.stringify([{ id: 'OB-011', qty: 1, opts: {} }, { id: 'GONE-1', qty: 2, opts: {} }])));

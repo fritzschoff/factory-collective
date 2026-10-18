@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { postApi } from '@/lib/api';
 import { MAX_QTY } from '@/lib/bag/items';
 import { useBag } from '@/lib/bag/store';
@@ -10,19 +10,32 @@ import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
 import type { ProductSummary } from '@/lib/products/summary';
 
+const subscribeNoop = () => () => {};
+
 /** The bag: lines from localStorage, prices from the catalogue, checkout through the API (Phase 2). */
 export function BagView({ products }: { products: Record<string, ProductSummary> }) {
   const { items, count, set } = useBag();
+  // false in the server HTML and while the page hydrates, true once the browser has read the stored bag (Ruling P44)
+  const read = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false); // the checkout request is on its way: further clicks are ignored
   const lines = items.flatMap((i) => (products[i.id] ? [{ i, p: products[i.id] }] : []));
 
-  // A stored line whose product is gone from the catalogue is not shown — and is dropped from the bag, so the count
-  // in the header is right too.
+  // A stored line whose product is gone from the catalogue is not shown — and, once the stored bag has been read, is
+  // dropped from it, so the count in the header is right too.
   useEffect(() => {
+    if (!read) return;
     for (const i of items) if (!products[i.id]) set(i.key, 0);
-  }, [items, products, set]);
+  }, [read, items, products, set]);
 
+  // The server cannot know what is stored: until the browser has read it, neither "empty" nor lines are shown.
+  if (!read) {
+    return (
+      <div className="bag__cols">
+        <div className="bag__list" aria-live="polite"><p className="bag__noscript">Loading your bag …</p></div>
+      </div>
+    );
+  }
   if (!lines.length) {
     // as on the old site: the list column keeps its place, the summary is not shown
     return (
