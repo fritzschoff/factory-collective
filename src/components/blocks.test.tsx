@@ -14,7 +14,7 @@ describe('ways in that are coming soon', () => {
         <LinkRow links={[way]} />
       </>,
     );
-    expect([...container.querySelectorAll('.soon')].map((s) => s.textContent)).toEqual(Array(4).fill('Read the text ( )coming soon'));
+    expect([...container.querySelectorAll('.soon')].map((s) => s.textContent)).toEqual(Array(4).fill('Read the text\u00a0(\u00a0)coming soon'));
     expect(container.querySelectorAll('.soon a')).toHaveLength(0);
   });
 });

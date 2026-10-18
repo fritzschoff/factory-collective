@@ -84,7 +84,7 @@ describe('the text of an entry that is coming soon', () => {
   });
 
   it('the registry label stands in when there is no text, brackets included', () => {
-    expect(textOf(<Soon k="sound" />)).toBe('Sound ( )');
+    expect(textOf(<Soon k="sound" />)).toBe('Sound\u00a0(\u00a0)');
   });
 
   it('text that already shows the brackets does not get a second pair', () => {

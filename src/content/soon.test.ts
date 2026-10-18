@@ -3,13 +3,13 @@ import { SOON, isSoon, soonHref, soonLabel, soonPaths, soonRedirects, withBracke
 
 describe('coming-soon registry', () => {
   it('adds the empty brackets exactly once', () => {
-    expect(soonLabel('furniture')).toBe('Furniture ( )');
+    expect(soonLabel('furniture')).toBe('Furniture\u00a0(\u00a0)');
     expect(soonLabel('theses')).toBe('T03 ( )  T04 ( )');
-    expect(soonLabel('campaign03')).toBe('( 03 ) ( )');
+    expect(soonLabel('campaign03')).toBe('( 03 )\u00a0(\u00a0)');
   });
 
   it('puts the empty brackets after any text, unless it already shows them', () => {
-    expect(withBrackets('Read the text')).toBe('Read the text ( )');
+    expect(withBrackets('Read the text')).toBe('Read the text\u00a0(\u00a0)');
     expect(withBrackets('Read the text ( )')).toBe('Read the text ( )');
     expect(withBrackets('( )')).toBe('( )');
   });

@@ -1,9 +1,25 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { pixel } from './pixels';
 
-const menu = (page: import('@playwright/test').Page) => page.locator('#menu');
+const menu = (page: Page) => page.locator('#menu');
 /** the panel of one room — all five are in the page, only the chosen one is visible */
-const panel = (page: import('@playwright/test').Page, room: string) => menu(page).getByRole('tabpanel', { name: room });
+const panel = (page: Page, room: string) => menu(page).getByRole('tabpanel', { name: room });
+const menuButton = (page: Page) => page.locator('.hd__util').getByRole('button', { name: 'Menu' });
+const roomLabel = (page: Page, room: string) => page.locator('.hd__bot').getByRole('button', { name: room });
+
+/**
+ * Opens the menu with `open`, and tries again until it is open: a button pressed before the page has hydrated does
+ * nothing. An open menu is left alone — pressing Menu again would close it.
+ */
+const openMenu = (page: Page, open: () => Promise<unknown>) => expect(async () => {
+  if (!(await menu(page).evaluate((el) => el.classList.contains('is-open')))) await open();
+  await expect(menu(page)).toHaveClass(/is-open/, { timeout: 500 });
+}).toPass({ timeout: 10_000 });
+const pressMenuButton = (page: Page) => () => menuButton(page).click({ timeout: 1000 });
+const pressRoomLabel = (page: Page, room: string) => () => roomLabel(page, room).click({ timeout: 1000 });
+/** The panel comes down with an animation; measure it once it has. */
+const panelHasComeDown = (page: Page) => page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+const enterOnMenuButton = (page: Page) => async () => { await menuButton(page).focus(); await page.keyboard.press('Enter'); };
 
 test.describe('menu', () => {
   test('all five rooms are in the HTML; a closed menu loads no pictures', async ({ page }) => {
@@ -28,9 +44,8 @@ test.describe('menu', () => {
 
   test('Menu opens the room of the page; Esc closes and gives focus back', async ({ page }) => {
     await page.goto('/');
-    const trigger = page.locator('.hd__util').getByRole('button', { name: 'Menu' });
-    await trigger.click();
-    await expect(menu(page)).toHaveClass(/is-open/);
+    const trigger = menuButton(page);
+    await openMenu(page, pressMenuButton(page));
     await expect(menu(page).getByRole('tab', { name: 'Atelier' })).toHaveAttribute('aria-selected', 'true');
     await page.keyboard.press('Escape');
     await expect(menu(page)).not.toHaveClass(/is-open/);
@@ -39,7 +54,7 @@ test.describe('menu', () => {
 
   test('a room label opens that room; tabs switch without closing; the dim closes', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__bot').getByRole('button', { name: 'Factory' }).click();
+    await openMenu(page, pressRoomLabel(page, 'Factory'));
     await expect(menu(page).getByRole('tab', { name: 'Factory' })).toHaveAttribute('aria-selected', 'true');
     await menu(page).getByRole('tab', { name: 'Studio' }).click();
     await expect(menu(page)).toHaveClass(/is-open/);
@@ -50,14 +65,14 @@ test.describe('menu', () => {
 
   test('coming-soon rows are not links', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__bot').getByRole('button', { name: 'Factory' }).click();
+    await openMenu(page, pressRoomLabel(page, 'Factory'));
     await expect(panel(page, 'Factory').locator('.soon')).toHaveCount(5);
     await expect(panel(page, 'Factory').getByRole('link', { name: /Publishing|Archive|Lectures/ })).toHaveCount(0);
   });
 
   test('Tab stays inside the open menu', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+    await openMenu(page, pressMenuButton(page));
     for (let i = 0; i < 40; i++) {
       await page.keyboard.press('Tab');
       expect(await page.evaluate(() => !!document.activeElement?.closest('#menu'))).toBe(true);
@@ -66,10 +81,8 @@ test.describe('menu', () => {
 
   test('opens by keyboard; Tab and Shift+Tab stay inside; Esc closes and gives focus back to Menu', async ({ page }) => {
     await page.goto('/');
-    const trigger = page.locator('.hd__util').getByRole('button', { name: 'Menu' });
-    await trigger.focus();
-    await page.keyboard.press('Enter');
-    await expect(menu(page)).toHaveClass(/is-open/);
+    const trigger = menuButton(page);
+    await openMenu(page, enterOnMenuButton(page));
     await expect(menu(page).getByRole('button', { name: '( Close )' })).toBeFocused();
     for (const key of ['Shift+Tab', 'Tab']) {
       for (let i = 1; i <= 40; i++) {
@@ -84,7 +97,7 @@ test.describe('menu', () => {
 
   test('Tab never stops on a coming-soon row', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__bot').getByRole('button', { name: 'Factory' }).click();
+    await openMenu(page, pressRoomLabel(page, 'Factory'));
     const stops = new Set<string>();
     for (let i = 1; i <= 40; i++) { // two rounds of the Factory panel
       await page.keyboard.press('Tab');
@@ -99,13 +112,12 @@ test.describe('menu', () => {
 
   test('the focus ring of a tab is not cut off by the scrolling tab row', async ({ page }) => {
     await page.goto('/');
-    const trigger = page.locator('.hd__util').getByRole('button', { name: 'Menu' });
-    await trigger.focus();
-    await page.keyboard.press('Enter');
+    await openMenu(page, enterOnMenuButton(page));
+    await expect(menu(page).getByRole('button', { name: '( Close )' })).toBeFocused();
     for (let i = 0; i < 5; i++) await page.keyboard.press('Shift+Tab'); // Close, then back over About, Campaigns, Studio, Atelier
     const first = menu(page).getByRole('tab', { name: 'Factory' });
     await expect(first).toBeFocused();
-    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished))); // the panel has come down
+    await panelHasComeDown(page);
     const box = (await first.boundingBox())!;
     // the ring lies 3 px outside the button, 1.5 px thick: look for its ink left of the word, above it and below it
     const ink = async (xs: number[], ys: number[]) => {
@@ -124,7 +136,8 @@ test.describe('menu', () => {
     for (const [width, height] of [[1440, 119.5], [1000, 83], [390, 72]]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
-      await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+      await openMenu(page, pressMenuButton(page));
+      await panelHasComeDown(page);
       const win = (await menu(page).locator('.mp__body:not([hidden]) .mp__win').boundingBox())!;
       expect(win.height, `${width} px wide`).toBeCloseTo(height, 0);
     }
@@ -132,7 +145,7 @@ test.describe('menu', () => {
 
   test('hovering a row shows its pictures in the window', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+    await openMenu(page, pressMenuButton(page));
     const atelier = panel(page, 'Atelier');
     await atelier.getByRole('link', { name: /Jackets/ }).hover();
     await expect(atelier.locator('.bwin__img').first()).toHaveAttribute('style', /jk_pinstripe/);
@@ -141,9 +154,9 @@ test.describe('menu', () => {
 
   test('the window does not move when a row is hovered, and the lines around it keep their height', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+    await openMenu(page, pressMenuButton(page));
     const atelier = panel(page, 'Atelier');
-    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished))); // the panel has come down
+    await panelHasComeDown(page);
     const place = async () => {
       const [title, win, cap] = await Promise.all(['.mp__ft', '.mp__win', '.mp__fc'].map((part) => atelier.locator(part).boundingBox()));
       return { title: title!.height, windowTop: win!.y, cap: cap!.height };
@@ -159,7 +172,7 @@ test.describe('menu', () => {
 
   test('the sign at the foot of the panel has its window', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+    await openMenu(page, pressMenuButton(page));
     expect((await menu(page).locator('.mp__sign path').getAttribute('d'))?.match(/M/g)).toHaveLength(2);
   });
 
@@ -172,7 +185,8 @@ test.describe('menu', () => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await page.addStyleTag({ content: '.mp { right: 15px !important; }' });
-      await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+      await openMenu(page, pressMenuButton(page));
+      await panelHasComeDown(page);
       const columns = await menu(page).locator('.mp__body:not([hidden]) .mp__cols').evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
       const box = (await menu(page).boundingBox())!;
       expect(box.width, `${width} px wide: the gutter is in place`).toBe(width - 15);
@@ -185,7 +199,8 @@ test.describe('menu', () => {
     // @phone tests run in both projects, so the phone size is set here: a dropped panel on a desktop is not a full screen
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+    await openMenu(page, pressMenuButton(page));
+    await panelHasComeDown(page);
     const box = (await menu(page).boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(840);
     await expect(menu(page).getByRole('tab', { name: 'About' })).toBeVisible();

@@ -48,9 +48,12 @@ export function soonHref(key: SoonKey, registry: SoonRegistry = SOON): string | 
   return e.status === 'live' ? e.path : undefined;
 }
 
-/** "Furniture" → "Furniture ( )" — any text with the empty brackets after it, unless it already shows them. */
+/**
+ * "Furniture" → "Furniture ( )" — any text with the empty brackets after it, unless it already shows them.
+ * The spaces are no-break spaces: the brackets stay together with each other and with the label's last word.
+ */
 export function withBrackets(text: string): string {
-  return /\(\s\)/.test(text) ? text : `${text} ( )`;
+  return /\(\s\)/.test(text) ? text : `${text}\u00a0(\u00a0)`;
 }
 
 /** "Furniture ( )" — the label with the empty brackets, unless it already has them. */

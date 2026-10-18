@@ -38,8 +38,8 @@ describe('buildMenu', () => {
   it('coming-soon rows have no link and carry the empty brackets', async () => {
     const all = entries(buildMenu(await getCatalog()));
     const soon = all.filter((e) => e.href === null);
-    expect(soon.map((e) => e.label)).toEqual(expect.arrayContaining(['Outerwear ( )', 'Furniture ( )', 'Bag / Profile Series ( )', '( 03 ) ( )', 'Journal ( )']));
-    expect(soon.every((e) => e.label.includes('( )'))).toBe(true);
+    expect(soon.map((e) => e.label)).toEqual(expect.arrayContaining(['Outerwear\u00a0(\u00a0)', 'Furniture\u00a0(\u00a0)', 'Bag / Profile Series\u00a0(\u00a0)', '( 03 )\u00a0(\u00a0)', 'Journal\u00a0(\u00a0)']));
+    expect(soon.every((e) => /\(\s\)/.test(e.label))).toBe(true);
   });
   it('no menu link points to a coming-soon address', async () => {
     const hrefs = entries(buildMenu(await getCatalog())).map((e) => e.href).filter((h): h is string => h !== null);
