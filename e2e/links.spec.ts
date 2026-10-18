@@ -27,6 +27,9 @@ test('every internal link and picture of every page answers 200, no redirects, n
     return status.get(url)!;
   };
 
+  const hasId = (page: string, id: string) => new RegExp(`\\sid="${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`).test(html.get(page)!);
+  let anchorsChecked = 0;
+
   for (const path of pages) {
     if ((await get(path)) !== 200) { problems.push(`${path} → ${status.get(path)}`); continue; }
     for (const { url, hash } of internalRefs(html.get(path)!)) {
@@ -34,8 +37,17 @@ test('every internal link and picture of every page answers 200, no redirects, n
       if (soonPaths().some((s) => url.startsWith(s))) problems.push(`${path} links to coming-soon ${url}`);
       const code = await get(url);
       if (code !== 200) problems.push(`${path} → ${url} answers ${code}`);
-      else if (hash && html.has(url) && !html.get(url)!.includes(`id="${hash}"`)) problems.push(`${path} → ${url}#${hash}: no such anchor`);
+      else if (hash && html.has(url)) {
+        anchorsChecked++;
+        if (!hasId(url, hash)) problems.push(`${path} → ${url}#${hash}: no such anchor`);
+      }
     }
   }
+
+  // A crawl that found nothing to check passes just as well as one that found everything fine: prove it did real work.
+  const pictures = [...status].filter(([u, code]) => u.startsWith('/images/') && code === 200);
+  expect(pictures.length, 'distinct picture files under /images/ that were fetched').toBeGreaterThanOrEqual(80);
+  expect(status.size, 'distinct URLs checked (pages, pictures, links)').toBeGreaterThan(pages.length);
+  expect(anchorsChecked, '#anchors checked against their target page').toBeGreaterThanOrEqual(1);
   expect(problems).toEqual([]);
 });
