@@ -1,9 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PRODUCTS } from '@/content/catalog';
 import { allPages } from '@/content/pages';
-import { getCatalog } from '@/lib/data/catalog';
+import { createCatalog, getCatalog } from '@/lib/data/catalog';
 import { buildSearchIndex, groupByKind, normalize, searchEntries } from './index';
 
+// The price list is the owner's to edit, and the environment of the machine is not ours: nothing here may depend on either.
+vi.mock('@/content/prices.json', () => ({ default: {} }));
+
 describe('search', () => {
+  beforeEach(() => {
+    vi.stubEnv('DEMO_PRICES', '0');
+    vi.stubEnv('IMAGES', 'local');
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   it('normalises codes and punctuation', () => {
     expect(normalize('SH / 001 — Shirt')).toBe('sh 001 shirt');
   });
@@ -18,6 +29,10 @@ describe('search', () => {
     const hits = searchEntries(buildSearchIndex(allPages(cat), cat), 'SH / 001');
     expect(hits.map((h) => h.h)).toContain('/atelier/fashion/jk-001/'); // "sh" is in "Fashion", "001" in the code
     expect(hits[0].h).toBe('/atelier/fashion/sh-001/');
+  });
+  it('a piece carries its price once it has one', () => {
+    const priced = createCatalog(PRODUCTS.map((p) => ({ ...p, priceCents: p.id === 'SH-001' ? 28000 : null })));
+    expect(searchEntries(buildSearchIndex(allPages(priced), priced), 'SH / 001')[0].p).toBe('€ 280');
   });
   it('an empty query finds nothing', async () => {
     const cat = await getCatalog();

@@ -38,6 +38,11 @@ export function Search({ index }: { index: SearchEntry[] }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [openSearch]);
 
+  // The search scrolls, not the page: keep the arrowed row on screen (the nearest edge only, so the list does not jump).
+  useEffect(() => {
+    if (sel >= 0) ref.current?.querySelector('.sres__a.is-sel')?.scrollIntoView({ block: 'nearest' });
+  }, [sel]);
+
   const go = (href: string) => { closeSearch(); router.push(href); };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && flat.length) {
