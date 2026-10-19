@@ -4,7 +4,7 @@ import { expandVariants, type ProductSave } from '@cfc/shop-core';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createUpload, registerImage } from './images-admin';
 import { saveProduct, setOnHand } from './products-admin';
-import { updateOrder } from './desk-admin';
+import { listOrders, updateOrder } from './desk-admin';
 
 let db: Firestore;
 
@@ -72,6 +72,8 @@ describe('admin products', () => {
       number: 1, status: 'paid', items: [{ sku: 'JK-900__50', productId: 'JK-900', qty: 1, name: 'probe', code: 'JK / 900', unitAmount: 52000, options: [] }],
       history: [{ at: new Date().toISOString(), status: 'paid' }], shortfall: false, stripeSessionId: 'cs_1', createdAt: new Date().toISOString(),
     });
+    await db.collection('orders').doc('o2').set({ number: 2, status: 'paid', items: [], history: [], shortfall: true, stripeSessionId: 'cs_2', createdAt: new Date().toISOString() });
+    expect((await listOrders(db)).map((order) => [order.number, order.shortfall])).toEqual([[2, true], [1, false]]);
     await updateOrder(db, 'o1', { status: 'cancelled', restock: true });
     expect((await db.collection('inventory').doc('JK-900__50').get()).get('onHand')).toBe(4);
     expect((await db.collection('orders').doc('o1').get()).get('status')).toBe('cancelled');
