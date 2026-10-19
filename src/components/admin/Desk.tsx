@@ -270,14 +270,17 @@ function Images({ form, onImages, onFocus, setNotice }: { form: ProductSave; onI
       <div className="ad__photos">
         {form.images.map((image, index) => (
           <figure className="ad__photo" key={image.path || index}>
-            {image.url && <img src={image.url} alt="" style={{ objectPosition: image.focus ?? '50% 50%' }} onClick={(event) => {
+            {image.url && (
+              // eslint-disable-next-line @next/next/no-img-element -- the raw upload (blob or emulator URL), shown to the admin only
+              <img src={image.url} alt="" style={{ objectPosition: image.focus ?? '50% 50%' }} onClick={(event) => {
               const rect = event.currentTarget.getBoundingClientRect();
               const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
               const y = Math.round(((event.clientY - rect.top) / rect.height) * 100);
               const focus = `${x}% ${y}%`;
               onImages(form.images.map((item, i) => i === index ? { ...item, focus } : item));
               if (index === 0) onFocus(focus);
-            }} />}
+            }} />
+            )}
             <input aria-label="Alt-Text" value={image.alt} onChange={(event) => onImages(form.images.map((item, i) => i === index ? { ...item, alt: event.target.value } : item))} />
             <div>
               <button type="button" disabled={index === 0} onClick={() => move(index, -1)}>Nach vorn</button>
