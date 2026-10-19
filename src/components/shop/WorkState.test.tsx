@@ -23,6 +23,14 @@ describe('WorkState', () => {
     expect(stored()[0]).toMatchObject({ id: 'LP-02.A', qty: 1, opts: { state: { v: '3', l: 'State 03' } } });
   });
 
+  it('adds the state shown checked, also one clicked before hydration (Ruling P53)', () => {
+    renderWithChrome(<WorkStateProvider initial="2"><StatePick options={options} /><EditionAdd product={archival} needsState /></WorkStateProvider>);
+    // before hydration a click moves only the native state of the radios: React never hears of it
+    (screen.getByRole('radio', { name: /State 03/ }) as HTMLInputElement).checked = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Choose a state · Add' }));
+    expect(stored()[0]).toMatchObject({ id: 'LP-02.A', opts: { state: { v: '3', l: 'State 03' } } });
+  });
+
   it('asks for a state first when none is chosen', () => {
     renderWithChrome(<WorkStateProvider initial={null}><EditionAdd product={archival} needsState /></WorkStateProvider>);
     fireEvent.click(screen.getByRole('button', { name: 'Choose a state · Add' }));

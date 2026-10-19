@@ -8,6 +8,7 @@ import { cx } from '@/lib/cx';
 import { defaultValueIndex } from '@/lib/products/options';
 import type { ProductSummary } from '@/lib/products/summary';
 import type { OptionDef } from '@/lib/types';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const ADDED_MS = 1600;
 
@@ -15,6 +16,7 @@ const ADDED_MS = 1600;
 export function BuyForm({ product, note }: { product: ProductSummary; note: string }) {
   const { add } = useBag();
   const inBag = useInBagToast();
+  const hydrated = useHydrated();
   const [added, setAdded] = useState(false);
   const timer = useRef<number | undefined>(undefined);
 
@@ -24,6 +26,7 @@ export function BuyForm({ product, note }: { product: ProductSummary; note: stri
     e.preventDefault();
     // "Added ✓" disables the button; this also covers Enter in the monogram field and a double click
     if (added) return;
+    // the options are read from the form, not kept in state: a chip clicked before hydration counts as it is shown
     const data = new FormData(e.currentTarget);
     const opts: BagOptions = {};
     for (const o of product.options) {
@@ -43,7 +46,7 @@ export function BuyForm({ product, note }: { product: ProductSummary; note: stri
   return (
     <form className="buy__form" noValidate onSubmit={onSubmit}>
       {product.options.map((o) => <OptionField key={o.id} o={o} />)}
-      <button className="pill pill--block" type="submit" disabled={added}>{added ? 'Added  ✓' : 'Add to bag'}</button>
+      <button className="pill pill--block" type="submit" disabled={added || !hydrated}>{added ? 'Added  ✓' : 'Add to bag'}</button>
       <p className="buy__note">{note}</p>
       {/* kept empty: the buy box spacing of the design counts this line (min-height 1.3em) */}
       <p className="buy__msg" role="status" />

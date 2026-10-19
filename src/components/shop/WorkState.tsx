@@ -5,8 +5,10 @@ import { useInBagToast } from '@/components/chrome/Toast';
 import { useBag } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import type { ProductSummary } from '@/lib/products/summary';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const ADDED_MS = 1600;
+const RADIO_NAME = 'lpstate';
 
 interface WorkStateValue { state: string | null; setState: (s: string) => void }
 const WorkState = createContext<WorkStateValue>({ state: null, setState: () => {} });
@@ -23,7 +25,7 @@ export function StatePick({ options }: { options: { value: string; label: string
     <fieldset className="pick" aria-label="State for the print">
       {options.map((o) => (
         <label key={o.value}>
-          <input type="radio" name="lpstate" value={o.value} checked={state === o.value} onChange={() => setState(o.value)} />
+          <input type="radio" name={RADIO_NAME} value={o.value} checked={state === o.value} onChange={() => setState(o.value)} />
           {o.image}
           <p className="micro ink">{o.label}</p>
           <span className="sub">{o.sub}</span>
@@ -34,9 +36,10 @@ export function StatePick({ options }: { options: { value: string; label: string
 }
 
 export function EditionAdd({ product, needsState }: { product: ProductSummary; needsState: boolean }) {
-  const { state } = useContext(WorkState);
+  const { state: picked } = useContext(WorkState);
   const { add } = useBag();
   const inBag = useInBagToast();
+  const hydrated = useHydrated();
   const [msg, setMsg] = useState('');
   const [added, setAdded] = useState(false);
   const timer = useRef<number | undefined>(undefined);
@@ -46,6 +49,8 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
   const onClick = () => {
     // "Added ✓" disables the button; this also covers a double click
     if (added) return;
+    // the state shown checked: one clicked before hydration moved the radios on the page while React kept the old one
+    const state = document.querySelector<HTMLInputElement>(`input[name="${RADIO_NAME}"]:checked`)?.value ?? picked;
     if (needsState && !state) {
       setMsg('Choose a state first.');
       document.getElementById('states')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -61,7 +66,7 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
 
   return (
     <>
-      <button className="pill pill--ghost" type="button" disabled={added} onClick={onClick}>{added ? 'Added  ✓' : needsState ? 'Choose a state · Add' : 'Add to bag'}</button>
+      <button className="pill pill--ghost" type="button" disabled={added || !hydrated} onClick={onClick}>{added ? 'Added  ✓' : needsState ? 'Choose a state · Add' : 'Add to bag'}</button>
       <p className={cx('buy__msg', msg && 'is-err')} role="status">{msg}</p>
     </>
   );

@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { postApi } from '@/lib/api';
+import { useHydrated } from '@/lib/use-hydrated';
 
 const SUBJECTS = [
   ['general', 'General'], ['order', 'An order'], ['original', 'An original'], ['fitting', 'A fitting'],
@@ -19,6 +20,7 @@ export function subjectFromQuery(q: string | null): { key: string; full: string 
 /** The contact form — also the target of every "Notify me". */
 export function ContactForm() {
   const { key, full } = subjectFromQuery(useSearchParams().get('subject'));
+  const hydrated = useHydrated();
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false); // a request is on its way: further submits are ignored
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -46,7 +48,7 @@ export function ContactForm() {
       <label>Subject<select key={full} name="subject" defaultValue={key}>{SUBJECTS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       <label>Message<textarea name="message" rows={6} required /></label>
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
-      <button className="pill" type="submit" disabled={busy}>Send</button>
+      <button className="pill" type="submit" disabled={busy || !hydrated}>Send</button>
       <p className="dlg__msg" role="status">{msg}</p>
     </form>
   );

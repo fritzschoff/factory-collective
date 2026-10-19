@@ -21,6 +21,16 @@ describe('BuyForm', () => {
     expect(screen.getByRole('button', { name: /^Added/ })).toBeDisabled();
   });
 
+  it('adds the options shown checked, also ones clicked before hydration (Ruling P53)', () => {
+    const p = toSummary({ ...PRODUCTS.find((x) => x.id === 'SH-001')!, priceCents: 26000 });
+    renderWithChrome(<BuyForm product={p} note="" />);
+    // before hydration a click moves only the native state of the radios: React never hears of it
+    (screen.getByRole('radio', { name: '54' }) as HTMLInputElement).checked = true;
+    (screen.getByRole('radio', { name: 'White' }) as HTMLInputElement).checked = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Add to bag' }));
+    expect(JSON.parse(localStorage.getItem('cfc.bag.v1')!)[0].opts).toEqual({ colour: { v: 'white', l: 'White' }, size: { v: '54', l: '54' } });
+  });
+
   it('a monogram is optional and kept in capitals', () => {
     const p = toSummary({ ...PRODUCTS.find((x) => x.id === 'BG-114')!, priceCents: 124000 });
     renderWithChrome(<BuyForm product={p} note="" />);

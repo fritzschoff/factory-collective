@@ -2,8 +2,10 @@
 
 import { useState, type FormEvent } from 'react';
 import { postApi } from '@/lib/api';
+import { useHydrated } from '@/lib/use-hydrated';
 
 export function NewsletterForm() {
+  const hydrated = useHydrated();
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false); // a request is on its way: further submits are ignored
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -27,7 +29,7 @@ export function NewsletterForm() {
     <form className="nl" noValidate aria-busy={busy} onSubmit={onSubmit}>
       <label className="sr" htmlFor="nl-mail">E-mail</label>
       <input id="nl-mail" name="email" type="email" required placeholder="E-mail" autoComplete="email" />
-      <button type="submit" disabled={busy}>( Subscribe )</button>
+      <button type="submit" disabled={busy || !hydrated}>( Subscribe )</button>
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
       <p className="nl__msg" role="status">{msg}</p>
     </form>

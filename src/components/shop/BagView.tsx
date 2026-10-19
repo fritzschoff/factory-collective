@@ -2,21 +2,20 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import { postApi } from '@/lib/api';
 import { MAX_QTY } from '@/lib/bag/items';
 import { useBag } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
 import type { ProductSummary } from '@/lib/products/summary';
-
-const subscribeNoop = () => () => {};
+import { useHydrated } from '@/lib/use-hydrated';
 
 /** The bag: lines from localStorage, prices from the catalogue, checkout through the API (Phase 2). */
 export function BagView({ products }: { products: Record<string, ProductSummary> }) {
   const { items, count, set } = useBag();
   // false in the server HTML and while the page hydrates, true once the browser has read the stored bag (Ruling P44)
-  const read = useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const read = useHydrated();
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false); // the checkout request is on its way: further clicks are ignored
   const lines = items.flatMap((i) => (products[i.id] ? [{ i, p: products[i.id] }] : []));
