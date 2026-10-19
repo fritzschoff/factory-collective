@@ -12,6 +12,7 @@
 .ad__table th, .ad__table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #D8D7D3; vertical-align: top; }
 .ad__table button { text-decoration: underline; text-underline-offset: 3px; }
 .ad__msg { color: var(--red); min-height: 1.4em; }
+.ad__warn { color: var(--red); }
 .ad__ok { color: var(--grey); }
 .ad__drop { border: 1px dashed #D8D7D3; padding: 16px; margin: 12px 0; }
 .ad__photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { PRODUCT_GROUPS, expandVariants, skuFor, type ProductKind, type ProductSave, type ShopImage, type ShopProduct } from '@cfc/shop-core';
 import { adminCall, adminError } from '@/components/admin/api';
+import { fmtPrice } from '@/lib/format';
 
 type Section = 'products' | 'stock' | 'orders' | 'enquiries' | 'newsletter';
 
@@ -342,8 +343,17 @@ function Stock() {
   );
 }
 
+/** The Stripe dashboard page of a payment, in test or live mode as the session was. */
+function stripePaymentUrl(sessionId: unknown, paymentIntent: unknown): string | null {
+  if (typeof paymentIntent !== 'string' || !paymentIntent) return null;
+  const test = typeof sessionId === 'string' && sessionId.startsWith('cs_test_');
+  return `https://dashboard.stripe.com/${test ? 'test/' : ''}payments/${paymentIntent}`;
+}
+
+const SHORTFALL = 'Bestand reichte nicht';
+
 function Orders() {
-  const [orders, setOrders] = useState<{ id: string; number: number; status: string; email: string }[]>([]);
+  const [orders, setOrders] = useState<{ id: string; number: number; status: string; email: string; shortfall: boolean }[]>([]);
   const [current, setCurrent] = useState<(Record<string, unknown> & { id: string }) | null>(null);
   const [notice, setNotice] = useState('');
   const load = () => { adminCall<{ orders: typeof orders }>('adminListOrders').then((data) => setOrders(data.orders)).catch((error) => setNotice(adminError(error).message)); };
@@ -364,13 +374,26 @@ function Orders() {
     }
   };
   if (current) {
-    const items = (current.items ?? []) as { qty: number; code: string; name: string }[];
+    const items = (current.items ?? []) as { qty: number; code: string; name: string; unitAmount?: number; options?: { label: string; value: string }[] }[];
+    const address = (current.address ?? null) as Record<string, string | null> | null;
+    const payment = stripePaymentUrl(current.stripeSessionId, current.stripePaymentIntent);
+    const amount = typeof current.amountTotal === 'number' ? fmtPrice(current.amountTotal, String(current.currency ?? 'eur').toUpperCase()) : '';
     return (
       <section>
         <button type="button" onClick={() => setCurrent(null)}>Zurück</button>
         <h2>Bestellung {String(current.number ?? '')}</h2>
-        <p>{String(current.email ?? '')}</p>
-        {items.map((item, index) => <p key={index}>{item.qty} × {item.code}{' // '}{item.name}</p>)}
+        {current.shortfall === true && <p className="ad__warn" role="alert">{SHORTFALL}: Die Zahlung kam an, als der Bestand schon fehlte. Bitte prüfen, ob das Stück gefertigt werden kann.</p>}
+        <p>{String(current.name ?? '')}<br />{String(current.email ?? '')}{current.phone ? <><br />{String(current.phone)}</> : null}</p>
+        {address && <p>{[address.line1, address.line2, [address.postal_code, address.city].filter(Boolean).join(' '), address.state, address.country].filter(Boolean).join(', ')}</p>}
+        {items.map((item, index) => (
+          <p key={index}>
+            {item.qty} × {item.code}{' // '}{item.name}
+            {item.options?.length ? ` — ${item.options.map((option) => `${option.label}: ${option.value}`).join(', ')}` : ''}
+            {typeof item.unitAmount === 'number' ? ` · ${fmtPrice(item.unitAmount * item.qty)}` : ''}
+          </p>
+        ))}
+        {amount && <p>Gesamt (mit Versand und Steuer): {amount}</p>}
+        {payment && <p><a href={payment} target="_blank" rel="noreferrer">Zahlung in Stripe öffnen</a></p>}
         <label>Status<select value={String(current.status ?? '')} onChange={(event) => setCurrent({ ...current, status: event.target.value })}><option>paid</option><option>in_progress</option><option>shipped</option><option>done</option><option>awaiting_payment</option><option>cancelled</option></select></label>
         <label>Sendungsnummer<input value={String(current.tracking ?? '')} onChange={(event) => setCurrent({ ...current, tracking: event.target.value })} /></label>
         <label>Notiz<textarea value={String(current.note ?? '')} onChange={(event) => setCurrent({ ...current, note: event.target.value })} /></label>
@@ -386,8 +409,8 @@ function Orders() {
     <section>
       <p className="ad__msg">{notice}</p>
       <table className="ad__table">
-        <thead><tr><th>Nr.</th><th>Status</th><th>E-Mail</th></tr></thead>
-        <tbody>{orders.map((order) => <tr key={order.id}><td><button type="button" onClick={() => void open(order.id)}>{order.number}</button></td><td>{order.status}</td><td>{order.email}</td></tr>)}</tbody>
+        <thead><tr><th>Nr.</th><th>Status</th><th>E-Mail</th><th>Hinweis</th></tr></thead>
+        <tbody>{orders.map((order) => <tr key={order.id}><td><button type="button" onClick={() => void open(order.id)}>{order.number}</button></td><td>{order.status}</td><td>{order.email}</td><td>{order.shortfall ? <strong className="ad__warn">{SHORTFALL}</strong> : ''}</td></tr>)}</tbody>
       </table>
     </section>
   );

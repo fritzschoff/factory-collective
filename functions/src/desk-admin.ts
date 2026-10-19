@@ -4,7 +4,7 @@ import type { Firestore } from 'firebase-admin/firestore';
 
 const ORDER_STATUSES: readonly OrderStatus[] = ['paid', 'in_progress', 'shipped', 'done', 'awaiting_payment', 'cancelled'];
 
-export async function listOrders(db: Firestore): Promise<{ id: string; number: number; status: string; email: string; amountTotal: number | null; createdAt: string }[]> {
+export async function listOrders(db: Firestore): Promise<{ id: string; number: number; status: string; email: string; amountTotal: number | null; createdAt: string; shortfall: boolean }[]> {
   const snap = await db.collection('orders').get();
   return snap.docs.map((doc) => ({
     id: doc.id,
@@ -13,6 +13,7 @@ export async function listOrders(db: Firestore): Promise<{ id: string; number: n
     email: String(doc.get('email') ?? ''),
     amountTotal: typeof doc.get('amountTotal') === 'number' ? doc.get('amountTotal') : null,
     createdAt: String(doc.get('createdAt') ?? ''),
+    shortfall: doc.get('shortfall') === true,
   })).sort((a, b) => b.number - a.number);
 }
 
