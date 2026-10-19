@@ -2,8 +2,8 @@ import type { SoonKey } from '@/content/soon';
 import type { WorldId } from '@/lib/nav/world';
 import type { ProductKind } from '@/lib/types';
 
-/** How many pieces a series or group has — counted from the catalogue, never typed in. */
-export interface CountOf { kind: ProductKind; group?: string }
+/** How many pieces a series, a group, or a studio series has — counted from the catalogue, never typed in. */
+export type CountOf = { kind: ProductKind; group?: string } | { series: 'ci' | 'lp' };
 
 /** A row of the menu: a link (with the pictures its hover window shows), or a coming-soon entry. */
 export type NavEntry =
@@ -82,11 +82,11 @@ export const NAV: NavWorld[] = [
     id: 'studio', label: 'Studio', verb: 'to enter', line: 'The space. The works are for sale: the original, and two print editions.',
     enter: { label: 'Enter the Studio', href: '/studio/' }, win: ['art/CI-07', 'art/LP-02-2', 'art/CI-detail'], cap: 'CI / 07 · LP / 02',
     columns: [
-      [{ head: { label: 'Conceptual Interference', href: '/studio/conceptual-interference/', win: ['art/CI-07', 'art/CI-03', 'art/CI-11', 'art/CI-14'], cap: 'CI / 07 · 03 · 11 · 14' }, note: '( 15 )', items: [
+      [{ head: { label: 'Conceptual Interference', href: '/studio/conceptual-interference/', count: { series: 'ci' }, win: ['art/CI-07', 'art/CI-03', 'art/CI-11', 'art/CI-14'], cap: 'CI / 07 · 03 · 11 · 14' }, items: [
         { label: 'CI / 07  original & prints', href: '/studio/conceptual-interference/ci-07/', win: ['art/CI-07', 'art/CI-detail'], cap: 'CI / 07' },
-        { label: 'All fifteen plates', href: '/studio/conceptual-interference/#all', win: ['art/CI-01', 'art/CI-05', 'art/CI-09', 'art/CI-14'] },
+        { label: 'All plates', href: '/studio/conceptual-interference/#all', count: { series: 'ci' }, win: ['art/CI-01', 'art/CI-05', 'art/CI-09', 'art/CI-14'] },
       ] }],
-      [{ head: { label: 'Layer Paintings', href: '/studio/layer-paintings/', win: ['art/LP-02-1', 'art/LP-02-2', 'art/LP-02-3'], cap: 'LP / 02 · three states' }, note: '( 4 )', items: [
+      [{ head: { label: 'Layer Paintings', href: '/studio/layer-paintings/', count: { series: 'lp' }, win: ['art/LP-02-1', 'art/LP-02-2', 'art/LP-02-3'], cap: 'LP / 02 · three states' }, items: [
         { label: 'LP / 02  triptych & prints', href: '/studio/layer-paintings/lp-02/', win: ['art/LP-02-1', 'art/LP-02-2', 'art/LP-02-3'], cap: 'LP / 02' },
         { label: 'Choose a state · poster, archival', href: '/studio/layer-paintings/lp-02/#states', win: ['art/LP-02-2', 'art/LP-01-2', 'art/LP-04-3'] },
       ] }],

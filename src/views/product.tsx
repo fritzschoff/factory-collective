@@ -203,7 +203,7 @@ function ScanExtras({ p, cat }: { p: Product; cat: Catalog }) {
         </div>
       </section>
       <Spec p={p} />
-      <Rail title="Cf." note="— the rest of the Scan Series" right={<A href="/atelier/scan-series/">All fifteen&nbsp;&nbsp;→</A>} items={[...rest, ...cat.pick(['BR-A'])].slice(0, 4)} />
+      <Rail title="Cf." note="— the rest of the Scan Series" right={<A href="/atelier/scan-series/">All {cat.shop('scan').length}&nbsp;&nbsp;→</A>} items={[...rest, ...cat.pick(['BR-A'])].slice(0, 4)} />
     </>
   );
 }

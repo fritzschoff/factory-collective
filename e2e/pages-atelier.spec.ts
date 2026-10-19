@@ -3,7 +3,7 @@ import { gotoReady } from './ready';
 
 test('home shows the campaign, four fashion pieces and the rooms', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('Eighteen pieces, cut like a section.')).toBeVisible();
+  await expect(page.getByText(/\d+ pieces, cut like a section\./)).toBeVisible();
   await expect(page.locator('.home__tiles .tile')).toHaveCount(4);
   // bags head: "Read the text" twice · studio head: Scenography
   await expect(page.locator('.sech .soon')).toHaveCount(3);

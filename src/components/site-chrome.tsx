@@ -9,6 +9,7 @@ import { MenuPanel } from '@/components/menu/MenuPanel';
 import { Search } from '@/components/search/Search';
 import { buildMenu } from '@/content/menu';
 import { allPages } from '@/content/pages';
+import { labelled, pieces, workCount } from '@/lib/counts';
 import { getCatalog } from '@/lib/data/catalog';
 import { buildSearchIndex } from '@/lib/search/build';
 
@@ -30,7 +31,15 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
         <main id="main" tabIndex={-1}>{children}</main>
         <Footer sheets={Object.fromEntries(pages.map((p) => [p.path, p.sheet]))} />
         <MenuPanel worlds={buildMenu(cat)} />
-        <Search index={buildSearchIndex(pages, cat)} />
+        <Search index={buildSearchIndex(pages, cat)} quick={[
+          { label: labelled('Fashion', pieces(cat, 'fashion')), href: '/atelier/fashion/' },
+          { label: labelled('Bags', pieces(cat, 'bag')), href: '/atelier/bags/' },
+          { label: labelled('Jewellery', pieces(cat, 'jewellery')), href: '/atelier/jewellery/' },
+          { label: labelled('Scan Series', pieces(cat, 'scan')), href: '/atelier/scan-series/' },
+          { label: labelled('Conceptual Interference', workCount('ci')), href: '/studio/conceptual-interference/' },
+          { label: labelled('Layer Paintings', workCount('lp')), href: '/studio/layer-paintings/' },
+          { label: 'Texts', href: '/factory/' },
+        ]} />
         <EnquireDialog />
         <Toast />
       </BagCatalog>

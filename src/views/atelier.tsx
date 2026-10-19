@@ -5,6 +5,7 @@ import { FashionFilter } from '@/components/shop/FashionFilter';
 import { Soon } from '@/components/soon';
 import { Rail, Tile } from '@/components/tiles';
 import { AxisV, Coming, Crumb, Img, Rule, ShopPoint } from '@/components/ui';
+import { labelled, paren, pieces } from '@/lib/counts';
 import { getCatalog } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
@@ -12,6 +13,7 @@ import { toSummary } from '@/lib/products/summary';
 /** ATELIER hub (sheet 03) */
 export async function AtelierPage() {
   const cat = await getCatalog();
+  const fashionN = pieces(cat, 'fashion');
   const fashion = cat.pick(['JK-004', 'SH-001', 'VT-001', 'TR-001']);
   const newIn = cat.pick(['BG-NEW', 'BR-A', 'OB-037', 'SH-004']);
   return (
@@ -31,15 +33,15 @@ export async function AtelierPage() {
             <p className="micro">( to make )&nbsp;&nbsp;the workshop</p>
             <p className="head6__p">Where the thesis becomes an object you can own. Everything here is cut, cast or printed in small series — and everything here can be bought.</p>
           </div>
-          <p className="head6__r"><A href="/atelier/fashion/">Fashion ( 18 )</A> · <A href="/atelier/bags/">Accessories ( 4 )</A> · <A href="/atelier/jewellery/">Jewellery ( 5 )</A> · <A href="/atelier/scan-series/">Objects ( 15 )</A> · <Soon k="furniture" /></p>
+          <p className="head6__r"><A href="/atelier/fashion/">{labelled('Fashion', fashionN)}</A> · <A href="/atelier/bags/">{labelled('Accessories', pieces(cat, 'bag'))}</A> · <A href="/atelier/jewellery/">{labelled('Jewellery', pieces(cat, 'jewellery'))}</A> · <A href="/atelier/scan-series/">{labelled('Objects', pieces(cat, 'scan'))}</A> · <Soon k="furniture" /></p>
         </header>
       </Sp>
       <Sp s="m">
-        <Rail title="Fashion" note="( 18 )" right={<A href="/atelier/fashion/">All 18 pieces&nbsp;&nbsp;→</A>} items={fashion} ratio="17/21" />
+        <Rail title="Fashion" note={paren(fashionN)} right={<A href="/atelier/fashion/">All {fashionN} pieces&nbsp;&nbsp;→</A>} items={fashion} ratio="17/21" />
       </Sp>
-      <Sp s="m"><Room slot="bags/BG-NEW" pos="50% 44%" kick="Accessories" title="Bag / Profile Series" href="/atelier/bags/" text="Carrying as a spatial question. Profiles, chambers and constructive logic instead of fashion types — mobile architecture at the scale of the body. Four bags drawn into the series, eleven still to come." links={[{ label: 'Bags ( 4 )', href: '/atelier/bags/' }, { label: 'Leather', href: '/atelier/bags/' }, { label: 'Read the text', soon: 'bagText' }]} /></Sp>
-      <Sp s="m"><Room slot="jewellery/hero" pos="50% 42%" kick="Jewellery" title="Ordinary Objects, in silver" href="/atelier/jewellery/" text="A spirit level, a screw clamp, a sheet of corrugated metal, a structural profile, a folding clasp — reforged exactly, in silver and gold. Not referenced. Translated." links={[{ label: 'Bangles ( 3 )', href: '/atelier/jewellery/' }, { label: 'Cuffs ( 1 )', href: '/atelier/jewellery/' }, { label: 'Bracelets ( 1 )', href: '/atelier/jewellery/' }, { label: 'Rings', soon: 'rings' }, { label: 'Read the text', href: '/factory/ordinary-objects/' }]} /></Sp>
-      <Sp s="m"><Room slot="scan/life-garden" pos="50% 56%" kick="Objects" title="Scan Series" href="/atelier/scan-series/" text="Fifteen found objects scanned, printed in ceramic and glazed by hand. The form is a perfect copy; the surface never repeats. The same thesis as the jewellery, at the scale of a table." links={[{ label: 'Vases ( 3 )', href: '/atelier/scan-series/' }, { label: 'Catch-alls ( 5 )', href: '/atelier/scan-series/' }, { label: 'Holders ( 4 )', href: '/atelier/scan-series/' }, { label: 'Trays ( 3 )', href: '/atelier/scan-series/' }]} /></Sp>
+      <Sp s="m"><Room slot="bags/BG-NEW" pos="50% 44%" kick="Accessories" title="Bag / Profile Series" href="/atelier/bags/" text={`Carrying as a spatial question. Profiles, chambers and constructive logic instead of fashion types — mobile architecture at the scale of the body. ${pieces(cat, 'bag')} bags drawn into the series, eleven still to come.`} links={[{ label: labelled('Bags', pieces(cat, 'bag')), href: '/atelier/bags/' }, { label: 'Leather', href: '/atelier/bags/' }, { label: 'Read the text', soon: 'bagText' }]} /></Sp>
+      <Sp s="m"><Room slot="jewellery/hero" pos="50% 42%" kick="Jewellery" title="Ordinary Objects, in silver" href="/atelier/jewellery/" text="A spirit level, a screw clamp, a sheet of corrugated metal, a structural profile, a folding clasp — reforged exactly, in silver and gold. Not referenced. Translated." links={[{ label: labelled('Bangles', pieces(cat, 'jewellery', 'bangles')), href: '/atelier/jewellery/' }, { label: labelled('Cuffs', pieces(cat, 'jewellery', 'cuffs')), href: '/atelier/jewellery/' }, { label: labelled('Bracelets', pieces(cat, 'jewellery', 'bracelets')), href: '/atelier/jewellery/' }, { label: 'Rings', soon: 'rings' }, { label: 'Read the text', href: '/factory/ordinary-objects/' }]} /></Sp>
+      <Sp s="m"><Room slot="scan/life-garden" pos="50% 56%" kick="Objects" title="Scan Series" href="/atelier/scan-series/" text={`${pieces(cat, 'scan')} found objects scanned, printed in ceramic and glazed by hand. The form is a perfect copy; the surface never repeats. The same thesis as the jewellery, at the scale of a table.`} links={[{ label: labelled('Vases', pieces(cat, 'scan', 'vases')), href: '/atelier/scan-series/' }, { label: labelled('Catch-alls', pieces(cat, 'scan', 'catch-alls')), href: '/atelier/scan-series/' }, { label: labelled('Holders', pieces(cat, 'scan', 'holders')), href: '/atelier/scan-series/' }, { label: labelled('Trays', pieces(cat, 'scan', 'trays')), href: '/atelier/scan-series/' }]} /></Sp>
       <Sp s="m">
         <Coming title="Furniture&nbsp;&nbsp;( )" text="The profile at the scale of a room. In work." link="Notify me&nbsp;&nbsp;→" href="/contact/?subject=notify-furniture" />
         <p className="coming-note">The Atelier only shows what exists. The empty bracket is the inventory of what does not — kept visible on purpose.</p>
@@ -72,7 +74,7 @@ export async function FashionPage() {
           <div className="head6__l">
             <h1 className="title">Fashion <span className="sub">( {cat.shop('fashion').length} )</span></h1>
             <p className="micro">{'//'} cut like a section</p>
-            <p className="head6__p">Eighteen pieces built from one profile. Seams sit where a joint would sit; a shoulder carries the way a lintel carries. Cut once, in small series, and not re-issued.</p>
+            <p className="head6__p">{cat.shop('fashion').length} pieces built from one profile. Seams sit where a joint would sit; a shoulder carries the way a lintel carries. Cut once, in small series, and not re-issued.</p>
           </div>
           <p className="head6__r"><A href="/factory/tectonics-without-origin/">Tectonics without origin — the text&nbsp;&nbsp;→</A><br /><span className="sub">Why the garment is drawn before it is cut.</span></p>
         </header>
