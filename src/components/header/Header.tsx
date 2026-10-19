@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Suspense, useSyncExternalStore, type ReactNode } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import { BagCount } from '@/components/shop/BagCount';
 import { cx } from '@/lib/cx';
+import { usePagePath } from '@/lib/nav/page-path';
 import { worldOf, type WorldId } from '@/lib/nav/world';
 import { signGeometry, windowShape } from '@/lib/sign/geometry';
 
@@ -50,7 +50,7 @@ const Small = ({ children }: { children: ReactNode }) => <Suspense fallback={nul
 
 /** A room label: Factory, Atelier or Studio, bracketed on the page of its room. */
 function Room({ id, text, x, first = false }: { id: WorldId; text: string; x: number; first?: boolean }) {
-  const world = worldOf(usePathname());
+  const world = worldOf(usePagePath());
   const { menu, openMenu } = useChrome();
   return (
     <button type="button" className={cx(first && 'is-first', world === id && 'is-on')} style={at(x)} aria-haspopup="dialog" aria-controls="menu" aria-expanded={menu.open && menu.tab === id} onClick={() => openMenu(id)}>
@@ -61,14 +61,14 @@ function Room({ id, text, x, first = false }: { id: WorldId; text: string; x: nu
 
 /** Campaigns and About, grey, on the right. */
 function Side({ id, text }: { id: 'campaigns' | 'about'; text: string }) {
-  const world = worldOf(usePathname());
+  const world = worldOf(usePagePath());
   const { menu, openMenu } = useChrome();
   return <button type="button" className={cx(world === id && 'is-on')} aria-haspopup="dialog" aria-controls="menu" aria-expanded={menu.open && menu.tab === id} onClick={() => openMenu(id)}>{text}</button>;
 }
 
 /** The ( or ) of the sign beside Atelier: on every page but the Factory and Studio rooms, which bracket their own label. */
 function Bracket({ x, glyph }: { x: number; glyph: string }) {
-  const world = worldOf(usePathname());
+  const world = worldOf(usePagePath());
   return world === 'factory' || world === 'studio' ? null : <span className="hd__br" style={at(x)} aria-hidden="true">{glyph}</span>;
 }
 
