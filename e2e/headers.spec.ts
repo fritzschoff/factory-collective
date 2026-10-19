@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-// the old server's values (Ruling P50); the Content-Security-Policy comes later
 const SECURITY = {
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
@@ -20,5 +19,22 @@ for (const [what, path, status] of [
     expect(res.status()).toBe(status);
     expect(res.headers()).toMatchObject(SECURITY);
     expect(res.headers()['x-powered-by']).toBeUndefined();
+    const policy = res.headers()['content-security-policy-report-only'];
+    expect(policy).toContain("default-src 'self'");
+    expect(policy).toContain("frame-ancestors 'self'");
+    expect(policy).toContain("form-action 'self'");
+    expect(policy).toContain("base-uri 'self'");
+    expect(policy).toContain("object-src 'none'");
+    expect(policy).toContain('https://firebasestorage.googleapis.com');
+    expect(policy).toContain('https://*.cloudfunctions.net');
+    expect(policy).not.toContain('unsafe-inline');
+    expect(res.headers()['content-security-policy']).toBeUndefined();
   });
 }
+
+test('a coming-soon redirect does not carry the security headers', async ({ request }) => {
+  const res = await request.get('/press/', { maxRedirects: 0 });
+  expect(res.status()).toBe(307);
+  expect(res.headers()['content-security-policy-report-only']).toBeUndefined();
+  expect(res.headers()['x-content-type-options']).toBeUndefined();
+});
