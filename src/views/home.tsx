@@ -3,6 +3,7 @@ import { A } from '@/components/link';
 import { Sp } from '@/components/quiet';
 import { Tile } from '@/components/tiles';
 import { AxisV, Img, Micro, Plate, SectionAA, ShopPoint } from '@/components/ui';
+import { SITE } from '@/content/site';
 import { getCatalog } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
@@ -17,6 +18,8 @@ export async function HomePage() {
   const bnew = cat.byId('BG-NEW');
   return (
     <div className="home">
+      {/* the page's heading for search engines and screen readers; the sign in the header is its visible name (Ruling P46) */}
+      <h1 className="sr">{SITE.name}</h1>
       {/* hero: campaign, edge to edge */}
       <section className="hero n" aria-label="Campaign ( 01 )">
         <div className="hero__pics">

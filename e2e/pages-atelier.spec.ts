@@ -9,6 +9,13 @@ test('home shows the campaign, four fashion pieces and the rooms', async ({ page
   await expect(page.locator('.sech .soon')).toHaveCount(3);
 });
 
+test('the home page has one h1, the name of the collective, for search engines and screen readers', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('h1')).toHaveText('Concept. ( ) Collective');
+  await expect(page.locator('h1')).toHaveClass('sr');
+});
+
 test('quick add from a home tile fills the bag', async ({ page }) => {
   await gotoReady(page, '/');
   const add = page.locator('.home__tiles .tile').first().getByRole('button', { name: 'Add' });
