@@ -8,6 +8,18 @@ test('studio: exhibitions, sound, scenography, architecture are coming soon', as
   await expect(page.locator('a[href*="/studio/exhibitions/"], a[href*="/studio/sound/"]')).toHaveCount(0);
 });
 
+test('exhibitions and sound offer a notify link that preselects the contact subject', async ({ page }) => {
+  await gotoReady(page, '/studio/');
+  const box = (name: RegExp) => page.locator('.coming', { has: page.getByRole('heading', { name }) });
+  await expect(box(/Exhibitions/)).toContainText('The show is over');
+  await expect(box(/Exhibitions/).getByRole('link', { name: /Notify me/ })).toHaveAttribute('href', '/contact/?subject=notify-exhibition');
+  await expect(box(/^Sound/)).toContainText('Not yet published');
+  await expect(box(/^Sound/).getByRole('link', { name: /Notify me/ })).toHaveAttribute('href', '/contact/?subject=notify-sound');
+  await box(/Exhibitions/).getByRole('link', { name: /Notify me/ }).click();
+  await expect(page).toHaveURL(/\/contact\/\?subject=notify-exhibition$/);
+  await expect(page.locator('.cform').getByLabel('Subject')).toHaveValue('notify');
+});
+
 test('a layer painting: choose a state, add the archival print', async ({ page }) => {
   await gotoReady(page, '/studio/layer-paintings/lp-02/');
   await page.locator('#states').getByText('State 03').click();

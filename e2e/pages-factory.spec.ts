@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test';
 import { gotoReady } from './ready';
 
+test('a text keeps row 03 coming soon, and the theses name the works they bind', async ({ page }) => {
+  await gotoReady(page, '/factory/tectonics-without-origin/');
+  const row = page.locator('.rows__r').filter({ hasText: 'Bag / Profile Series' });
+  await expect(row).toContainText('03');
+  await expect(row).toHaveClass(/is-red/);
+  await expect(row.getByRole('link')).toHaveCount(0);
+  await gotoReady(page, '/factory/');
+  await expect(page.locator('#t01')).toContainText('// profile');
+  await expect(page.locator('#t02')).toContainText('// ordinary object');
+  await expect(page.locator('#theses .thesis.is-red')).toHaveCount(2);
+  await expect(page.locator('.tile--idx', { hasText: 'JK / 001' })).toContainText('Thesis T01');
+  await expect(page.locator('.tile--idx', { hasText: 'OB / 011' })).toContainText('Thesis T02');
+});
+
 test('factory: text 03, theses T03 / T04 and three side rooms are coming soon', async ({ page }) => {
   await page.goto('/factory/');
   await expect(page.getByRole('heading', { level: 1, name: 'Factory' })).toBeVisible();

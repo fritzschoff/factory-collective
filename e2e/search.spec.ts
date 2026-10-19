@@ -13,6 +13,15 @@ async function openWithSlash(page: Page) {
   return input;
 }
 
+test('control k opens the search from another room', async ({ page }) => {
+  await page.goto('/factory/');
+  const input = page.getByRole('combobox', { name: 'Search the site' });
+  await expect(async () => {
+    await page.keyboard.press('Control+k');
+    await expect(input).toBeFocused({ timeout: 500 });
+  }).toPass();
+});
+
 test('slash opens the search; a code finds its piece; Enter goes there', async ({ page }) => {
   await page.goto('/');
   const input = await openWithSlash(page);
