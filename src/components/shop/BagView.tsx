@@ -63,7 +63,7 @@ export function BagView({ products }: { products: Record<string, ProductSummary>
     // as on the old site: the list column keeps its place, the summary is not shown
     return (
       <div className="bag__cols">
-        <div className="bag__list">
+        <div className="bag__list" aria-live="polite">
           <div className="bag__empty"><p>Your bag is empty.</p><Link className="pill" href="/atelier/">Go to the Atelier&nbsp;&nbsp;→</Link></div>
         </div>
       </div>

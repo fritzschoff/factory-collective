@@ -17,6 +17,7 @@ export function useDialog(
   open: boolean,
   onClose: () => void,
   initialFocus?: RefObject<HTMLElement | null>,
+  lockScroll = true,
 ): void {
   // The latest onClose without re-running the effect: a new inline callback must not move focus.
   const closeLatest = useEffectEvent(onClose);
@@ -24,8 +25,8 @@ export function useDialog(
   useEffect(() => {
     const el = ref.current;
     if (!open || !el) return;
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.body.classList.add('is-locked');
+    const previous = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
+    if (lockScroll) document.body.classList.add('is-locked');
     (initialFocus?.current ?? tabOrder(el)[0])?.focus({ preventScroll: true });
 
     const onKey = (e: KeyboardEvent) => {
@@ -47,8 +48,8 @@ export function useDialog(
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.classList.remove('is-locked');
+      if (lockScroll) document.body.classList.remove('is-locked');
       previous?.focus({ preventScroll: true });
     };
-  }, [open, ref, initialFocus]);
+  }, [open, ref, initialFocus, lockScroll]);
 }

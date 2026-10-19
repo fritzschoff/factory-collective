@@ -45,6 +45,7 @@ export function Search({ index }: { index: SearchEntry[] }) {
 
   const go = (href: string) => { closeSearch(); router.push(href); };
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return;
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && flat.length) {
       e.preventDefault();
       const down = e.key === 'ArrowDown';
@@ -61,20 +62,23 @@ export function Search({ index }: { index: SearchEntry[] }) {
       <div className="search__top"><span className="micro">Search</span><button type="button" onClick={closeSearch}>( Close )</button></div>
       <form className="search__form" role="search" onSubmit={(e) => e.preventDefault()}>
         <label htmlFor="q" className="sr">Search the site</label>
-        <input ref={input} id="q" type="search" autoComplete="off" placeholder="Search — a piece, a code, a text" value={q} onChange={(e) => { setQ(e.target.value); setSel(-1); }} onKeyDown={onKeyDown} />
+        <input ref={input} id="q" type="search" role="combobox" aria-autocomplete="list" aria-expanded={flat.length > 0} aria-controls="search-results" aria-activedescendant={sel >= 0 ? `sres-${sel}` : undefined} autoComplete="off" placeholder="Search — a piece, a code, a text" value={q} onChange={(e) => { setQ(e.target.value); setSel(-1); }} onKeyDown={onKeyDown} />
       </form>
-      <div className="search__res" aria-live="polite">
+      <div id="search-results" className="search__res" role="listbox" aria-label="Results" aria-live="polite">
         {q.trim() && !flat.length && <p className="sres__none">Nothing drawn under that name. ( )</p>}
         {groups.map(([kind, list]) => (
           <section className="sres__g" key={kind}>
             <h3>{kind}</h3>
-            {list.map((x) => (
-              <Link key={x.h + x.n} className={cx('sres__a', flat.indexOf(x) === sel && 'is-sel')} href={x.h} onClick={closeSearch}>
+            {list.map((x) => {
+              const i = flat.indexOf(x);
+              return (
+              <Link key={x.h + x.n} id={`sres-${i}`} role="option" aria-selected={i === sel} className={cx('sres__a', i === sel && 'is-sel')} href={x.h} onClick={closeSearch}>
                 <span className="sres__t">{x.i && <Image src={x.i} alt="" width={54} height={66} />}</span>
                 <span className="sres__n">{x.n}<br /><span className="sres__m">{x.s}</span></span>
                 <span className="sres__m">{x.p ?? ''}</span>
               </Link>
-            ))}
+              );
+            })}
           </section>
         ))}
       </div>

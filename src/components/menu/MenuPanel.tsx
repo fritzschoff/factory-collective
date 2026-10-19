@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import { SignGlyphs, SignRow } from '@/components/header/Header';
 import { BagCount } from '@/components/shop/BagCount';
@@ -85,6 +85,15 @@ export function MenuPanel({ worlds }: { worlds: MenuWorld[] }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialog(ref, menu.open, closeMenu, closeRef);
   const current = worlds.find((w) => w.id === menu.tab) ?? worlds[0];
+  const onTabs = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = worlds.findIndex((w) => w.id === current.id);
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? worlds.length - 1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? i - 1 : null;
+    if (next === null) return;
+    e.preventDefault();
+    const id = worlds[(next + worlds.length) % worlds.length].id;
+    openMenu(id);
+    document.getElementById(`mp-tab-${id}`)?.focus();
+  };
 
   return (
     <>
@@ -92,9 +101,9 @@ export function MenuPanel({ worlds }: { worlds: MenuWorld[] }) {
       <div ref={ref} id="menu" className={cx('mp', menu.open && 'is-open')} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!menu.open} inert={!menu.open}>
         <div className="mp__in">
           <div className="mp__top">
-            <div className="mp__tabs" role="tablist" aria-label="Rooms">
+            <div className="mp__tabs" role="tablist" aria-label="Rooms" onKeyDown={onTabs}>
               {worlds.map((w) => (
-                <button key={w.id} id={`mp-tab-${w.id}`} type="button" role="tab" aria-selected={w.id === current.id} aria-controls={`mp-${w.id}`} className={cx(w.quiet && 'is-quiet', w.id === current.id && 'is-on')} onClick={() => openMenu(w.id)}>{w.label}</button>
+                <button key={w.id} id={`mp-tab-${w.id}`} type="button" role="tab" aria-selected={w.id === current.id} aria-controls={`mp-${w.id}`} tabIndex={w.id === current.id ? 0 : -1} className={cx(w.quiet && 'is-quiet', w.id === current.id && 'is-on')} onClick={() => openMenu(w.id)}>{w.label}</button>
               ))}
             </div>
             <div className="mp__util">

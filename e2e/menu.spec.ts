@@ -114,7 +114,8 @@ test.describe('menu', () => {
     await page.goto('/');
     await openMenu(page, enterOnMenuButton(page));
     await expect(menu(page).getByRole('button', { name: '( Close )' })).toBeFocused();
-    for (let i = 0; i < 5; i++) await page.keyboard.press('Shift+Tab'); // Close, then back over About, Campaigns, Studio, Atelier
+    await page.keyboard.press('Shift+Tab'); // the selected room; the others are reached with the arrow keys
+    await page.keyboard.press('Home');
     const first = menu(page).getByRole('tab', { name: 'Factory' });
     await expect(first).toBeFocused();
     await panelHasComeDown(page);

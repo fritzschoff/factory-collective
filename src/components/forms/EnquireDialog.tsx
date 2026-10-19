@@ -46,7 +46,7 @@ export function EnquireDialog() {
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (enquiry.open && !d.open) d.showModal();
+    if (enquiry.open && !d.open) { d.showModal(); d.querySelector<HTMLElement>('input[name="name"]')?.focus(); }
     if (!enquiry.open && d.open) d.close();
   }, [enquiry.open]);
   return (

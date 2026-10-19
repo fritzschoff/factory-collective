@@ -99,7 +99,7 @@ export function BuyForm({ product, note }: { product: ProductSummary; note: stri
           <p className="buy__note"><A href="/contact/?subject=notify">Notify me</A></p>
         </>
       ) : (
-        <button className="pill pill--block" type="submit" disabled={added || !hydrated || chosenGone}>{added ? 'Added  ✓' : 'Add to bag'}</button>
+        <button className="pill pill--block" type="submit" disabled={!hydrated || chosenGone} aria-disabled={added || undefined}>{added ? 'Added  ✓' : 'Add to bag'}</button>
       )}
       <p className="buy__note">{note}</p>
       <p className="buy__msg" role="status">{typeof left === 'number' && left > 0 && left <= 3 ? `Only ${left} left` : ''}</p>
@@ -147,7 +147,13 @@ function SizeGuideLink() {
       href="#acc-measurements"
       onClick={(e) => {
         const d = document.getElementById('acc-measurements');
-        if (d instanceof HTMLDetailsElement) { e.preventDefault(); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        if (d instanceof HTMLDetailsElement) {
+          e.preventDefault();
+          d.open = true;
+          d.tabIndex = -1;
+          d.focus({ preventScroll: true });
+          d.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        }
       }}
     >
       Size guide&nbsp;&nbsp;→

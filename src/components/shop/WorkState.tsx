@@ -66,7 +66,7 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
 
   return (
     <>
-      <button className="pill pill--ghost" type="button" disabled={added || !hydrated} onClick={onClick}>{added ? 'Added  ✓' : needsState ? 'Choose a state · Add' : 'Add to bag'}</button>
+      <button className="pill pill--ghost" type="button" disabled={!hydrated} aria-disabled={added || undefined} onClick={onClick}>{added ? 'Added  ✓' : needsState ? 'Choose a state · Add' : 'Add to bag'}</button>
       <p className={cx('buy__msg', msg && 'is-err')} role="status">{msg}</p>
     </>
   );

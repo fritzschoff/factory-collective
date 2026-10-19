@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PRODUCTS } from '@/content/catalog';
 import { toSummary } from '@/lib/products/summary';
 import { renderWithChrome } from '@/test/chrome';
@@ -10,6 +10,15 @@ import { QuickAddButton } from './QuickAdd';
 
 const summary = (id: string) => toSummary({ ...PRODUCTS.find((p) => p.id === id)!, priceCents: 26000 });
 const stored = () => JSON.parse(localStorage.getItem('cfc.bag.v1') ?? '[]');
+
+const realOffsetParent = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetParent');
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'offsetParent', {
+    configurable: true,
+    get() { return (this as HTMLElement).closest('[hidden]') ? null : (this as HTMLElement).parentElement; },
+  });
+});
+afterAll(() => { if (realOffsetParent) Object.defineProperty(HTMLElement.prototype, 'offsetParent', realOffsetParent); });
 
 describe('QuickAddButton', () => {
   afterEach(() => localStorage.clear());
@@ -33,6 +42,7 @@ describe('QuickAddButton', () => {
     const openBox = () => {
       renderWithChrome(<QuickAddButton product={summary('SH-001')} />);
       const add = screen.getByRole('button', { name: 'Add' });
+      act(() => add.focus());
       fireEvent.click(add);
       return add;
     };
@@ -41,6 +51,18 @@ describe('QuickAddButton', () => {
       openBox();
       expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement);
       expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Light grey' }));
+    });
+
+    it('Tab stays inside the box, and Shift+Tab from the first choice does not close it', () => {
+      openBox();
+      const first = screen.getByRole('button', { name: 'Light grey' });
+      expect(first).toHaveFocus();
+      fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add to bag' })).toHaveFocus();
+      fireEvent.keyDown(document.activeElement!, { key: 'Tab' });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(first).toHaveFocus();
     });
 
     it('Escape closes the box and puts focus back on the button', () => {
