@@ -1,4 +1,4 @@
-import { slotSrc } from '@/lib/images';
+import { mediaUrl, slotSrc } from '@/lib/images';
 import type { OptionDef, Product, ProductKind } from '@/lib/types';
 
 /** What the browser needs to know about a product (bag, quick add): plain data, no functions. */
@@ -21,7 +21,7 @@ export interface ProductSummary {
 export function toSummary(p: Product): ProductSummary {
   return {
     id: p.id, code: p.code, name: p.name, sub: p.sub ?? p.material, kind: p.kind, href: p.href,
-    img: slotSrc(p.images[0]), ground: !!p.ground, pos: p.pos ?? null,
+    img: mediaUrl(p.media, p.images[0]) ?? slotSrc(p.images[0]), ground: !!p.ground, pos: p.pos ?? null,
     priceCents: p.priceCents ?? null, lead: p.lead, options: p.options, work: p.work ?? null,
   };
 }

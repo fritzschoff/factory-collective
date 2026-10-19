@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { postApi } from '@/lib/api';
+import { postApi, submitOnce } from '@/lib/api';
 import { useHydrated } from '@/lib/use-hydrated';
 
 export function NewsletterForm() {
@@ -16,7 +16,7 @@ export function NewsletterForm() {
     setMsg('…');
     setBusy(true);
     try {
-      await postApi('newsletter', Object.fromEntries(new FormData(form)));
+      await submitOnce('newsletter', (idempotencyKey) => postApi('newsletter', Object.fromEntries(new FormData(form)), { idempotencyKey }));
       setMsg('Subscribed. One letter a month.');
       form.reset();
     } catch (err) {

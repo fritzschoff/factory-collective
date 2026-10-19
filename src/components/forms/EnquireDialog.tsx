@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
-import { postApi } from '@/lib/api';
+import { postApi, submitOnce } from '@/lib/api';
 
 function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
   const [msg, setMsg] = useState('');
@@ -15,7 +15,7 @@ function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
     setMsg('Sending …');
     setBusy(true);
     try {
-      await postApi('enquire', { ...Object.fromEntries(new FormData(form)), work: what, subject: 'original' });
+      await submitOnce('enquire-dialog', (idempotencyKey) => postApi('enquire', { ...Object.fromEntries(new FormData(form)), work: what, subject: 'original' }, { idempotencyKey }));
       setMsg('Thank you. We write back within two working days.');
       form.reset();
     } catch (err) {

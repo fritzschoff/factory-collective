@@ -5,6 +5,7 @@
   "engines": {
     "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
   },
+  "workspaces": ["packages/shop-core", "functions"],
   "scripts": {
     "predev": "node scripts/images-manifest.mjs",
     "dev": "next dev",
@@ -12,12 +13,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit && tsc -p packages/shop-core --noEmit && tsc -p functions --noEmit",
     "images:report": "node scripts/images-manifest.mjs && tsx scripts/images-report.ts",
     "sign:css": "node scripts/sign-css.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "emulators": "node scripts/firebase-project.mjs && firebase emulators:start",
+    "deploy:firebase": "node scripts/firebase-project.mjs --require-project && firebase deploy --only functions,firestore,storage",
+    "seed:catalog": "tsx scripts/seed-catalog.ts",
+    "test:functions": "vitest run --config functions/vitest.config.mts"
   },
   "dependencies": {
     "next": "16.4.0",
@@ -25,6 +30,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
     "@playwright/test": "^1.64.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -35,7 +41,10 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9.39.5",
+    "firebase-admin": "^13.6.0",
+    "firebase-tools": "^14.20.0",
     "eslint-config-next": "16.4.0",
+    "image-size": "^1.2.1",
     "jsdom": "^29.1.1",
     "pngjs": "^7.0.0",
     "tsx": "^4.23.15",

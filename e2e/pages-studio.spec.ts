@@ -34,7 +34,7 @@ test('enquiring about an original says it is not connected yet', async ({ page }
   await dialog.getByLabel('Name').fill('A. Person');
   await dialog.getByLabel('E-mail').fill('a@example.com');
   await dialog.getByRole('button', { name: 'Send enquiry' }).click();
-  await expect(dialog.getByRole('status')).toHaveText('Sending messages is not connected yet.');
+  await expect(dialog.getByRole('status')).toHaveText(process.env.NEXT_PUBLIC_API_BASE ? 'Thank you. We write back within two working days.' : 'Sending messages is not connected yet.');
 });
 
 test('Esc closes the enquiry dialog and focus returns to the button', async ({ page }) => {

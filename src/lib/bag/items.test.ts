@@ -22,6 +22,14 @@ describe('bag lines', () => {
     const items = addLine([], 'OB-011', {});
     expect(setQty(items, items[0].key, 0)).toEqual([]);
   });
+  it('drops a quantity that is not a whole number', () => {
+    const items = addLine([], 'OB-011', {});
+    expect(addLine(items, 'JK-001', white, Number.NaN)).toBe(items);
+    expect(addLine(items, 'JK-001', white, -2)).toBe(items);
+    expect(addLine(items, 'JK-001', white, 1.5)).toBe(items);
+    expect(setQty(items, items[0].key, Number.NaN)).toBe(items);
+    expect(setQty(items, items[0].key, 1.5)).toBe(items);
+  });
 });
 
 describe('parseBag', () => {
@@ -40,6 +48,15 @@ describe('parseBag', () => {
     expect(parseBag(raw)).toEqual([
       { key: 'JK-001|size=50', id: 'JK-001', qty: 2, opts: { size: { v: '50', l: '50' } } },
       { key: 'OB-011|', id: 'OB-011', qty: 9, opts: {} },
+    ]);
+  });
+  it('merges lines that repair to the same key', () => {
+    const raw = JSON.stringify([
+      { id: 'JK-001', qty: 2, opts: { size: { v: '50', l: '50' } } },
+      { key: 'other', id: 'JK-001', qty: 3, opts: { size: { v: '50', l: '50' } } },
+    ]);
+    expect(parseBag(raw)).toEqual([
+      { key: 'JK-001|size=50', id: 'JK-001', qty: 5, opts: { size: { v: '50', l: '50' } } },
     ]);
   });
 });

@@ -120,6 +120,7 @@ describe('EnquireDialog', () => {
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
     fireEvent.click(send);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
   });
 
   it('opens the button again when the request fails', async () => {

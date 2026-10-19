@@ -10,6 +10,13 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'http', hostname: '127.0.0.1', port: '9199' },
+      { protocol: 'http', hostname: 'localhost', port: '9199' },
+    ],
+  },
   trailingSlash: true,
   poweredByHeader: false,
   cacheComponents: true,

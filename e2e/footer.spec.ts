@@ -21,6 +21,6 @@ test('the newsletter says it is not connected yet', async ({ page }) => {
     if (new URL(page.url()).search) await page.goto('/');
     await page.getByPlaceholder('E-mail').fill('someone@example.com');
     await page.getByRole('button', { name: '( Subscribe )' }).click();
-    await expect(page.locator('.nl__msg')).toHaveText('The newsletter is not connected yet.', { timeout: 1000 });
+    await expect(page.locator('.nl__msg')).toHaveText(process.env.NEXT_PUBLIC_API_BASE ? 'Subscribed. One letter a month.' : 'The newsletter is not connected yet.', { timeout: 1000 });
   }).toPass();
 });

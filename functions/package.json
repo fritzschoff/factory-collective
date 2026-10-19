@@ -1,0 +1,20 @@
+{
+  "name": "cfc-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": { "node": "22" },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=lib/index.js --external:firebase-admin --external:firebase-functions --format=cjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cfc/shop-core": "*",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.6.0",
+    "stripe": "^18.5.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11",
+    "typescript": "^5.9.3"
+  }
+}

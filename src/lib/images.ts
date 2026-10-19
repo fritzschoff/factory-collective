@@ -31,4 +31,10 @@ export function resolveSlot(slot: string, mode: ImageMode = imageMode(), files: 
 
 export const slotSrc = (slot: string): string | null => resolveSlot(slot).src;
 
+export function mediaUrl(media: readonly { slot: string; url: string }[] | undefined, slot: string | undefined): string | undefined {
+  if (!media || !slot) return undefined;
+  const url = media.find((item) => item.slot === slot)?.url;
+  return url || undefined;
+}
+
 export const hasRealPictures = (): boolean => Object.keys(REAL).length > 0;

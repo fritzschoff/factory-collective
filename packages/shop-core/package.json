@@ -1,0 +1,16 @@
+{
+  "name": "@cfc/shop-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./sku": "./src/sku.ts",
+    "./price": "./src/price.ts",
+    "./validate": "./src/validate.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  }
+}

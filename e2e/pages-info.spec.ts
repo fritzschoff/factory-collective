@@ -9,9 +9,8 @@ test('the bag: list, quantity, remove, checkout not connected', async ({ page })
   await expect(page.locator('.bi')).toHaveCount(1);
   await page.getByRole('button', { name: 'One more' }).click();
   await expect(page.locator('.bi__q span')).toHaveText('2');
-  await page.getByRole('button', { name: 'Checkout' }).click();
-  // not getByRole('alert'): Next adds its own route announcer with that role
-  await expect(page.locator('.sum__e')).toHaveText('Checkout is not connected yet.');
+  await expect(page.getByRole('button', { name: 'Checkout' })).toBeDisabled();
+  await expect(page.locator('.sum__e')).toHaveText('This piece has no price yet.');
   await page.getByRole('button', { name: 'Remove' }).click();
   await expect(page.getByText('Your bag is empty.')).toBeVisible();
 });
@@ -47,11 +46,12 @@ test('a stored line whose product no longer exists is dropped from the bag and f
   expect(bag.map((l: { id: string }) => l.id)).toEqual(['OB-011']);
 });
 
-test('thank-you empties the bag', async ({ page }) => {
+test('thank-you without an order leaves the bag', async ({ page }) => {
   await gotoReady(page, '/atelier/scan-series/ob-011/');
   await page.getByRole('button', { name: 'Add to bag' }).click();
   await gotoReady(page, '/bag/thank-you/');
-  await expect(page.locator('.hd__util')).toContainText('Bag ( 0 )');
+  await expect(page.locator('.hd__util')).toContainText('Bag ( 1 )');
+  await expect(page.getByText('Your bag is unchanged.')).toBeVisible();
 });
 
 test('Notify me preselects the subject of the contact form', async ({ page }) => {
@@ -78,7 +78,7 @@ test('the contact form says it is not connected yet', async ({ page }) => {
   await form.getByLabel('E-mail').fill('a@example.com');
   await form.getByLabel('Message').fill('Hello there.');
   await form.getByRole('button', { name: 'Send' }).click();
-  await expect(form.getByRole('status')).toHaveText('Sending messages is not connected yet.');
+  await expect(form.getByRole('status')).toHaveText(process.env.NEXT_PUBLIC_API_BASE ? 'Thank you. We write back within two working days.' : 'Sending messages is not connected yet.');
 });
 
 test('campaign 01 links Film and Behind the set as coming soon', async ({ page }) => {

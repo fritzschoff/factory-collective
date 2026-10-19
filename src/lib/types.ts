@@ -5,9 +5,21 @@ export type ProductKind = 'fashion' | 'bag' | 'jewellery' | 'scan' | 'print';
 export interface OptionValue { id: string; label: string; swatch?: string }
 
 /** One choice the buyer makes before adding to the bag. */
+export type ProductStatus = 'draft' | 'active' | 'archived';
+
+export interface ProductMedia {
+  slot: string;
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+  focus: string | null;
+}
+
 export interface OptionDef {
   id: string;
   label: string;
+  role?: 'variant' | 'config';
   type: 'swatch' | 'size' | 'choice' | 'text';
   values?: OptionValue[];
   note?: string;
@@ -35,6 +47,9 @@ export interface Product {
   description: string;
   /** image slot keys; the first is the main picture, the rest the gallery */
   images: string[];
+  /** storage copies of those slots, when the catalogue comes from Firebase */
+  media?: ProductMedia[];
+  status?: ProductStatus;
   /** object-position of the main picture in crops */
   pos?: string;
   /** main picture is an object on a paper ground */

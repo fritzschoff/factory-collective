@@ -1,15 +1,19 @@
+import { cacheLife } from 'next/cache';
 import { cache } from 'react';
+import type { ShopProduct } from '@cfc/shop-core';
 import { PRODUCTS, WORKS, type Work } from '@/content/catalog';
+import type { SoonKey } from '@/content/soon';
 import manualPrices from '@/content/prices.json';
 import { fmtPrice } from '@/lib/format';
 import type { Product, ProductKind } from '@/lib/types';
 
 /**
- * The only door to product data. Phase 1 reads the catalogue in the code;
- * Phase 2 replaces the body of getCatalog() with the Firebase `catalog` function.
+ * The only door to product data. An empty API base reads the catalogue in the code.
+ * A set base reads the catalog function and keeps the last good result for a minute.
  */
 export interface Catalog {
   readonly products: readonly Product[];
+  readonly archived: readonly Product[];
   byId(id: string): Product | undefined;
   /** these products, in this order; unknown ids are skipped — an editorial pick must not break a page */
   pick(ids: readonly string[]): Product[];
@@ -20,15 +24,20 @@ export interface Catalog {
 }
 
 export function createCatalog(products: readonly Product[]): Catalog {
-  const ids = new Map(products.map((p) => [p.id, p]));
+  const visible = products.filter((p) => (p.status ?? 'active') !== 'draft');
+  const active = visible.filter((p) => (p.status ?? 'active') === 'active');
+  const archived = visible.filter((p) => p.status === 'archived');
+  const all = new Map(visible.map((p) => [p.id, p]));
+  const activeIds = new Map(active.map((p) => [p.id, p]));
   return {
-    products,
-    byId: (id) => ids.get(id),
-    pick: (list) => list.map((id) => ids.get(id)).filter((p): p is Product => p !== undefined),
-    shop: (kind) => products.filter((p) => p.kind === kind),
-    group: (kind, g) => products.filter((p) => p.kind === kind && p.group === g),
-    bySlug: (kind, slug) => products.find((p) => p.kind === kind && p.slug === slug),
-    printsOf: (workId) => products.filter((p) => p.work?.id === workId),
+    products: active,
+    archived,
+    byId: (id) => all.get(id),
+    pick: (list) => list.map((id) => activeIds.get(id)).filter((p): p is Product => p !== undefined),
+    shop: (kind) => active.filter((p) => p.kind === kind),
+    group: (kind, g) => active.filter((p) => p.kind === kind && p.group === g),
+    bySlug: (kind, slug) => visible.find((p) => p.kind === kind && p.slug === slug),
+    printsOf: (workId) => visible.filter((p) => p.work?.id === workId),
   };
 }
 
@@ -47,10 +56,45 @@ export function priceCentsFor(p: Product, manual: Readonly<Record<string, unknow
   return demo ? demoPriceCents(p) : null;
 }
 
-export const getCatalog = cache(async (): Promise<Catalog> => {
-  const demo = process.env.DEMO_PRICES === '1';
-  return createCatalog(PRODUCTS.map((p) => ({ ...p, priceCents: priceCentsFor(p, manualPrices, demo) })));
-});
+const apiBase = (): string | null => (process.env.NEXT_PUBLIC_API_BASE ?? '').replace(/\/$/, '') || null;
+
+function fromShop(product: ShopProduct): Product {
+  const text = product.textLink
+    ? product.textLink.soon
+      ? { soon: product.textLink.soon as SoonKey, label: product.textLink.label }
+      : { href: product.textLink.href ?? '/', label: product.textLink.label }
+    : undefined;
+  return {
+    id: product.id, code: product.code, slug: product.slug, kind: product.kind, group: product.group, name: product.name,
+    material: product.material, sub: product.sub, description: product.description, images: product.images.map((image) => image.slot),
+    media: product.images, pos: product.pos, ground: product.ground, tag: product.tag,
+    options: product.options, spec: product.spec, note: product.note, dims: product.dims, inv: product.inv, text,
+    accordions: product.accordions, href: product.href, priceCents: product.priceCents, lead: product.lead, work: product.work,
+    status: product.status,
+  };
+}
+
+async function loadProducts(): Promise<Product[]> {
+  const base = apiBase();
+  if (process.env.VERCEL_ENV === 'production' && !base) throw new Error('NEXT_PUBLIC_API_BASE is required in production.');
+  if (!base) {
+    const demo = process.env.DEMO_PRICES === '1';
+    return PRODUCTS.map((p) => ({ ...p, priceCents: priceCentsFor(p, manualPrices, demo) }));
+  }
+  const res = await fetch(`${base}/catalog`);
+  if (!res.ok) throw new Error(`catalog responded ${res.status}`);
+  const data = (await res.json()) as { products?: ShopProduct[] };
+  if (!data.products) throw new Error('catalog responded without products');
+  return data.products.map(fromShop);
+}
+
+async function readProducts(): Promise<Product[]> {
+  'use cache';
+  if (process.env.NEXT_RUNTIME) cacheLife({ stale: 60, revalidate: 60, expire: 86400 });
+  return loadProducts();
+}
+
+export const getCatalog = cache(async () => createCatalog(await readProducts()));
 
 /** "from € 45" over the print editions of a work. */
 export function fromPrice(cat: Catalog, w: Work): string {

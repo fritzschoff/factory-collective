@@ -7,6 +7,7 @@ import { ComingTile, IndexGrid, PlateRow } from '@/components/tiles';
 import { AxisV, Coming, Diag, Hair, Img, Lens, LevelMark, MarkBar, Micro, Narrate, NotIn, Opening, OutPlate, Plate, RunOff, SectionAA } from '@/components/ui';
 import { getCatalog } from '@/lib/data/catalog';
 import { fmtPrice, Word } from '@/lib/format';
+import { mediaUrl } from '@/lib/images';
 
 const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
@@ -50,7 +51,7 @@ export async function BagsPage() {
       <Sp s="l"><Lens slot="bags/carried" ratio="1248/720" pos="50% 42%" fx={48} fy={58} cw={43} ch={23} blur={14} caption="Campaign ( 01 )  —  carried: only what lies inside the brackets is in focus" /></Sp>
       <Sp s="l" id="series"><Hair left="The series" right={`( ${shown} of ${drawn} drawn )`} /></Sp>
       <div className="g5 q-idx">
-        {bags.map((b) => <article className="tile tile--idx" key={b.id}><A className="tile__a" href={b.href}><Img slot={b.images[0]} ratio="1/1.2" pos={b.pos} w={230} alt={b.code} sizes="(min-width:1440px) 230px, 40vw" /></A><p className="micro tile__c"><b>{b.code}</b></p><p className="tile__s">{b.name} &nbsp; {fmtPrice(b.priceCents)}</p></article>)}
+        {bags.map((b) => <article className="tile tile--idx" key={b.id}><A className="tile__a" href={b.href}><Img slot={b.images[0]} src={mediaUrl(b.media, b.images[0])} ratio="1/1.2" pos={b.pos} w={230} alt={b.code} sizes="(min-width:1440px) 230px, 40vw" /></A><p className="micro tile__c"><b>{b.code}</b></p><p className="tile__s">{b.name} &nbsp; {fmtPrice(b.priceCents)}</p></article>)}
         <ComingTile title={`${Word(drawn - shown)} more`.toUpperCase()} line="drawn, not yet stitched" ratio="1/1.2" />
       </div>
       <Sp s="l"><Ghost word="ATELIER"><Narrate size="l">{Word(shown)} exist.<br /><span className="g">The series was drawn as fifteen.</span></Narrate></Ghost></Sp>

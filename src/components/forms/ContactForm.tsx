@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState, type FormEvent } from 'react';
-import { postApi } from '@/lib/api';
+import { postApi, submitOnce } from '@/lib/api';
 import { useHydrated } from '@/lib/use-hydrated';
 
 const SUBJECTS = [
@@ -46,7 +46,7 @@ export function ContactForm() {
     setMsg('Sending …');
     setBusy(true);
     try {
-      await postApi('enquire', Object.fromEntries(new FormData(form)));
+      await submitOnce('enquire', (idempotencyKey) => postApi('enquire', Object.fromEntries(new FormData(form)), { idempotencyKey }));
       setMsg('Thank you. We write back within two working days.');
       form.reset();
     } catch (err) {

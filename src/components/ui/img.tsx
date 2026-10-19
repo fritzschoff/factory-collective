@@ -7,6 +7,8 @@ import { resolveSlot } from '@/lib/images';
 export interface ImgProps {
   /** slot key = the file name in public/images, without extension */
   slot: string;
+  /** a Storage URL, used instead of the slot file when the catalogue has one */
+  src?: string;
   /** CSS aspect ratio of the box, e.g. "4/5"; omit when the parent sets the size */
   ratio?: string;
   pos?: string;
@@ -23,8 +25,8 @@ export interface ImgProps {
   as?: 'span' | 'figure' | 'div';
 }
 
-export function Img({ slot, ratio, pos, sizes = '(min-width: 1440px) 1440px, 100vw', alt = '', eager, ground, className, style, children, as: Tag = 'span' }: ImgProps) {
-  const r = resolveSlot(slot);
+export function Img({ slot, src, ratio, pos, sizes = '(min-width: 1440px) 1440px, 100vw', alt = '', eager, ground, className, style, children, as: Tag = 'span' }: ImgProps) {
+  const r = src ? { src, source: 'remote' as const } : resolveSlot(slot);
   const st: CSSProperties = { ...(ratio ? { aspectRatio: ratio } : {}), ...style };
   if (!r.src) {
     return (

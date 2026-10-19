@@ -11,6 +11,7 @@ import { T01, T02, GLOSSARY } from '@/content/texts';
 import type { SoonKey } from '@/content/soon';
 import { getCatalog } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
+import { mediaUrl } from '@/lib/images';
 import { toSummary } from '@/lib/products/summary';
 
 const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
@@ -67,7 +68,7 @@ export async function FactoryPage() {
         <div className="g4 q-idx">
           {came.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
               <p className="micro tile__c"><b>{p.code}</b><span>Thesis {THESIS[p.id]}</span></p>
               <p className="tile__s">{p.name} &nbsp; {fmtPrice(p.priceCents)}</p>
             </article>
@@ -127,7 +128,7 @@ export async function TextT01() {
         <div className="g4 q-idx">
           {works.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
               <p className="micro tile__c"><b>{p.code}</b></p>
               <p className="tile__s">{p.name} &nbsp; {SUB[p.id]}</p>
               <p className="tile__b"><span>{fmtPrice(p.priceCents)}</span><QuickAddButton product={toSummary(p)} /></p>

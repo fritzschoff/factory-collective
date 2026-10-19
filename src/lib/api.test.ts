@@ -24,6 +24,14 @@ describe('postApi', () => {
     await expect(postApi('checkout', {})).rejects.toThrow('Your bag is empty.');
   });
 
+  it('does not turn an error object into [object Object], and an empty success is a failure', async () => {
+    vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: { code: 1 } }), { status: 400 })));
+    await expect(postApi('checkout', {})).rejects.toThrow('Something went wrong. Please try again.');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 200 })));
+    await expect(postApi('newsletter', {})).rejects.toThrow('Something went wrong. Please try again.');
+  });
+
   it('a network failure becomes a plain sentence', async () => {
     vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.example');
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
