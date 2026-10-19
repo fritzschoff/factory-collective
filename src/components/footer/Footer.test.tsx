@@ -30,6 +30,12 @@ describe('Footer', () => {
     expect(container.querySelector('.tb')).toHaveTextContent('Atelier / Fashion');
   });
 
+  it('names the home page "Home" when Vercel re-renders it as /index', () => {
+    nav.path = '/index';
+    const { container } = renderWithChrome(<Footer sheets={SHEETS} />);
+    expect(container.querySelector('.tb')).toHaveTextContent('Home');
+  });
+
   it('names an address that no page answers "404"', () => {
     nav.path = '/nowhere/';
     const { container } = renderWithChrome(<Footer sheets={SHEETS} />);

@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { createContext, Suspense, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { usePagePath } from '@/lib/nav/page-path';
 import { worldOf, type WorldId } from '@/lib/nav/world';
 
 export interface ToastLink { href: string; label: string }
@@ -31,7 +31,7 @@ let toastSeq = 0;
  * its own (see ChromeProvider), so that boundary holds this and nothing else.
  */
 function RouteWatch({ onRoute }: { onRoute: (pathname: string) => void }) {
-  const pathname = usePathname() ?? '/';
+  const pathname = usePagePath();
   // a layout effect runs before the browser paints: no frame shows an overlay on the new page
   useLayoutEffect(() => onRoute(pathname), [pathname, onRoute]);
   return null;
