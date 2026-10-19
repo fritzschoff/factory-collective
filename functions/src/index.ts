@@ -1,15 +1,13 @@
+import './options';
 import { checkoutBodySchema, enquireSchema, newsletterSchema } from '@cfc/shop-core';
 import type { Response } from 'express';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onRequest, type Request } from 'firebase-functions/v2/https';
-import { setGlobalOptions } from 'firebase-functions/v2';
 import Stripe from 'stripe';
 import { db } from './admin';
 import { applyCors, clientIp, rateLimit, sendJson } from './http';
 import { availabilityFor, bookFromSession, orderBySession, publicProducts, quote, releaseReservation, releaseStale, reserve, saveEnquiry, saveNewsletter, stripeLineItems, type CheckoutSession, type Mailer } from './logic';
 import { enquiryTo, listParam, mailFrom, resendKey, secretValue, shippingCountries, siteUrl, stripeAutomaticTax, stripeSecret, stripeShippingRates, stripeWebhookSecret } from './params';
-
-setGlobalOptions({ region: 'europe-west3' });
 
 const http = { cors: false, invoker: 'public' } as const;
 
@@ -169,3 +167,5 @@ export const newsletter = onRequest({ ...http, secrets: [resendKey] }, (req, res
 export const releaseReservations = onSchedule({ schedule: 'every 60 minutes', timeZone: 'Europe/Berlin' }, async () => {
   await releaseStale(db());
 });
+
+export { adminCreateUpload, adminGetOrder, adminGetProduct, adminListEnquiries, adminListNewsletter, adminListOrders, adminListProducts, adminListStock, adminRegisterImage, adminSaveProduct, adminSetOnHand, adminUpdateOrder, adminWhoami } from './calls';
