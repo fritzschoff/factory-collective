@@ -40,7 +40,12 @@ async () => {
   const probe = document.createElement('span'); probe.className='s'; probe.style.fontSize=FS+'px'; probe.innerHTML='x<span style="display:inline-block;width:1px;height:0;vertical-align:baseline"></span>';
   document.body.appendChild(probe); const pr = probe.getBoundingClientRect(); const ir = probe.querySelector('span').getBoundingClientRect();
   const baselineFromTop = (ir.bottom - pr.top)/FS; probe.remove();
-  return {adv, out, baselineFromTop, FS};
+  const words = {};
+  for (const t of ['ATELIER','FACTORY','STUDIO','CAMPAIGN','CONCEPT','ABOUT']) {
+    const s = document.createElement('span'); s.className='s'; s.textContent=t; document.body.appendChild(s);
+    words[t] = s.getBoundingClientRect().width/200; s.remove();
+  }
+  return {adv, out, baselineFromTop, FS, words};
 }
 """
 with sync_playwright() as pw:
@@ -70,7 +75,8 @@ m = {
     'left':  {'innerAtMidEm': round(inL/FS,5), 'inkLeftEm': round(oL['lo']/FS,5), 'inkRightEm': round(oL['hi']/FS,5)},
     'right': {'innerAtMidEm': round(inR/FS,5), 'inkLeftEm': round(oR['lo']/FS,5), 'inkRightEm': round(oR['hi']/FS,5)},
     'rows': ys, 'kLeft': kl, 'kRight': kr                # offsets of the inner contour, in units of the ink height
-  }
+  },
+  'words': {k: round(v, 7) for k, v in res['words'].items()}
 }
 os.makedirs(os.path.join(ROOT,'src/lib/sign'), exist_ok=True)
 json.dump(m, open(os.path.join(ROOT,'src/lib/sign/font-metrics.json'),'w'), indent=1)

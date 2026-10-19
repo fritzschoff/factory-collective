@@ -7,14 +7,12 @@ const panel = (page: Page, room: string) => menu(page).getByRole('tabpanel', { n
 const menuButton = (page: Page) => page.locator('.hd__util').getByRole('button', { name: 'Menu' });
 const roomLabel = (page: Page, room: string) => page.locator('.hd__bot').getByRole('button', { name: room });
 
-/**
- * Opens the menu with `open`, and tries again until it is open: a button pressed before the page has hydrated does
- * nothing. An open menu is left alone — pressing Menu again would close it.
- */
-const openMenu = (page: Page, open: () => Promise<unknown>) => expect(async () => {
+/** Opens the menu once the page has hydrated. An open menu is left alone — pressing Menu again would close it. */
+const openMenu = async (page: Page, open: () => Promise<unknown>) => {
+  await page.locator('html[data-hydrated]').waitFor({ state: 'attached' });
   if (!(await menu(page).evaluate((el) => el.classList.contains('is-open')))) await open();
-  await expect(menu(page)).toHaveClass(/is-open/, { timeout: 500 });
-}).toPass({ timeout: 10_000 });
+  await expect(menu(page)).toHaveClass(/is-open/);
+};
 const pressMenuButton = (page: Page) => () => menuButton(page).click({ timeout: 1000 });
 const pressRoomLabel = (page: Page, room: string) => () => roomLabel(page, room).click({ timeout: 1000 });
 /** The panel comes down with an animation; measure it once it has. */
