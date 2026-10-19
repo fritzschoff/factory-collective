@@ -6,7 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { expandVariants, shopProductFromCode, skuFor, type ReservationItem, type ShopProduct } from '@cfc/shop-core';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { rateLimit } from './http';
-import { availabilityFor, bookFromSession, orderBySession, quote, releaseReservation, releaseStale, reserve, saveEnquiry, saveNewsletter } from './logic';
+import { availabilityFor, bookFromSession, bookingMode, orderBySession, publicProducts, quote, releaseReservation, releaseStale, reserve, saveEnquiry, saveNewsletter } from './logic';
 
 const projectId = 'demo-cfc';
 let db: Firestore;
@@ -155,6 +155,56 @@ describe('shop', () => {
     expect(avail['JK-001__white.50'].available).toBe(1);
   });
 
+  it('finds the reservation through the session metadata when the session id was never stored', async () => {
+    const product = jacket();
+    await stock(product, 1);
+    const quoted = quote(new Map([[product.id, product]]), [{ id: 'JK-001', qty: 1, opts: { colour: 'white', size: '50' } }]);
+    const id = await reserve(db, quoted.lines);
+    await bookFromSession(db, { id: 'cs_meta', reservationId: id, payment_status: 'paid' }, 'paid');
+    expect((await db.collection('reservations').doc(id).get()).get('status')).toBe('completed');
+    expect((await db.collection('inventory').doc(quoted.lines[0].sku).get()).get('onHand')).toBe(0);
+  });
+
+  it('takes no stock twice when a released hold completes unpaid and is then paid or fails', async () => {
+    const product = jacket();
+    await stock(product, 3);
+    const item = { id: 'JK-001', qty: 1, opts: { colour: 'white', size: '50' } };
+    const quoted = quote(new Map([[product.id, product]]), [item]);
+    const sku = quoted.lines[0].sku;
+    const paid = await reserve(db, quoted.lines);
+    const failed = await reserve(db, quoted.lines);
+    await releaseReservation(db, paid);
+    await releaseReservation(db, failed);
+    await bookFromSession(db, { id: 'cs_sepa_1', reservationId: paid, payment_status: 'unpaid' }, 'unpaid');
+    await bookFromSession(db, { id: 'cs_sepa_2', reservationId: failed, payment_status: 'unpaid' }, 'unpaid');
+    await reserve(db, quoted.lines); // someone else holds the next piece meanwhile
+    expect((await db.collection('inventory').doc(sku).get()).get('reserved')).toBe(1);
+    await bookFromSession(db, { id: 'cs_sepa_1', reservationId: paid, payment_status: 'paid' }, 'paid');
+    await bookFromSession(db, { id: 'cs_sepa_2', reservationId: failed, payment_status: 'unpaid' }, 'failed');
+    const row = await db.collection('inventory').doc(sku).get();
+    expect(row.get('onHand')).toBe(2);
+    expect(row.get('reserved')).toBe(1);
+  });
+
+  it('never cancels a booked order when a late expiry arrives', async () => {
+    const product = jacket();
+    await stock(product, 1);
+    const quoted = quote(new Map([[product.id, product]]), [{ id: 'JK-001', qty: 1, opts: { colour: 'white', size: '50' } }]);
+    const id = await reserve(db, quoted.lines);
+    await bookFromSession(db, { id: 'cs_done', reservationId: id, payment_status: 'paid' }, 'paid');
+    await bookFromSession(db, { id: 'cs_done', reservationId: id }, 'expired');
+    expect((await orderBySession(db, 'cs_done'))?.status).toBe('paid');
+    expect((await db.collection('reservations').doc(id).get()).get('status')).toBe('completed');
+  });
+
+  it('leaves out who saved a product and every draft from the public catalogue', async () => {
+    await db.collection('products').doc('JK-001').set({ ...jacket(), updatedBy: 'owner@example.com' });
+    await db.collection('products').doc('JK-002').set({ ...jacket(), id: 'JK-002', status: 'draft' });
+    const products = await publicProducts(db);
+    expect(products.map((product) => product.id)).toEqual(['JK-001']);
+    expect(products[0]).not.toHaveProperty('updatedBy');
+  });
+
   it('frees a pending reservation', async () => {
     const product = jacket();
     await stock(product, null);
@@ -163,6 +213,17 @@ describe('shop', () => {
     await releaseReservation(db, id);
     expect((await db.collection('reservations').doc(id).get()).get('status')).toBe('released');
     expect((await db.collection('inventory').doc(quoted.lines[0].sku).get()).get('reserved')).toBe(0);
+  });
+});
+
+describe('webhook events', () => {
+  it('books a completed session as paid unless the payment is still open', () => {
+    expect(bookingMode('checkout.session.completed', 'paid')).toBe('paid');
+    expect(bookingMode('checkout.session.completed', 'no_payment_required')).toBe('paid');
+    expect(bookingMode('checkout.session.completed', 'unpaid')).toBe('unpaid');
+    expect(bookingMode('checkout.session.async_payment_failed', 'unpaid')).toBe('failed');
+    expect(bookingMode('checkout.session.expired', 'unpaid')).toBe('expired');
+    expect(bookingMode('payment_intent.created', null)).toBeNull();
   });
 });
 

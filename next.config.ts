@@ -14,9 +14,11 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
-      { protocol: 'http', hostname: '127.0.0.1', port: '9199' },
-      { protocol: 'http', hostname: 'localhost', port: '9199' },
+      // product pictures of this project's bucket only — the optimizer must not resize any other bucket's files
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com', pathname: `/v0/b/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '*'}/o/**` },
+      ...(process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === '1'
+        ? [{ protocol: 'http', hostname: '127.0.0.1', port: '9199' } as const, { protocol: 'http', hostname: 'localhost', port: '9199' } as const]
+        : []),
     ],
   },
   trailingSlash: true,

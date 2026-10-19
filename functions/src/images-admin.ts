@@ -10,8 +10,18 @@ const TYPES = new Map([
   ['image/avif', 'avif'],
 ]);
 
+/** The default bucket as Cloud Functions describe it in FIREBASE_CONFIG (new projects use <id>.firebasestorage.app). */
+function configuredBucket(config = process.env.FIREBASE_CONFIG): string {
+  try {
+    const bucket = (JSON.parse(config ?? '{}') as { storageBucket?: unknown }).storageBucket;
+    return typeof bucket === 'string' ? bucket : '';
+  } catch {
+    return '';
+  }
+}
+
 export function storageBucket(): string {
-  return process.env.FIREBASE_STORAGE_BUCKET || process.env.STORAGE_BUCKET || `${process.env.GCLOUD_PROJECT || 'demo-cfc'}.appspot.com`;
+  return process.env.FIREBASE_STORAGE_BUCKET || process.env.STORAGE_BUCKET || configuredBucket() || `${process.env.GCLOUD_PROJECT || 'demo-cfc'}.appspot.com`;
 }
 
 export function downloadUrl(bucket: string, objectPath: string, token: string): string {

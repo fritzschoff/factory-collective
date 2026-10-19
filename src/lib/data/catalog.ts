@@ -76,7 +76,8 @@ function fromShop(product: ShopProduct): Product {
 
 async function loadProducts(): Promise<Product[]> {
   const base = apiBase();
-  if (process.env.VERCEL_ENV === 'production' && !base) throw new Error('NEXT_PUBLIC_API_BASE is required in production.');
+  // Without a base the shop reads the code catalogue — also in production until the Functions are deployed (go-live
+  // checklist). With a base, an unreachable catalog fails the build: never an empty shop online.
   if (!base) {
     const demo = process.env.DEMO_PRICES === '1';
     return PRODUCTS.map((p) => ({ ...p, priceCents: priceCentsFor(p, manualPrices, demo) }));

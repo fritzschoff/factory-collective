@@ -30,8 +30,9 @@ const STALE_MS = 60 * 60 * 1000;
 export async function publicProducts(db: Firestore): Promise<ShopProduct[]> {
   const snap = await db.collection('products').get();
   return snap.docs.flatMap((doc) => {
-    const data = doc.data() as ShopProduct;
+    const data = { ...(doc.data() as ShopProduct) };
     if (data.status === 'draft') return [];
+    delete data.updatedBy; // the admin's e-mail address stays out of the public catalogue
     return [{ ...data, id: doc.id, spec: specFromStore(data.spec) }];
   });
 }
@@ -159,6 +160,11 @@ export async function releaseReservation(db: Firestore, id: string, statuses: re
     if (!snap.exists) return;
     const status = String(snap.get('status') ?? '');
     if (!statuses.includes(status)) return;
+    // released once before (and then completed unpaid): it holds no stock any more
+    if (snap.get('unreserved') === true) {
+      tx.update(ref, { status: 'released' });
+      return;
+    }
     const items = (snap.get('items') ?? []) as ReservationItem[];
     const inventory = await Promise.all(items.map(async (item) => tx.get(db.collection('inventory').doc(item.sku))));
     items.forEach((item, index) => {
@@ -179,6 +185,8 @@ export async function releaseStale(db: Firestore, now = Date.now()): Promise<num
 
 export interface CheckoutSession {
   id: string;
+  /** metadata.reservationId, set by checkout */
+  reservationId?: string | null;
   payment_status?: string | null;
   customer_details?: { email?: string | null; name?: string | null; phone?: string | null; address?: Record<string, string | null> | null } | null;
   amount_total?: number | null;
@@ -196,13 +204,32 @@ function stored<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-export async function bookFromSession(db: Firestore, session: CheckoutSession, mode: 'paid' | 'unpaid' | 'failed' | 'expired', mailer?: Mailer | null, now = new Date()): Promise<void> {
+/** What a Stripe event means for the reservation. 'no_payment_required' (a 100 % promotion code) counts as paid. */
+export function bookingMode(type: string, paymentStatus?: string | null): 'paid' | 'unpaid' | 'failed' | 'expired' | null {
+  if (type === 'checkout.session.completed') return paymentStatus === 'unpaid' ? 'unpaid' : 'paid';
+  if (type === 'checkout.session.async_payment_succeeded') return 'paid';
+  if (type === 'checkout.session.async_payment_failed') return 'failed';
+  if (type === 'checkout.session.expired') return 'expired';
+  return null;
+}
+
+async function reservationOf(db: Firestore, session: CheckoutSession) {
+  if (session.reservationId) {
+    const snap = await db.collection('reservations').doc(session.reservationId).get();
+    if (snap.exists) return snap;
+  }
   const found = await db.collection('reservations').where('stripeSessionId', '==', session.id).limit(1).get();
-  if (found.empty) return;
-  const reservationRef = found.docs[0].ref;
+  return found.empty ? null : found.docs[0];
+}
+
+export async function bookFromSession(db: Firestore, session: CheckoutSession, mode: 'paid' | 'unpaid' | 'failed' | 'expired', mailer?: Mailer | null, now = new Date()): Promise<void> {
+  const found = await reservationOf(db, session);
+  if (!found) return;
+  const reservationRef = found.ref;
   if (mode === 'failed' || mode === 'expired') {
+    if (found.get('status') === 'completed') return; // a booked order is never cancelled by a late event
     await releaseReservation(db, reservationRef.id, ['pending', 'awaiting_payment']);
-    const orderId = found.docs[0].get('orderId');
+    const orderId = found.get('orderId');
     if (typeof orderId === 'string') {
       const orderRef = db.collection('orders').doc(orderId);
       const order = await orderRef.get();
@@ -228,12 +255,14 @@ export async function bookFromSession(db: Firestore, session: CheckoutSession, m
       if (!existing?.exists) tx.set(counterRef, { n: number }, { merge: true });
       const order: ShopOrder = { ...orderFrom(session, items, number, 'awaiting_payment', false, now), history: [...prior, { at: now.toISOString(), status: 'awaiting_payment' }] };
       tx.set(orderRef, stored(order), { merge: true });
-      tx.update(reservationRef, { status: 'awaiting_payment', orderId: orderRef.id });
+      // released by the hourly job before the payment started: the stock was given back and must not be taken twice
+      const unreserved = reservation.get('status') === 'released';
+      tx.update(reservationRef, { status: 'awaiting_payment', orderId: orderRef.id, ...(unreserved ? { unreserved: true } : {}) });
       return false;
     }
     if (reservation.get('booked') === true) return false;
     if (!existing?.exists) tx.set(counterRef, { n: number }, { merge: true });
-    const released = reservation.get('status') === 'released';
+    const released = reservation.get('status') === 'released' || reservation.get('unreserved') === true;
     let shortfall = false;
     items.forEach((item, index) => {
       const row = inventory[index];

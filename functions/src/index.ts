@@ -6,7 +6,7 @@ import { onRequest, type Request } from 'firebase-functions/v2/https';
 import Stripe from 'stripe';
 import { db } from './admin';
 import { applyCors, clientIp, rateLimit, sendJson } from './http';
-import { availabilityFor, bookFromSession, orderBySession, publicProducts, quote, releaseReservation, releaseStale, reserve, saveEnquiry, saveNewsletter, stripeLineItems, type CheckoutSession, type Mailer } from './logic';
+import { availabilityFor, bookFromSession, bookingMode, orderBySession, publicProducts, quote, releaseReservation, releaseStale, reserve, saveEnquiry, saveNewsletter, stripeLineItems, type CheckoutSession, type Mailer } from './logic';
 import { enquiryTo, listParam, mailFrom, resendKey, secretValue, shippingCountries, siteUrl, stripeAutomaticTax, stripeSecret, stripeShippingRates, stripeWebhookSecret } from './params';
 
 const http = { cors: false, invoker: 'public' } as const;
@@ -105,11 +105,9 @@ export const stripeWebhook = onRequest({ ...http, secrets: [stripeWebhookSecret,
     sendJson(res, 400, { error: 'Invalid signature.' });
     return;
   }
-  const session = checkoutSession(event.data.object as Stripe.Checkout.Session);
-  if (event.type === 'checkout.session.completed') await bookFromSession(db(), session, session.payment_status === 'paid' ? 'paid' : 'unpaid', mailer());
-  else if (event.type === 'checkout.session.async_payment_succeeded') await bookFromSession(db(), session, 'paid', mailer());
-  else if (event.type === 'checkout.session.async_payment_failed') await bookFromSession(db(), session, 'failed', mailer());
-  else if (event.type === 'checkout.session.expired') await bookFromSession(db(), session, 'expired', mailer());
+  const object = event.data.object as Stripe.Checkout.Session;
+  const mode = bookingMode(event.type, object.payment_status);
+  if (mode) await bookFromSession(db(), checkoutSession(object), mode, mailer());
   sendJson(res, 200, { received: true });
 });
 
@@ -136,6 +134,7 @@ function checkoutSession(session: Stripe.Checkout.Session): CheckoutSession {
   const intent = session.payment_intent;
   return {
     id: session.id,
+    reservationId: session.metadata?.reservationId ?? null,
     payment_status: session.payment_status,
     customer_details: details ? { email: details.email, name: details.name, phone: details.phone, address: address ? mapped : null } : null,
     amount_total: session.amount_total,
