@@ -62,8 +62,8 @@ function Room({ id, text, x, first = false }: { id: WorldId; text: string; x: nu
 /** Campaigns and About, grey, on the right. */
 function Side({ id, text }: { id: 'campaigns' | 'about'; text: string }) {
   const world = worldOf(usePathname());
-  const { openMenu } = useChrome();
-  return <button type="button" className={cx(world === id && 'is-on')} aria-haspopup="dialog" aria-controls="menu" onClick={() => openMenu(id)}>{text}</button>;
+  const { menu, openMenu } = useChrome();
+  return <button type="button" className={cx(world === id && 'is-on')} aria-haspopup="dialog" aria-controls="menu" aria-expanded={menu.open && menu.tab === id} onClick={() => openMenu(id)}>{text}</button>;
 }
 
 /** The ( or ) of the sign beside Atelier: on every page but the Factory and Studio rooms, which bracket their own label. */

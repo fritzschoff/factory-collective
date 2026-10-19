@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithChrome } from '@/test/chrome';
 
@@ -45,5 +45,22 @@ describe('Header: while the address is pending', () => {
     expect(container.querySelector('.hd__sign')).not.toBeNull();
     expect(screen.queryByRole('button', { name: /Factory|Atelier|Studio|Campaigns|About/ })).toBeNull();
     expect(container.querySelectorAll('.hd__br')).toHaveLength(0);
+  });
+});
+
+// Every button of the header that opens the menu says so: which panel it controls, and whether it is open on its room.
+describe('Header: the buttons that open the menu', () => {
+  it.each(['Factory', 'Atelier', 'Studio', 'Campaigns', 'About'])('%s controls the menu and is expanded while the menu shows its room', (label) => {
+    nav.path = '/';
+    renderWithChrome(<Header />);
+    const button = screen.getByRole('button', { name: label });
+    expect(button).toHaveAttribute('aria-controls', 'menu');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    // the menu is open, but on another room for every other label
+    const others = ['Factory', 'Atelier', 'Studio', 'Campaigns', 'About'].filter((l) => l !== label);
+    for (const other of others) expect(screen.getByRole('button', { name: other })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'true');
   });
 });
