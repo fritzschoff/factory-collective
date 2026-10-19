@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useChrome } from '@/components/chrome/ChromeProvider';
+import { useInBagToast } from '@/components/chrome/Toast';
 import { useBag } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import type { ProductSummary } from '@/lib/products/summary';
@@ -36,7 +36,7 @@ export function StatePick({ options }: { options: { value: string; label: string
 export function EditionAdd({ product, needsState }: { product: ProductSummary; needsState: boolean }) {
   const { state } = useContext(WorkState);
   const { add } = useBag();
-  const { showToast } = useChrome();
+  const inBag = useInBagToast();
   const [msg, setMsg] = useState('');
   const [added, setAdded] = useState(false);
   const timer = useRef<number | undefined>(undefined);
@@ -53,7 +53,7 @@ export function EditionAdd({ product, needsState }: { product: ProductSummary; n
     }
     setMsg('');
     add(product.id, needsState && state ? { state: { v: state, l: `State 0${state}` } } : {});
-    showToast(`${product.code} // ${product.name} is in your bag.`, { href: '/bag/', label: 'View bag  →' });
+    inBag(product);
     setAdded(true);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setAdded(false), ADDED_MS);

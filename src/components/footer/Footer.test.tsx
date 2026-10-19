@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithChrome } from '@/test/chrome';
 
@@ -12,6 +12,8 @@ vi.mock('next/navigation', async (importOriginal) => {
 import { Footer } from './Footer';
 
 const SHEETS = { '/': 'Home', '/atelier/fashion/': 'Atelier / Fashion' };
+/** The message line of the newsletter form — the toast of the chrome is a status region as well. */
+const message = () => within(document.querySelector<HTMLElement>('form.nl')!).getByRole('status');
 
 describe('Footer', () => {
   afterEach(() => { nav.path = '/'; nav.pending = false; vi.unstubAllEnvs(); });
@@ -69,7 +71,7 @@ describe('Newsletter form', () => {
     renderWithChrome(<Footer sheets={SHEETS} />);
     fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'nobody' } });
     fireEvent.click(screen.getByRole('button', { name: '( Subscribe )' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Please enter a valid e-mail address.');
+    expect(message()).toHaveTextContent('Please enter a valid e-mail address.');
   });
 
   it('says it is not connected yet while there is no API base', async () => {
@@ -77,7 +79,7 @@ describe('Newsletter form', () => {
     renderWithChrome(<Footer sheets={SHEETS} />);
     fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'someone@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: '( Subscribe )' }));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('The newsletter is not connected yet.'));
+    await waitFor(() => expect(message()).toHaveTextContent('The newsletter is not connected yet.'));
   });
 
   it('ignores a second submit while the first is on its way, then takes the next one', async () => {
@@ -97,7 +99,7 @@ describe('Newsletter form', () => {
     fireEvent.click(button);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
-    expect(screen.getByRole('status')).toHaveTextContent('Subscribed. One letter a month.');
+    expect(message()).toHaveTextContent('Subscribed. One letter a month.');
     expect(button).toBeEnabled();
     expect(form).toHaveAttribute('aria-busy', 'false');
     fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'again@example.com' } });
@@ -111,7 +113,7 @@ describe('Newsletter form', () => {
     renderWithChrome(<Footer sheets={SHEETS} />);
     fireEvent.change(screen.getByPlaceholderText('E-mail'), { target: { value: 'someone@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: '( Subscribe )' }));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No connection. Please try again in a moment.'));
+    await waitFor(() => expect(message()).toHaveTextContent('No connection. Please try again in a moment.'));
     expect(screen.getByRole('button', { name: '( Subscribe )' })).toBeEnabled();
   });
 });

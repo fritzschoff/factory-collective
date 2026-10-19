@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { useChrome } from '@/components/chrome/ChromeProvider';
+import { useInBagToast } from '@/components/chrome/Toast';
 import type { BagOptions } from '@/lib/bag/items';
 import { useBag } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
@@ -14,7 +14,7 @@ import type { ProductSummary } from '@/lib/products/summary';
 /** "Add" on a tile: adds at once, or first asks for size, colour … in a small box. */
 export function QuickAddButton({ product, label = 'Add' }: { product: ProductSummary; label?: string }) {
   const { add } = useBag();
-  const { showToast } = useChrome();
+  const inBag = useInBagToast();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setOpen(false), []);
@@ -25,7 +25,7 @@ export function QuickAddButton({ product, label = 'Add' }: { product: ProductSum
   }
   const commit = (opts: BagOptions) => {
     add(product.id, opts);
-    showToast(`${product.code} // ${product.name} is in your bag.`, { href: '/bag/', label: 'View bag  →' });
+    inBag(product);
     setOpen(false);
   };
   return (

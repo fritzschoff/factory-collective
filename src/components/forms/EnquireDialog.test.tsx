@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ChromeProvider, useChrome } from '@/components/chrome/ChromeProvider';
 import { renderWithChrome } from '@/test/chrome';
@@ -20,6 +20,8 @@ beforeAll(() => {
 });
 
 const dialog = (container: HTMLElement) => container.querySelector('dialog') as HTMLDialogElement;
+/** The message line of the enquiry form — the toast of the chrome is a status region as well. */
+const message = () => within(document.querySelector<HTMLElement>('form.dlg__f')!).getByRole('status');
 
 function Page() {
   const { closeEnquiry } = useChrome();
@@ -66,7 +68,7 @@ describe('EnquireDialog', () => {
     renderWithChrome(<Page />);
     fireEvent.click(screen.getByRole('button', { name: 'Enquire about this piece' }));
     fireEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Please enter your name and a valid e-mail address.');
+    expect(message()).toHaveTextContent('Please enter your name and a valid e-mail address.');
   });
 
   it('says sending is not connected yet while there is no API base', async () => {
@@ -76,7 +78,7 @@ describe('EnquireDialog', () => {
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Sending messages is not connected yet.'));
+    await waitFor(() => expect(message()).toHaveTextContent('Sending messages is not connected yet.'));
   });
 
   it('starts every opening with an empty form', async () => {
@@ -84,11 +86,11 @@ describe('EnquireDialog', () => {
     const open = () => fireEvent.click(screen.getByRole('button', { name: 'Enquire about this piece' }));
     open();
     fireEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Please enter');
+    expect(message()).toHaveTextContent('Please enter');
     fireEvent.click(screen.getByRole('button', { name: '( Close )' }));
     open();
     await act(async () => {});
-    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(message()).toHaveTextContent('');
   });
 
   it('ignores a second submit while the first is on its way, then takes the next one', async () => {
@@ -111,7 +113,7 @@ describe('EnquireDialog', () => {
     fireEvent.click(send);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
-    expect(screen.getByRole('status')).toHaveTextContent('Thank you. We write back within two working days.');
+    expect(message()).toHaveTextContent('Thank you. We write back within two working days.');
     expect(send).toBeEnabled();
     expect(form).toHaveAttribute('aria-busy', 'false');
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
@@ -128,7 +130,7 @@ describe('EnquireDialog', () => {
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada' } });
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
-    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('No connection. Please try again in a moment.'));
+    await waitFor(() => expect(message()).toHaveTextContent('No connection. Please try again in a moment.'));
     expect(screen.getByRole('button', { name: 'Send enquiry' })).toBeEnabled();
   });
 });

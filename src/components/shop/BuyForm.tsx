@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useChrome } from '@/components/chrome/ChromeProvider';
+import { useInBagToast } from '@/components/chrome/Toast';
 import type { BagOptions } from '@/lib/bag/items';
 import { useBag } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
@@ -14,7 +14,7 @@ const ADDED_MS = 1600;
 /** The buy form of a product page: options, Add to bag, the note under it. */
 export function BuyForm({ product, note }: { product: ProductSummary; note: string }) {
   const { add } = useBag();
-  const { showToast } = useChrome();
+  const inBag = useInBagToast();
   const [added, setAdded] = useState(false);
   const timer = useRef<number | undefined>(undefined);
 
@@ -34,7 +34,7 @@ export function BuyForm({ product, note }: { product: ProductSummary; note: stri
       if (v) opts[o.id] = { v: v.id, l: v.label };
     }
     add(product.id, opts);
-    showToast(`${product.code} // ${product.name} is in your bag.`, { href: '/bag/', label: 'View bag  →' });
+    inBag(product);
     setAdded(true);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setAdded(false), ADDED_MS);
