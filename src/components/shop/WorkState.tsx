@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useInBagToast } from '@/components/chrome/Toast';
-import { useBag } from '@/lib/bag/store';
+import { useBagWrite } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import type { ProductSummary } from '@/lib/products/summary';
 import { useHydrated } from '@/lib/use-hydrated';
@@ -37,7 +37,7 @@ export function StatePick({ options }: { options: { value: string; label: string
 
 export function EditionAdd({ product, needsState }: { product: ProductSummary; needsState: boolean }) {
   const { state: picked } = useContext(WorkState);
-  const { add } = useBag();
+  const { add } = useBagWrite();
   const inBag = useInBagToast();
   const hydrated = useHydrated();
   const [msg, setMsg] = useState('');

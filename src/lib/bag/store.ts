@@ -38,10 +38,18 @@ function subscribe(onChange: () => void): () => void {
   return () => { window.removeEventListener(EVENT, onChange); window.removeEventListener('storage', onStorage); };
 }
 
-export function useBag() {
-  const items = useSyncExternalStore(subscribe, read, () => EMPTY);
+function useBagActions() {
   const add = useCallback((id: string, opts: BagOptions, qty = 1) => write(addLine(read(), id, opts, qty)), []);
   const set = useCallback((key: string, qty: number) => write(setQty(read(), key, qty)), []);
   const clear = useCallback(() => write([]), []);
-  return { items, count: countItems(items), add, set, clear };
+  return { add, set, clear };
+}
+
+export function useBag() {
+  const items = useSyncExternalStore(subscribe, read, () => EMPTY);
+  return { items, count: countItems(items), ...useBagActions() };
+}
+
+export function useBagWrite() {
+  return useBagActions();
 }

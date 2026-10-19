@@ -10,7 +10,7 @@ import { Search } from '@/components/search/Search';
 import { buildMenu } from '@/content/menu';
 import { allPages } from '@/content/pages';
 import { getCatalog } from '@/lib/data/catalog';
-import { buildSearchIndex } from '@/lib/search/index';
+import { buildSearchIndex } from '@/lib/search/build';
 
 /**
  * Everything around a public page: header, menu, search, footer, enquiry dialog, toast.

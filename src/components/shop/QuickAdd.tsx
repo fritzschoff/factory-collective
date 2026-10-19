@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { useInBagToast } from '@/components/chrome/Toast';
 import type { BagOptions } from '@/lib/bag/items';
 import { useDialog } from '@/lib/a11y/use-dialog';
-import { useBag } from '@/lib/bag/store';
+import { useBagWrite } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
 import { defaultValueIndex } from '@/lib/products/options';
@@ -15,7 +15,7 @@ import { useHydrated } from '@/lib/use-hydrated';
 
 /** "Add" on a tile: adds at once, or first asks for size, colour … in a small box. */
 export function QuickAddButton({ product, label = 'Add' }: { product: ProductSummary; label?: string }) {
-  const { add } = useBag();
+  const { add } = useBagWrite();
   const hydrated = useHydrated();
   const inBag = useInBagToast();
   const [open, setOpen] = useState(false);
