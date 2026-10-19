@@ -9,6 +9,7 @@ import { Soon } from '@/components/soon';
 import { PlateRow, Tile } from '@/components/tiles';
 import { AxisV, Coming, Crumb, Dim, Elevation, Hair, Img, Lens, LevelMark, MarkBar, Micro, Museum, Narrate, NotIn, OutPlate, Pill, Plate, Rule, SectionAA, Steps, Diag, cx } from '@/components/ui';
 import { workPages } from '@/content/pages';
+import { workCount, workPanels } from '@/lib/counts';
 import { WORKS, fromPrice, getCatalog, type Catalog, type Work } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
@@ -41,10 +42,10 @@ export async function StudioPage() {
         </header>
       </Sp>
       <Sp s="m">
-        <Rule title="Art" note="( 2 series, 19 works )  // both on layering" right={<A href="/studio/conceptual-interference/">Viewing room&nbsp;&nbsp;→</A>} />
+        <Rule title="Art" note={`( 2 series, ${workCount('ci') + workCount('lp')} works )  // both on layering`} right={<A href="/studio/conceptual-interference/">Viewing room&nbsp;&nbsp;→</A>} />
         {[
-          { slot: 'art/CI-detail', k: 'Series 01 — 2025', t: 'Conceptual Interference', href: '/studio/conceptual-interference/', p: 'Translucent material pulled over colour and gesture, lit from behind. The composition is not drawn — it is allowed. Chance treated as a layer of authorship, standing in for every process that is read afterwards as if it had been designed.', m: [['Works', '15'], ['Medium', 'Archival print'], ['Sheet', '90 × 120 cm']] as [string, string][] },
-          { slot: 'art/LP-detail', k: 'Series 02 — 2025', t: 'Layer Paintings', href: '/studio/layer-paintings/', p: 'City plans, fields, roads, borders — lines that elsewhere carry the authority of survey and law, drawn by hand onto layered film. Each work is a triptych: three states of the same layers, and no argument for why one of them should be the one that counts.', m: [['Works', '4 triptychs'], ['Panels', '12'], ['Each', '3 × 50 × 70 cm']] as [string, string][] }
+          { slot: 'art/CI-detail', k: 'Series 01 — 2025', t: 'Conceptual Interference', href: '/studio/conceptual-interference/', p: 'Translucent material pulled over colour and gesture, lit from behind. The composition is not drawn — it is allowed. Chance treated as a layer of authorship, standing in for every process that is read afterwards as if it had been designed.', m: [['Works', String(workCount('ci'))], ['Medium', 'Archival print'], ['Sheet', '90 × 120 cm']] as [string, string][] },
+          { slot: 'art/LP-detail', k: 'Series 02 — 2025', t: 'Layer Paintings', href: '/studio/layer-paintings/', p: 'City plans, fields, roads, borders — lines that elsewhere carry the authority of survey and law, drawn by hand onto layered film. Each work is a triptych: three states of the same layers, and no argument for why one of them should be the one that counts.', m: [['Works', `${workCount('lp')} triptychs`], ['Panels', String(workPanels('lp'))], ['Each', '3 × 50 × 70 cm']] as [string, string][] }
         ].map((s) => (
           <section className="room room--s" key={s.t}>
             <A className="room__img" href={s.href} tabIndex={-1} aria-hidden="true"><Img slot={s.slot} ratio="690/620" w={690} sizes="(min-width:1440px) 690px, 52vw" /></A>
@@ -73,7 +74,7 @@ export async function CIPage() {
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
-      <QOpen kick="Studio / Art / Series 01" meta="2025 · 15 works · archival pigment print" title="Conceptual Interference">Nobody composed this. Everybody reads it as composition.</QOpen>
+      <QOpen kick="Studio / Art / Series 01" meta={`2025 · ${ci.length} works · archival pigment print`} title="Conceptual Interference">Nobody composed this. Everybody reads it as composition.</QOpen>
       <Sp s="l">
         <Plate slot="art/CI-detail" ratio="1248/840" w={1248} eager sizes="(min-width:1440px) 1248px, 92vw">
           <AxisV x={38.2} letter="A.1" light /><SectionAA y={62} inset={5.6} />
@@ -96,7 +97,7 @@ export async function CIPage() {
       <Sp s="l"><MarkBar word="STUDIO" win="ink" w="64%" style={{ marginLeft: '36%' }} /></Sp>
       <Sp s="l"><Lens slot="art/CI-14" ratio="1248/760" pos="center" fx={44} fy={52} cw={50} ch={25} blur={16} caption="CI / 14  —  the window as a lens: only what lies inside the brackets is in focus" /></Sp>
       <Sp s="l" id="all">
-        <Hair left="All fifteen" right="Every plate has its own page — original and two print editions" />
+        <Hair left={`All ${ci.length}`} right="Every plate has its own page — original and two print editions" />
         <div className="pills pills--before"><Pill href="#editions">Shop the prints&nbsp;&nbsp;→</Pill><Pill href="/contact/?subject=original" ghost>Enquire about an original&nbsp;&nbsp;→</Pill></div>
         <div className="g5 q-idx">
           {ci.map((w) => (
@@ -128,7 +129,7 @@ export async function LPPage() {
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
-      <QOpen kick="Studio / Art / Series 02" meta="2025 · 4 triptychs · 12 panels" title="Layer Paintings">A line on a plan is a decision<br />wearing the clothes of a fact.</QOpen>
+      <QOpen kick="Studio / Art / Series 02" meta={`2025 · ${lp.length} triptychs · ${workPanels('lp')} panels`} title="Layer Paintings">A line on a plan is a decision<br />wearing the clothes of a fact.</QOpen>
       <Sp s="l">
         <div className="wall3">
           {lp2.slots.map((s, i) => (

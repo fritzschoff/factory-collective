@@ -33,7 +33,7 @@ describe('Search: the arrow keys', () => {
   });
 
   const type = (value: string) => {
-    renderWithChrome(<><Open /><Search index={INDEX} /></>);
+    renderWithChrome(<><Open /><Search index={INDEX} quick={[]} /></>);
     fireEvent.click(screen.getByRole('button', { name: 'open' }));
     const input = screen.getByRole('searchbox', { name: 'Search the site' });
     fireEvent.change(input, { target: { value } });

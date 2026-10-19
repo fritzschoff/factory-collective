@@ -1,6 +1,7 @@
 import { WORKS } from '@/content/catalog';
 import { SITE } from '@/content/site';
-import type { Catalog } from '@/lib/data/catalog';
+import { pieces, workCount } from '@/lib/counts';
+import { getCatalog, type Catalog } from '@/lib/data/catalog';
 import type { WorldId } from '@/lib/nav/world';
 import type { ProductKind } from '@/lib/types';
 
@@ -73,7 +74,33 @@ export function workPages(): PageEntry[] {
   });
 }
 
-export const allPages = (cat: Catalog): PageEntry[] => [...STATIC_PAGES, ...productPages(cat), ...workPages()];
+function patch(page: PageEntry, description: string, sub?: string): PageEntry {
+  return { ...page, description, search: page.search && sub !== undefined ? { ...page.search, sub } : page.search };
+}
+
+export function withCounts(pages: readonly PageEntry[], cat: Catalog): PageEntry[] {
+  const fashion = pieces(cat, 'fashion');
+  const scan = pieces(cat, 'scan');
+  const jewellery = pieces(cat, 'jewellery');
+  const ci = workCount('ci');
+  const lp = workCount('lp');
+  return pages.map((page) => {
+    if (page.path === '/atelier/fashion/') return patch(page, `${fashion} pieces built from one profile. Seams sit where a joint would sit; a shoulder carries the way a lintel carries.`, `${fashion} pieces`);
+    if (page.path === '/atelier/jewellery/') return patch(page, `${jewellery} tools — a clasp, a clamp, a level, a profile, a sheet — reforged at the scale of the wrist.`);
+    if (page.path === '/atelier/scan-series/') return patch(page, `${scan} found objects scanned, printed in ceramic and glazed by hand. The form is a perfect copy; the surface never repeats.`, `${scan} ceramic objects`);
+    if (page.path === '/studio/conceptual-interference/') return patch(page, `${ci} plates. Translucent material over colour and gesture, lit from behind. Chance treated as a layer of authorship.`, `${ci} plates — originals and prints`);
+    if (page.path === '/studio/layer-paintings/') return patch(page, `${lp} triptychs. City plans, fields, roads and borders drawn onto layered film — three states of the same layers.`, `${lp} triptychs — originals and prints`);
+    if (page.path === '/campaigns/01/') return patch(page, `${fashion} pieces, cut like a section, worn against concrete, glass and steel.`);
+    if (page.path === '/campaigns/02/') return patch(page, `${scan} ceramic objects, photographed where they are used rather than where they were made.`);
+    return page;
+  });
+}
+
+export const allPages = (cat: Catalog): PageEntry[] => [...withCounts(STATIC_PAGES, cat), ...productPages(cat), ...workPages()];
+
+export async function countedPage(path: string): Promise<PageEntry> {
+  return withCounts([staticPage(path)], await getCatalog())[0];
+}
 
 /** The entry of a static page; throws on a typo so a broken route file fails the build. */
 export function staticPage(path: string): PageEntry {

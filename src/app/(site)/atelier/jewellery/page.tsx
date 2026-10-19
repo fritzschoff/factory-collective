@@ -1,8 +1,10 @@
-import { staticPage } from '@/content/pages';
+import { countedPage } from '@/content/pages';
 import { pageMetadata } from '@/lib/seo';
 import { JewelleryPage } from '@/views/series';
 
-export const metadata = pageMetadata(staticPage('/atelier/jewellery/'));
+export async function generateMetadata() {
+  return pageMetadata(await countedPage('/atelier/jewellery/'));
+}
 
 export default function Page() {
   return <JewelleryPage />;

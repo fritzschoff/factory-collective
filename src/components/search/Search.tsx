@@ -9,15 +9,10 @@ import { useDialog } from '@/lib/a11y/use-dialog';
 import { cx } from '@/lib/cx';
 import { groupByKind, searchEntries, type SearchEntry } from '@/lib/search/index';
 
-const QUICK = [
-  { label: 'Fashion ( 18 )', href: '/atelier/fashion/' }, { label: 'Bags', href: '/atelier/bags/' }, { label: 'Jewellery ( 5 )', href: '/atelier/jewellery/' },
-  { label: 'Scan Series ( 15 )', href: '/atelier/scan-series/' }, { label: 'Conceptual Interference', href: '/studio/conceptual-interference/' },
-  { label: 'Layer Paintings', href: '/studio/layer-paintings/' }, { label: 'Texts', href: '/factory/' },
-];
 const CODES = ['SH / 001', 'OB / 011', 'CI / 07'];
 
 /** Full-screen search over pages and pieces; `/` or ⌘K opens it from anywhere. */
-export function Search({ index }: { index: SearchEntry[] }) {
+export function Search({ index, quick }: { index: SearchEntry[]; quick: { label: string; href: string }[] }) {
   const { searchOpen, openSearch, closeSearch } = useChrome();
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
@@ -81,7 +76,7 @@ export function Search({ index }: { index: SearchEntry[] }) {
       {!q.trim() && (
         <div className="search__hint">
           <p className="micro">Quick ways in</p>
-          <p>{QUICK.map((l, i) => <span key={l.href}>{i > 0 && ' · '}<Link href={l.href} onClick={closeSearch}>{l.label}</Link></span>)}</p>
+          <p>{quick.map((l, i) => <span key={l.href}>{i > 0 && ' · '}<Link href={l.href} onClick={closeSearch}>{l.label}</Link></span>)}</p>
           <p className="micro">Try a code: {CODES.map((c, i) => <span key={c}>{i > 0 && ' · '}<button type="button" onClick={() => { setQ(c); input.current?.focus(); }}>{c}</button></span>)}</p>
         </div>
       )}
