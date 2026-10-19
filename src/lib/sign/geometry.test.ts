@@ -1,9 +1,18 @@
+import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { HEADER_PAD_EM, signAdvances, signGeometry, windowShape } from './geometry';
 
 describe('sign geometry', () => {
   it('spans 19.596 em with ATELIER in the brackets', () => {
     expect(signGeometry().tot).toBeCloseTo(19.5964, 3);
+  });
+  // The stylesheets work out the height of the sign row as its width / tot, with tot written out: a change of the font
+  // metrics has to change them too, or the header and the menu are drawn for the old sign.
+  it.each(['header.css', 'menu.css'])('is the number %s divides the width of the sign by', (file) => {
+    const css = fs.readFileSync(new URL(`../../styles/${file}`, import.meta.url), 'utf8');
+    const divisors = [...css.matchAll(/98\.9(?:cqw| \* var\(--u\)) \/ ([\d.]+)/g)].map((m) => Number(m[1]));
+    expect(divisors.length).toBeGreaterThan(0);
+    expect(new Set(divisors)).toEqual(new Set([signGeometry().tot]));
   });
   it('lists the nine pieces of the sign in order', () => {
     const adv = signAdvances();

@@ -208,6 +208,7 @@
 .acc summary::after { content: ''; width: 7px; height: 7px; border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); transform: rotate(45deg) translateY(-2px); transition: transform .25s; } .acc details[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
 .acc details p { padding: 0 0 18px; color: #2A2A28; font-size: var(--fs-m); line-height: 1.65; max-width: 34em; }
 .acc__link { display: block; padding: 15px 0; border-top: 1px solid var(--hair); font-size: var(--fs-m); } .acc__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.acc__link.soon:hover { text-decoration: none; } /* coming soon: not a link, so no underline */
 .pdp__sec { margin-top: var(--g-m); } .pdp__cap { margin-top: 14px; color: var(--ink); } .pcap { margin-top: 12px; font-size: var(--fs-s); line-height: 1.6; color: var(--grey); } .pcap b { font-family: var(--display); color: var(--ink); margin-right: .3em; } .pcap a { margin-left: 14px; }
 .src { display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); gap: clamp(20px, 3vw, 44px); align-items: center; background: var(--paper); padding: clamp(20px, 3vw, 44px); } .src__l { font-size: clamp(16px, 1.46vw, 21px); line-height: 1.45; } .src__s { margin-top: 24px; color: var(--grey); font-size: var(--fs-s); } .src__d { width: 100%; height: auto; }
 .mk-ex { left: clamp(10px, 1.4vw, 20px); top: clamp(10px, 1.4vw, 20px); }
