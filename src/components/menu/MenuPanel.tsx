@@ -50,7 +50,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
   if (!live && hover) setHover(null);
   const show = (e: MenuEntry) => () => { if (e.win.length) setHover(e); };
   const row = (e: MenuEntry, key: string) => (e.href
-    ? <li key={key}><Link className="mp__it" href={e.href} onClick={onNavigate} onMouseEnter={show(e)} onFocus={show(e)}><span className="mp__t">{e.label}</span>{e.count && <small>{e.count}</small>}</Link></li>
+    ? <li key={key}><Link className="mp__it" href={e.href} prefetch={live ? undefined : false} onClick={onNavigate} onMouseEnter={show(e)} onFocus={show(e)}><span className="mp__t">{e.label}</span>{e.count && <small>{e.count}</small>}</Link></li>
     : <li key={key}><span className="mp__it soon"><span className="soon__t">{e.label}</span><small className="soon__n">coming soon</small></span></li>);
   const urls = live ? (hover?.win.length ? hover.win : world.win) : [];
   return (
@@ -61,7 +61,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
             {col.map((g, k) => (
               <section className="mp__grp" key={k}>
                 {g.head.href
-                  ? <h3 className="mp__h"><Link href={g.head.href} onClick={onNavigate} onMouseEnter={show(g.head)} onFocus={show(g.head)}><span className="mp__t">{g.head.label}</span></Link><small>{g.head.count ?? g.note ?? ''}</small></h3>
+                  ? <h3 className="mp__h"><Link href={g.head.href} prefetch={live ? undefined : false} onClick={onNavigate} onMouseEnter={show(g.head)} onFocus={show(g.head)}><span className="mp__t">{g.head.label}</span></Link><small>{g.head.count ?? g.note ?? ''}</small></h3>
                   : <h3 className="mp__h soon"><span className="soon__t">{g.head.label}</span><small className="soon__n">coming soon</small></h3>}
                 {g.items.length > 0 && <ul>{g.items.map((e, i) => row(e, `${k}-${i}`))}</ul>}
               </section>
@@ -70,7 +70,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
         ))}
         <MenuWindow urls={urls} title={hover ? `${world.label} / ${hover.label}` : ''} cap={hover ? hover.cap : world.cap} />
       </div>
-      <Link className="mp__enter" href={world.enter.href} onClick={onNavigate}>{world.enter.label}&nbsp;&nbsp;→</Link>
+      <Link className="mp__enter" href={world.enter.href} prefetch={live ? undefined : false} onClick={onNavigate}>{world.enter.label}&nbsp;&nbsp;→</Link>
     </div>
   );
 }
@@ -109,13 +109,13 @@ export function MenuPanel({ worlds }: { worlds: MenuWorld[] }) {
             <div className="mp__util">
               <button ref={closeRef} type="button" onClick={closeMenu}>( Close )</button>
               <button type="button" className="mp__search" onClick={openSearch}>Search</button>
-              <Link href="/bag/" onClick={closeMenu}>Bag ( <BagCount /> )</Link>
+              <Link href="/bag/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Bag ( <BagCount /> )</Link>
             </div>
           </div>
           {worlds.map((w) => <WorldPanel key={w.id} world={w} shown={w.id === current.id} live={menu.open && w.id === current.id} onNavigate={closeMenu} />)}
           <div className="mp__foot">
             <span>{current.verb ? `( ${current.verb.toUpperCase()} )  ` : ''}{current.line ?? ''}</span>
-            <span><Link href="/shipping/" onClick={closeMenu}>Shipping</Link> · <Link href="/contact/" onClick={closeMenu}>Contact</Link> · English</span>
+            <span><Link href="/shipping/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Shipping</Link> · <Link href="/contact/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Contact</Link> · English</span>
           </div>
           <div className="mp__sign" aria-hidden="true"><SignRow /><SignGlyphs /></div>
           <div className="mp__sigb" />

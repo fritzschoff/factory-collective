@@ -1,13 +1,20 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PRODUCTS } from '@/content/catalog';
 import { allPages } from '@/content/pages';
 import { createCatalog, getCatalog } from '@/lib/data/catalog';
-import { buildSearchIndex, groupByKind, normalize, searchEntries } from './index';
+import { buildSearchIndex } from './build';
+import { groupByKind, normalize, searchEntries } from './index';
 
 // The price list is the owner's to edit, and the environment of the machine is not ours: nothing here may depend on either.
 vi.mock('@/content/prices.json', () => ({ default: {} }));
 
 describe('search', () => {
+  it('keeps the picture manifest out of the module the browser imports', () => {
+    const source = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+    expect(source).not.toMatch(/slotSrc|image-manifest|samples/);
+  });
+
   beforeEach(() => {
     vi.stubEnv('DEMO_PRICES', '0');
     vi.stubEnv('IMAGES', 'local');

@@ -6,7 +6,7 @@ import { useInBagToast } from '@/components/chrome/Toast';
 import { A } from '@/components/link';
 import { getApi } from '@/lib/api';
 import type { BagOptions } from '@/lib/bag/items';
-import { useBag } from '@/lib/bag/store';
+import { useBagWrite } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import { defaultValueIndex } from '@/lib/products/options';
 import type { ProductSummary } from '@/lib/products/summary';
@@ -48,7 +48,7 @@ function allSoldOut(product: ProductSummary, items: Record<string, { available: 
 
 /** The buy form of a product page: options, Add to bag, the note under it. */
 export function BuyForm({ product, note }: { product: ProductSummary; note: string }) {
-  const { add } = useBag();
+  const { add } = useBagWrite();
   const inBag = useInBagToast();
   const hydrated = useHydrated();
   const [added, setAdded] = useState(false);
