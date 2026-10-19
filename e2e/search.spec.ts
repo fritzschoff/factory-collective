@@ -5,13 +5,22 @@ import { expect, test, type Page } from '@playwright/test';
  * server): press `/` until the search has taken focus instead of guessing how long to wait.
  */
 async function openWithSlash(page: Page) {
-  const input = page.getByRole('searchbox', { name: 'Search the site' });
+  const input = page.getByRole('combobox', { name: 'Search the site' });
   await expect(async () => {
     await page.keyboard.press('/');
     await expect(input).toBeFocused({ timeout: 500 });
   }).toPass();
   return input;
 }
+
+test('control k opens the search from another room', async ({ page }) => {
+  await page.goto('/factory/');
+  const input = page.getByRole('combobox', { name: 'Search the site' });
+  await expect(async () => {
+    await page.keyboard.press('Control+k');
+    await expect(input).toBeFocused({ timeout: 500 });
+  }).toPass();
+});
 
 test('slash opens the search; a code finds its piece; Enter goes there', async ({ page }) => {
   await page.goto('/');
@@ -26,7 +35,7 @@ test('slash opens the search; a code finds its piece; Enter goes there', async (
 test('nothing found says so; Esc closes', async ({ page }) => {
   await page.goto('/');
   // the button does nothing until the page has hydrated: click until the search is open (an open search covers it)
-  const input = page.getByRole('searchbox', { name: 'Search the site' });
+  const input = page.getByRole('combobox', { name: 'Search the site' });
   await expect(async () => {
     if (!(await input.isVisible())) await page.locator('.hd__util').getByRole('button', { name: 'Search' }).click({ timeout: 1000 });
     await expect(input).toBeFocused({ timeout: 500 });

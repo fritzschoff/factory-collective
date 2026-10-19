@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import { SignGlyphs, SignRow } from '@/components/header/Header';
 import { BagCount } from '@/components/shop/BagCount';
@@ -50,7 +50,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
   if (!live && hover) setHover(null);
   const show = (e: MenuEntry) => () => { if (e.win.length) setHover(e); };
   const row = (e: MenuEntry, key: string) => (e.href
-    ? <li key={key}><Link className="mp__it" href={e.href} onClick={onNavigate} onMouseEnter={show(e)} onFocus={show(e)}><span className="mp__t">{e.label}</span>{e.count && <small>{e.count}</small>}</Link></li>
+    ? <li key={key}><Link className="mp__it" href={e.href} prefetch={live ? undefined : false} onClick={onNavigate} onMouseEnter={show(e)} onFocus={show(e)}><span className="mp__t">{e.label}</span>{e.count && <small>{e.count}</small>}</Link></li>
     : <li key={key}><span className="mp__it soon"><span className="soon__t">{e.label}</span><small className="soon__n">coming soon</small></span></li>);
   const urls = live ? (hover?.win.length ? hover.win : world.win) : [];
   return (
@@ -61,7 +61,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
             {col.map((g, k) => (
               <section className="mp__grp" key={k}>
                 {g.head.href
-                  ? <h3 className="mp__h"><Link href={g.head.href} onClick={onNavigate} onMouseEnter={show(g.head)} onFocus={show(g.head)}><span className="mp__t">{g.head.label}</span></Link><small>{g.head.count ?? g.note ?? ''}</small></h3>
+                  ? <h3 className="mp__h"><Link href={g.head.href} prefetch={live ? undefined : false} onClick={onNavigate} onMouseEnter={show(g.head)} onFocus={show(g.head)}><span className="mp__t">{g.head.label}</span></Link><small>{g.head.count ?? g.note ?? ''}</small></h3>
                   : <h3 className="mp__h soon"><span className="soon__t">{g.head.label}</span><small className="soon__n">coming soon</small></h3>}
                 {g.items.length > 0 && <ul>{g.items.map((e, i) => row(e, `${k}-${i}`))}</ul>}
               </section>
@@ -70,7 +70,7 @@ function WorldPanel({ world, shown, live, onNavigate }: { world: MenuWorld; show
         ))}
         <MenuWindow urls={urls} title={hover ? `${world.label} / ${hover.label}` : ''} cap={hover ? hover.cap : world.cap} />
       </div>
-      <Link className="mp__enter" href={world.enter.href} onClick={onNavigate}>{world.enter.label}&nbsp;&nbsp;→</Link>
+      <Link className="mp__enter" href={world.enter.href} prefetch={live ? undefined : false} onClick={onNavigate}>{world.enter.label}&nbsp;&nbsp;→</Link>
     </div>
   );
 }
@@ -85,6 +85,15 @@ export function MenuPanel({ worlds }: { worlds: MenuWorld[] }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useDialog(ref, menu.open, closeMenu, closeRef);
   const current = worlds.find((w) => w.id === menu.tab) ?? worlds[0];
+  const onTabs = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = worlds.findIndex((w) => w.id === current.id);
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? worlds.length - 1 : e.key === 'ArrowRight' || e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? i - 1 : null;
+    if (next === null) return;
+    e.preventDefault();
+    const id = worlds[(next + worlds.length) % worlds.length].id;
+    openMenu(id);
+    document.getElementById(`mp-tab-${id}`)?.focus();
+  };
 
   return (
     <>
@@ -92,21 +101,21 @@ export function MenuPanel({ worlds }: { worlds: MenuWorld[] }) {
       <div ref={ref} id="menu" className={cx('mp', menu.open && 'is-open')} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!menu.open} inert={!menu.open}>
         <div className="mp__in">
           <div className="mp__top">
-            <div className="mp__tabs" role="tablist" aria-label="Rooms">
+            <div className="mp__tabs" role="tablist" aria-label="Rooms" onKeyDown={onTabs}>
               {worlds.map((w) => (
-                <button key={w.id} id={`mp-tab-${w.id}`} type="button" role="tab" aria-selected={w.id === current.id} aria-controls={`mp-${w.id}`} className={cx(w.quiet && 'is-quiet', w.id === current.id && 'is-on')} onClick={() => openMenu(w.id)}>{w.label}</button>
+                <button key={w.id} id={`mp-tab-${w.id}`} type="button" role="tab" aria-selected={w.id === current.id} aria-controls={`mp-${w.id}`} tabIndex={w.id === current.id ? 0 : -1} className={cx(w.quiet && 'is-quiet', w.id === current.id && 'is-on')} onClick={() => openMenu(w.id)}>{w.label}</button>
               ))}
             </div>
             <div className="mp__util">
               <button ref={closeRef} type="button" onClick={closeMenu}>( Close )</button>
               <button type="button" className="mp__search" onClick={openSearch}>Search</button>
-              <Link href="/bag/" onClick={closeMenu}>Bag ( <BagCount /> )</Link>
+              <Link href="/bag/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Bag ( <BagCount /> )</Link>
             </div>
           </div>
           {worlds.map((w) => <WorldPanel key={w.id} world={w} shown={w.id === current.id} live={menu.open && w.id === current.id} onNavigate={closeMenu} />)}
           <div className="mp__foot">
             <span>{current.verb ? `( ${current.verb.toUpperCase()} )  ` : ''}{current.line ?? ''}</span>
-            <span><Link href="/shipping/" onClick={closeMenu}>Shipping</Link> · <Link href="/contact/" onClick={closeMenu}>Contact</Link> · English</span>
+            <span><Link href="/shipping/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Shipping</Link> · <Link href="/contact/" prefetch={menu.open ? undefined : false} onClick={closeMenu}>Contact</Link> · English</span>
           </div>
           <div className="mp__sign" aria-hidden="true"><SignRow /><SignGlyphs /></div>
           <div className="mp__sigb" />

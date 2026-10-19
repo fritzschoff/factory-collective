@@ -1,16 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { hasAnchor, pageRefs } from '../scripts/page-refs';
 import { allPages } from '../src/content/pages';
 import { soonPaths } from '../src/content/soon';
 import { getCatalog } from '../src/lib/data/catalog';
-
-/** href / src values of a page that point into the site — path plus anchor; query strings are dropped. */
-function internalRefs(html: string): { url: string; hash?: string }[] {
-  return [...html.matchAll(/\s(?:href|src)="(\/[^"#?]*)(\?[^"#]*)?(#[^"]*)?"/g)].map((m) => {
-    // next/image: check the picture file itself, not the optimiser (trailingSlash makes the optimiser path "/_next/image/")
-    if (m[1].replace(/\/$/, '') === '/_next/image') return { url: new URLSearchParams((m[2] ?? '').slice(1).replace(/&amp;/g, '&')).get('url') ?? '' };
-    return { url: m[1], hash: m[3]?.slice(1) };
-  });
-}
 
 test('every internal link and picture of every page answers 200, no redirects, no coming-soon targets', async ({ request }) => {
   test.setTimeout(600_000);
@@ -27,26 +19,32 @@ test('every internal link and picture of every page answers 200, no redirects, n
     return status.get(url)!;
   };
 
-  const hasId = (page: string, id: string) => new RegExp(`\\sid="${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`).test(html.get(page)!);
+  const imageRefs = new Set<string>();
   let anchorsChecked = 0;
 
   for (const path of pages) {
     if ((await get(path)) !== 200) { problems.push(`${path} → ${status.get(path)}`); continue; }
-    for (const { url, hash } of internalRefs(html.get(path)!)) {
-      if (!url || url.startsWith('/_next/')) continue;
-      if (soonPaths().some((s) => url.startsWith(s))) problems.push(`${path} links to coming-soon ${url}`);
-      const code = await get(url);
-      if (code !== 200) problems.push(`${path} → ${url} answers ${code}`);
-      else if (hash && html.has(url)) {
+    for (const { url, hash } of pageRefs(html.get(path)!)) {
+      const target = url || path;
+      if (!target.startsWith('/') || target.startsWith('/_next/')) continue;
+      if (url) {
+        if (soonPaths().some((s) => url.startsWith(s))) problems.push(`${path} links to coming-soon ${url}`);
+        const code = await get(url);
+        if (code !== 200) problems.push(`${path} → ${url} answers ${code}`);
+        if (url.startsWith('/images/')) imageRefs.add(url);
+      }
+      if (hash && html.has(target)) {
         anchorsChecked++;
-        if (!hasId(url, hash)) problems.push(`${path} → ${url}#${hash}: no such anchor`);
+        if (!hasAnchor(html.get(target)!, hash)) problems.push(`${path} → ${target}#${hash}: no such anchor`);
       }
     }
   }
 
-  // A crawl that found nothing to check passes just as well as one that found everything fine: prove it did real work.
   const pictures = [...status].filter(([u, code]) => u.startsWith('/images/') && code === 200);
-  expect(pictures.length, 'distinct picture files under /images/ that were fetched').toBeGreaterThanOrEqual(80);
+  const missed = [...imageRefs].filter((url) => status.get(url) !== 200);
+  expect(imageRefs.size, 'distinct picture files the pages point at').toBeGreaterThan(0);
+  expect(missed, 'picture files that did not answer 200').toEqual([]);
+  expect(pictures.length, 'distinct picture files under /images/ that answered 200').toBe(imageRefs.size);
   expect(status.size, 'distinct URLs checked (pages, pictures, links)').toBeGreaterThan(pages.length);
   expect(anchorsChecked, '#anchors checked against their target page').toBeGreaterThanOrEqual(1);
   expect(problems).toEqual([]);

@@ -195,6 +195,7 @@
 .buy__form { margin-top: 28px; display: grid; gap: 22px; }
 .opt { border: 0; padding: 0; margin: 0; min-width: 0; } .opt legend { padding: 0; margin-bottom: 9px; }
 .opt__v { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.opt__c.is-sold { cursor: not-allowed; } .opt__c.is-sold span { text-decoration: line-through; color: var(--grey); } .opt__c.is-sold input { pointer-events: none; }
 .opt__c { position: relative; cursor: pointer; } .opt__c input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
 .opt__c span { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 44px; height: 40px; padding: 0 14px; border: 1px solid #D8D7D3; font-size: var(--fs-s); transition: border-color .2s; background: #fff; }
 .opt__c:hover span { border-color: var(--axis2); } .opt__c:has(input:checked) span { border-color: var(--ink); box-shadow: inset 0 0 0 .5px var(--ink); } .opt__c:has(input:focus-visible) span { outline: 1.5px solid var(--ink); outline-offset: 2px; }
@@ -217,6 +218,7 @@
 /* ── bag ───────────────────────────────────────────────────── */
 .bag { margin-top: clamp(20px, 2.4vw, 34px); } .bag__h .title { margin-bottom: 10px; } .bag__h .sub { font-size: var(--fs-m); }
 .bag__cols { display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); gap: clamp(30px, 4.2vw, 60px); margin-top: clamp(28px, 3.4vw, 48px); align-items: start; }
+.bi.is-bad { box-shadow: inset 3px 0 0 var(--red); }
 .bi { display: grid; grid-template-columns: clamp(90px, 11vw, 160px) minmax(0, 1fr) auto; gap: clamp(14px, 1.7vw, 24px); padding: 24px 0; border-top: 1px solid var(--hair); }
 .bi__img { display: block; width: 100%; aspect-ratio: 4 / 5; background: var(--paper); overflow: hidden; } .bi__img img { width: 100%; height: 100%; object-fit: cover; } .bi__img.is-ground img { object-fit: contain; padding: 8%; }
 .bi__t { line-height: 1.7; font-size: var(--fs-m); } .bi__t b { font-family: var(--display); font-size: 14px; } .bi__t .sub { display: block; font-size: var(--fs-s); }

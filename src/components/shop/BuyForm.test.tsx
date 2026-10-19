@@ -16,9 +16,13 @@ describe('BuyForm', () => {
     renderWithChrome(<BuyForm product={p} note="Ships in 5 days." />);
     expect(screen.getByRole('radio', { name: '50' })).toBeChecked();
     fireEvent.click(screen.getByRole('radio', { name: 'Chambray' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add to bag' }));
+    const add = screen.getByRole('button', { name: 'Add to bag' });
+    add.focus();
+    fireEvent.click(add);
     expect(JSON.parse(localStorage.getItem('cfc.bag.v1')!)[0]).toMatchObject({ id: 'SH-001', opts: { colour: { v: 'chambray', l: 'Chambray' }, size: { v: '50', l: '50' } } });
-    expect(screen.getByRole('button', { name: /^Added/ })).toBeDisabled();
+    const added = screen.getByRole('button', { name: /^Added/ });
+    expect(added).toHaveAttribute('aria-disabled', 'true');
+    expect(added).toHaveFocus();
   });
 
   it('adds the options shown checked, also ones clicked before hydration (Ruling P53)', () => {
@@ -58,5 +62,14 @@ describe('BuyForm', () => {
     expect(status).toHaveAttribute('role', 'status');
     expect(status).toBeEmptyDOMElement();
     expect(form.querySelector('p.buy__note')!.nextElementSibling).toBe(status);
+  });
+
+  it('the size guide opens the measurements and moves focus there', () => {
+    const p = toSummary({ ...PRODUCTS.find((x) => x.id === 'SH-001')!, priceCents: 26000 });
+    renderWithChrome(<><BuyForm product={p} note="" /><details id="acc-measurements"><summary>Measurements</summary><p>The table.</p></details></>);
+    fireEvent.click(screen.getByRole('link', { name: /Size guide/ }));
+    const measurements = document.getElementById('acc-measurements')!;
+    expect(measurements).toHaveAttribute('open', '');
+    expect(measurements).toHaveFocus();
   });
 });

@@ -5,15 +5,18 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObje
 import { createPortal } from 'react-dom';
 import { useInBagToast } from '@/components/chrome/Toast';
 import type { BagOptions } from '@/lib/bag/items';
-import { useBag } from '@/lib/bag/store';
+import { useDialog } from '@/lib/a11y/use-dialog';
+import { useBagWrite } from '@/lib/bag/store';
 import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
 import { defaultValueIndex } from '@/lib/products/options';
 import type { ProductSummary } from '@/lib/products/summary';
+import { useHydrated } from '@/lib/use-hydrated';
 
 /** "Add" on a tile: adds at once, or first asks for size, colour … in a small box. */
 export function QuickAddButton({ product, label = 'Add' }: { product: ProductSummary; label?: string }) {
-  const { add } = useBag();
+  const { add } = useBagWrite();
+  const hydrated = useHydrated();
   const inBag = useInBagToast();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
@@ -33,6 +36,7 @@ export function QuickAddButton({ product, label = 'Add' }: { product: ProductSum
       <button
         ref={button}
         type="button"
+        disabled={!hydrated}
         aria-haspopup={choices.length ? 'dialog' : undefined}
         aria-expanded={choices.length ? open : undefined}
         onClick={() => (choices.length ? setOpen((o) => !o) : commit({}))}
@@ -48,6 +52,7 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
   const box = useRef<HTMLDivElement>(null);
   const choices = product.options.filter((o) => o.type !== 'text');
   const [picked, setPicked] = useState<Record<string, number>>(() => Object.fromEntries(choices.map((o) => [o.id, defaultValueIndex(o)])));
+  useDialog(box, true, onClose, undefined, false);
 
   // place the box under the button, right-aligned; above it when there is no room below
   useLayoutEffect(() => {
@@ -59,9 +64,6 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
     el.style.left = `${Math.max(12, Math.min(window.innerWidth - w - 12, a.right - w))}px`;
     el.style.top = `${a.bottom + h + 12 > window.innerHeight ? Math.max(12, a.top - h - 8) : a.bottom + 8}px`;
     el.style.visibility = 'visible';
-    // The box sits at the end of the page in tab order, so it takes focus when it opens: its first choice. A hidden
-    // element cannot be focused, so this has to come after the line above; and it must not scroll, any scroll closes the box.
-    el.querySelector<HTMLElement>('button')?.focus({ preventScroll: true });
   }, [anchor]);
 
   useEffect(() => {
@@ -69,7 +71,6 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
       const t = e.target as Node;
       if (!box.current?.contains(t) && !anchor.current?.contains(t)) onClose();
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { onClose(); anchor.current?.focus(); } };
     // Focus moved to another control, outside the box and its button: close. No related target means focus went to
     // no element at all (a press on the box's padding or on a button the browser does not focus on press, the window
     // losing focus, Tab leaving the page): that is not a move to another control, so the box stays.
@@ -77,15 +78,15 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
       const to = e.relatedTarget;
       if (to instanceof Node && !box.current?.contains(to) && !anchor.current?.contains(to)) onClose();
     };
+    const start = window.scrollY;
+    const onScroll = () => { if (Math.abs(window.scrollY - start) > 48) onClose(); };
     document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
     document.addEventListener('focusout', onFocusOut);
-    window.addEventListener('scroll', onClose, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
       document.removeEventListener('focusout', onFocusOut);
-      window.removeEventListener('scroll', onClose);
+      window.removeEventListener('scroll', onScroll);
     };
   }, [anchor, onClose]);
 
@@ -103,8 +104,8 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
       <div className="qa__h"><b>{product.code}</b><span>{fmtPrice(product.priceCents)}</span></div>
       {choices.map((o) => (
         <div className="qa__o" key={o.id}>
-          <span>{o.label}</span>
-          <div className="qa__c">
+          <span id={`qa-${product.id}-${o.id}`}>{o.label}</span>
+          <div className="qa__c" role="group" aria-labelledby={`qa-${product.id}-${o.id}`}>
             {(o.values ?? []).map((v, i) => (
               <button key={v.id} type="button" className={cx('chip', picked[o.id] === i && 'is-on')} aria-pressed={picked[o.id] === i} onClick={() => setPicked((p) => ({ ...p, [o.id]: i }))}>{v.label}</button>
             ))}

@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 import { expectNotFoundPage } from './not-found';
 import { gotoReady } from './ready';
 
+test('a swipe across the gallery shows the next picture', async ({ page }) => {
+  await gotoReady(page, '/atelier/fashion/sh-001/');
+  await expect(page.locator('.gal__n')).toHaveText('1 of 4');
+  await page.locator('.gal__main').evaluate((el) => {
+    const fire = (type: 'touchstart' | 'touchend', x: number) => {
+      const touch = new Touch({ identifier: 1, target: el, clientX: x, clientY: 40 });
+      const init = { bubbles: true, cancelable: true, changedTouches: [touch], touches: type === 'touchend' ? [] : [touch] };
+      el.dispatchEvent(new TouchEvent(type, init));
+    };
+    fire('touchstart', 320);
+    fire('touchend', 40);
+  });
+  await expect(page.locator('.gal__n')).toHaveText('2 of 4');
+});
+
 test('a product page: gallery, size guide, add to bag', async ({ page }) => {
   await gotoReady(page, '/atelier/fashion/sh-001/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('SH / 001');

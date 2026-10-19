@@ -1,8 +1,10 @@
-import { staticPage } from '@/content/pages';
+import { countedPage } from '@/content/pages';
 import { pageMetadata } from '@/lib/seo';
 import { CIPage } from '@/views/studio';
 
-export const metadata = pageMetadata(staticPage('/studio/conceptual-interference/'));
+export async function generateMetadata() {
+  return pageMetadata(await countedPage('/studio/conceptual-interference/'));
+}
 
 export default function Page() {
   return <CIPage />;

@@ -16,18 +16,23 @@ const EXT = /\.(jpe?g|png|webp|avif)$/i;
 const walk = (dir) => (!fs.existsSync(dir) ? [] : fs.readdirSync(dir, { withFileTypes: true })
   .flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)])));
 
+const RANK = { jpg: 0, jpeg: 0, png: 1, webp: 2, avif: 3 };
+
 /** absolute file paths → { slots: { 'fashion/JK-001': '/images/fashion/JK-001.jpg' } } */
 export function buildManifest(files) {
   const slots = {};
   for (const abs of files) {
     const rel = path.relative(DIR, abs).split(path.sep).join('/');
     if (!EXT.test(rel) || rel.startsWith('_')) continue;
-    slots[rel.replace(EXT, '')] = `/images/${rel}`;
+    const slot = rel.replace(EXT, '');
+    const ext = rel.split('.').pop().toLowerCase();
+    const prev = slots[slot];
+    if (!prev || RANK[ext] < prev.rank) slots[slot] = { rank: RANK[ext], url: `/images/${rel}` };
   }
-  return { slots: Object.fromEntries(Object.entries(slots).sort(([a], [b]) => a.localeCompare(b))) };
+  return { slots: Object.fromEntries(Object.entries(slots).sort(([a], [b]) => a.localeCompare(b)).map(([slot, file]) => [slot, file.url])) };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) {
   const manifest = buildManifest(walk(DIR));
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, `${JSON.stringify(manifest, null, 2)}\n`);

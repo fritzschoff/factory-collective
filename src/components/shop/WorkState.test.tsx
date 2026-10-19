@@ -50,10 +50,13 @@ describe('WorkState', () => {
   it('ignores a second click while it shows Added', () => {
     renderWithChrome(<WorkStateProvider initial="2"><EditionAdd product={archival} needsState /></WorkStateProvider>);
     const button = screen.getByRole('button', { name: 'Choose a state · Add' });
+    button.focus();
     fireEvent.click(button);
     fireEvent.click(button);
     expect(stored()).toHaveLength(1);
     expect(stored()[0].qty).toBe(1);
-    expect(screen.getByRole('button', { name: /^Added/ })).toBeDisabled();
+    const added = screen.getByRole('button', { name: /^Added/ });
+    expect(added).toHaveAttribute('aria-disabled', 'true');
+    expect(added).toHaveFocus();
   });
 });

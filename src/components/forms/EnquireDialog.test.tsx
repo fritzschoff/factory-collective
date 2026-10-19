@@ -46,12 +46,21 @@ describe('EnquireDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: '( Close )' }));
     expect(dialog(container).open).toBe(false);
     open();
-    fireEvent.click(dialog(container)); // a click on the dialog itself is a click on the backdrop
+    fireEvent.mouseDown(dialog(container));
+    fireEvent.click(dialog(container));
     expect(dialog(container).open).toBe(false);
     open();
     fireEvent.click(screen.getByRole('button', { name: 'close from outside' }));
     expect(dialog(container).open).toBe(false);
     open();
+    expect(dialog(container).open).toBe(true);
+  });
+
+  it('stays open when a text selection ends on the backdrop', () => {
+    const { container } = renderWithChrome(<Page />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enquire about this piece' }));
+    fireEvent.mouseDown(screen.getByRole('textbox', { name: 'Message' }));
+    fireEvent.click(dialog(container));
     expect(dialog(container).open).toBe(true);
   });
 
@@ -120,6 +129,7 @@ describe('EnquireDialog', () => {
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'ada@example.com' } });
     fireEvent.click(send);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    await act(async () => { answer(new Response(JSON.stringify({ ok: true }), { status: 200 })); });
   });
 
   it('opens the button again when the request fails', async () => {

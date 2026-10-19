@@ -14,6 +14,16 @@ describe('useBag', () => {
     expect(JSON.parse(localStorage.getItem('cfc.bag.v1')!)).toHaveLength(1);
   });
 
+  it('drops the bag when another tab clears storage', () => {
+    const { result } = renderHook(() => useBag());
+    act(() => result.current.add('OB-011', {}));
+    act(() => {
+      localStorage.clear();
+      window.dispatchEvent(new StorageEvent('storage', { key: null }));
+    });
+    expect(result.current.count).toBe(0);
+  });
+
   it('follows changes made in another tab', () => {
     const { result } = renderHook(() => useBag());
     act(() => {

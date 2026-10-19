@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { A } from '@/components/link';
 import { QuickAddButton } from '@/components/shop/QuickAdd';
 import { Img } from '@/components/ui/img';
+import { mediaUrl } from '@/lib/images';
 import { Rule } from '@/components/ui/text';
 import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
@@ -17,7 +18,7 @@ export function Tile({ p, ratio = '4/5', w = 340, sub, tag, pos, className, eage
     <article className={cx('tile', className)} data-id={p.id}>
       {(tag ?? p.tag) && <span className="tile__tag">{tag ?? p.tag}</span>}
       <A className="tile__a" href={p.href} aria-label={`${p.code} ${p.name}`}>
-        <Img slot={p.images[0]} ratio={ratio} pos={pos ?? p.pos} w={w} ground={ground ?? p.ground} alt={`${p.code} — ${p.name}`} eager={eager} sizes={sizes ?? '(min-width:1440px) 340px, (min-width:700px) 25vw, 50vw'} />
+        <Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio={ratio} pos={pos ?? p.pos} w={w} ground={ground ?? p.ground} alt={`${p.code} — ${p.name}`} eager={eager} sizes={sizes ?? '(min-width:1440px) 340px, (min-width:700px) 25vw, 50vw'} />
       </A>
       <p className="tile__t"><b>{p.code}</b>{' // '}{p.name}</p>
       <p className="tile__s">{sub ?? p.material}</p>
@@ -55,7 +56,7 @@ export function PlateRow({ slot, ratio = '768/900', pos, ground, code, line, pri
   slot: string; ratio?: string; pos?: string; ground?: boolean; code: ReactNode; line: ReactNode; price?: string; cta?: string; href?: string; product?: Product; mark?: ReactNode; buy?: boolean; w?: number; alt?: string;
 }) {
   const to = product?.href ?? href;
-  const pic = <Img slot={slot} ratio={ratio} pos={pos} ground={ground} w={w} alt={alt ?? ''} sizes="(min-width:1440px) 768px, (min-width:900px) 53vw, 100vw" />;
+  const pic = <Img slot={slot} src={mediaUrl(product?.media, slot)} ratio={ratio} pos={pos} ground={ground} w={w} alt={alt ?? ''} sizes="(min-width:1440px) 768px, (min-width:900px) 53vw, 100vw" />;
   return (
     <div className="prow">
       {to ? <A className="prow__img" href={to}>{pic}</A> : <span className="prow__img">{pic}</span>}
@@ -80,7 +81,7 @@ export function IndexGrid({ items, cols = 5, ratio = '1/1.2', add = true }: { it
     <div className={cols === 5 ? 'g5' : 'g4'}>
       {items.map((p) => (
         <article className="tile tile--idx" key={p.id}>
-          <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio={ratio} pos={p.pos} ground={p.ground} w={230} alt={`${p.code} — ${p.name}`} sizes="(min-width:1440px) 230px, 40vw" /></A>
+          <A className="tile__a" href={p.href}><Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio={ratio} pos={p.pos} ground={p.ground} w={230} alt={`${p.code} — ${p.name}`} sizes="(min-width:1440px) 230px, 40vw" /></A>
           <p className="micro tile__c"><b>{p.code}</b><span>{fmtPrice(p.priceCents)}</span></p>
           <p className="tile__s">{p.name}{add && <> &nbsp; <AddLink p={p} /></>}</p>
         </article>

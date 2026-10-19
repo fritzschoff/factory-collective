@@ -13,6 +13,7 @@ export default defineConfig([
     'playwright-report/**',
     'test-results/**',
     'dist/**',
+    'functions/**',
     'dist-server/**',
     '.superpowers/**',
     '.playwright-mcp/**',

@@ -4,12 +4,14 @@ import { ContactForm } from '@/components/forms/ContactForm';
 import { A } from '@/components/link';
 import { QEnd, QOpen, Sp } from '@/components/quiet';
 import { BagCount } from '@/components/shop/BagCount';
+import { AwaitOrder } from '@/components/shop/AwaitOrder';
 import { BagView } from '@/components/shop/BagView';
 import { ClearBag } from '@/components/shop/ClearBag';
 import { Tile } from '@/components/tiles';
 import { Crumb, Img, Museum, Pill, Register, Rule, Sign } from '@/components/ui';
 import { SITE } from '@/content/site';
 import { ABOUT } from '@/content/texts';
+import { getApi } from '@/lib/api';
 import { getCatalog } from '@/lib/data/catalog';
 import { toSummary } from '@/lib/products/summary';
 
@@ -31,12 +33,36 @@ export async function BagPage() {
   );
 }
 
-export function ThankYouPage() {
+interface PlacedOrder {
+  number: number;
+  items: { sku: string; code: string; name: string; qty: number; options: { label: string; value: string }[] }[];
+}
+
+async function loadOrder(sessionId: string): Promise<PlacedOrder | null> {
+  try { return await getApi<PlacedOrder>('order', { session_id: sessionId }); } catch { return null; }
+}
+
+export async function ThankYouPage({ sessionId = null }: { sessionId?: string | null }) {
+  const order = sessionId ? await loadOrder(sessionId) : null;
   return (
     <div className="q">
-      <ClearBag />
+      {order && <ClearBag />}
       <Sp s="l" className="q-top" />
-      <QOpen kick="Bag / Order" meta="Thank you" title="Thank you">Your order is placed.<br /><span className="g">A receipt from Stripe is on its way to your inbox; we write again when the piece leaves the workshop.</span></QOpen>
+      {order ? (
+        <QOpen kick="Bag / Order" meta={`Order ${String(order.number).padStart(4, '0')}`} title="Thank you">Your order is placed.<br /><span className="g">A receipt from Stripe is on its way to your inbox; we write again when the piece leaves the workshop.</span></QOpen>
+      ) : sessionId ? (
+        <QOpen kick="Bag / Order" meta="Thank you" title="Thank you">Your payment is being confirmed.<br /><span className="g">This page shows the order in a moment.</span></QOpen>
+      ) : (
+        <QOpen kick="Bag / Order" meta="Thank you" title="Thank you">If an order has just been placed, its confirmation is on its way.<br /><span className="g">Your bag is unchanged.</span></QOpen>
+      )}
+      {sessionId && !order && <AwaitOrder sessionId={sessionId} />}
+      {order && (
+        <Sp s="m">
+          {order.items.map((item) => (
+            <p key={item.sku}>{item.qty} × {item.code}{' // '}{item.name}{item.options.length ? ` — ${item.options.map((option) => `${option.label}: ${option.value}`).join(', ')}` : ''}</p>
+          ))}
+        </Sp>
+      )}
       <Sp s="l"><div className="pills"><Pill href="/atelier/">Continue shopping&nbsp;&nbsp;→</Pill><Pill href="/campaigns/" ghost>Campaigns&nbsp;&nbsp;→</Pill></div></Sp>
       <Sp s="m"><QEnd sheet="Order" index="—" /></Sp>
     </div>

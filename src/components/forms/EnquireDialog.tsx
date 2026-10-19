@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useChrome } from '@/components/chrome/ChromeProvider';
-import { postApi } from '@/lib/api';
+import { postApi, submitOnce } from '@/lib/api';
 
 function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
   const [msg, setMsg] = useState('');
@@ -15,7 +15,7 @@ function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
     setMsg('Sending …');
     setBusy(true);
     try {
-      await postApi('enquire', { ...Object.fromEntries(new FormData(form)), work: what, subject: 'original' });
+      await submitOnce('enquire-dialog', (idempotencyKey) => postApi('enquire', { ...Object.fromEntries(new FormData(form)), work: what, subject: 'original' }, { idempotencyKey }));
       setMsg('Thank you. We write back within two working days.');
       form.reset();
     } catch (err) {
@@ -42,14 +42,15 @@ function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
 export function EnquireDialog() {
   const { enquiry, closeEnquiry } = useChrome();
   const ref = useRef<HTMLDialogElement>(null);
+  const pressedOnFrame = useRef(false);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (enquiry.open && !d.open) d.showModal();
+    if (enquiry.open && !d.open) { d.showModal(); d.querySelector<HTMLElement>('input[name="name"]')?.focus(); }
     if (!enquiry.open && d.open) d.close();
   }, [enquiry.open]);
   return (
-    <dialog ref={ref} className="dlg" aria-labelledby="enq-t" onClose={closeEnquiry} onClick={(e) => { if (e.target === ref.current) closeEnquiry(); }}>
+    <dialog ref={ref} className="dlg" aria-labelledby="enq-t" onClose={closeEnquiry} onMouseDown={(e) => { pressedOnFrame.current = e.target === ref.current; }} onClick={(e) => { if (e.target === ref.current && pressedOnFrame.current) closeEnquiry(); }}>
       <EnquireForm key={enquiry.n} what={enquiry.what} onClose={closeEnquiry} />
     </dialog>
   );

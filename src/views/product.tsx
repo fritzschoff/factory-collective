@@ -11,6 +11,7 @@ import { AxisV, Crumb, Diag, Dim, Img, Micro, Museum, Plate, Rule, SectionAA, Sh
 import { productPages } from '@/content/pages';
 import { getCatalog, type Catalog } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
+import { mediaUrl } from '@/lib/images';
 import { toSummary } from '@/lib/products/summary';
 import { NOT_FOUND_METADATA, pageMetadata } from '@/lib/seo';
 import type { Product, ProductKind } from '@/lib/types';
@@ -31,7 +32,8 @@ const GROUP_LABEL = (g: string) => g[0].toUpperCase() + g.slice(1);
 
 /** One static page per product of this kind. */
 export async function productStaticParams(kind: ShopKind): Promise<{ slug: string }[]> {
-  return (await getCatalog()).shop(kind).map((p) => ({ slug: p.slug }));
+  const cat = await getCatalog();
+  return [...cat.products, ...cat.archived].filter((p) => p.kind === kind).map((p) => ({ slug: p.slug }));
 }
 
 export async function productMetadata(kind: ShopKind, slug: string): Promise<Metadata> {
@@ -53,9 +55,9 @@ export async function ProductRoute({ kind, slug }: { kind: ShopKind; slug: strin
 
 function Gallery({ p }: { p: Product }) {
   const slides = p.images.map((s, i) => (
-    <Img key={s} slot={s} ratio="895/1060" pos={i === 0 ? p.pos : undefined} ground={p.ground && i === 0} w={895} eager={i === 0} alt={i === 0 ? `${p.code} — ${p.name}` : `${p.code} — view ${i + 1}`} sizes="(min-width:1440px) 895px, (min-width:900px) 62vw, 100vw" />
+    <Img key={s} slot={s} src={mediaUrl(p.media, s)} ratio="895/1060" pos={i === 0 ? p.pos : undefined} ground={p.ground && i === 0} w={895} eager={i === 0} alt={i === 0 ? `${p.code} — ${p.name}` : `${p.code} — view ${i + 1}`} sizes="(min-width:1440px) 895px, (min-width:900px) 62vw, 100vw" />
   ));
-  const thumbs = p.images.map((s, i) => <Img key={s} slot={s} ratio="215/200" pos={i === 0 ? p.pos : undefined} ground={p.ground && i === 0} w={215} sizes="(min-width:900px) 16vw, 24vw" />);
+  const thumbs = p.images.map((s, i) => <Img key={s} slot={s} src={mediaUrl(p.media, s)} ratio="215/200" pos={i === 0 ? p.pos : undefined} ground={p.ground && i === 0} w={215} sizes="(min-width:900px) 16vw, 24vw" />);
   const overlay = (
     <span className="over">
       <span className="mk mk-axisv" style={{ left: '50%', top: 0, padding: 0 }} aria-hidden="true" />
@@ -146,7 +148,7 @@ function BagExtras({ p, cat }: { p: Product; cat: Catalog }) {
       <section className="pdp__sec">
         <div className="g2">
           <figure><Img slot="bags/carried" ratio="710/620" pos="50% 42%" w={710} /><figcaption className="pcap"><b>Campaign ( 01 )</b>{' // '}carried, look 03 <A className="link-u" href="/campaigns/01/">View the campaign&nbsp;&nbsp;→</A></figcaption></figure>
-          {first && <figure><Img slot={first.images[0]} ratio="710/620" pos="50% 48%" w={710} /><figcaption className="pcap"><b>{first.code}</b>{' // '}{first.name} <span>{fmtPrice(first.priceCents)}</span></figcaption></figure>}
+          {first && <figure><Img slot={first.images[0]} src={mediaUrl(first.media, first.images[0])} ratio="710/620" pos="50% 48%" w={710} /><figcaption className="pcap"><b>{first.code}</b>{' // '}{first.name} <span>{fmtPrice(first.priceCents)}</span></figcaption></figure>}
         </div>
       </section>
       <Spec p={p} />
@@ -201,7 +203,7 @@ function ScanExtras({ p, cat }: { p: Product; cat: Catalog }) {
         </div>
       </section>
       <Spec p={p} />
-      <Rail title="Cf." note="— the rest of the Scan Series" right={<A href="/atelier/scan-series/">All fifteen&nbsp;&nbsp;→</A>} items={[...rest, ...cat.pick(['BR-A'])].slice(0, 4)} />
+      <Rail title="Cf." note="— the rest of the Scan Series" right={<A href="/atelier/scan-series/">All {cat.shop('scan').length}&nbsp;&nbsp;→</A>} items={[...rest, ...cat.pick(['BR-A'])].slice(0, 4)} />
     </>
   );
 }

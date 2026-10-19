@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test';
 import { gotoReady } from './ready';
 
+test('a text keeps row 03 coming soon, and the theses name the works they bind', async ({ page }) => {
+  await gotoReady(page, '/factory/tectonics-without-origin/');
+  const row = page.locator('.rows__r').filter({ hasText: 'Bag / Profile Series' });
+  await expect(row).toContainText('03');
+  await expect(row).toHaveClass(/is-red/);
+  await expect(row.getByRole('link')).toHaveCount(0);
+  await gotoReady(page, '/factory/');
+  await expect(page.locator('#t01')).toContainText('// profile');
+  await expect(page.locator('#t02')).toContainText('// ordinary object');
+  await expect(page.locator('#theses .thesis.is-red')).toHaveCount(2);
+  await expect(page.locator('.tile--idx', { hasText: 'JK / 001' })).toContainText('Thesis T01');
+  await expect(page.locator('.tile--idx', { hasText: 'OB / 011' })).toContainText('Thesis T02');
+});
+
 test('factory: text 03, theses T03 / T04 and three side rooms are coming soon', async ({ page }) => {
   await page.goto('/factory/');
   await expect(page.getByRole('heading', { level: 1, name: 'Factory' })).toBeVisible();
@@ -10,16 +24,11 @@ test('factory: text 03, theses T03 / T04 and three side rooms are coming soon', 
   await expect(page.locator('a[href*="bag-profile-series"]')).toHaveCount(0);
 });
 
-test('factory: the Menu button opens the Factory room, even when it is pressed right after load', async ({ page }) => {
-  await page.goto('/factory/');
+test('factory: the Menu button opens the Factory room', async ({ page }) => {
+  await gotoReady(page, '/factory/');
   const menu = page.locator('#menu');
-  // the button does nothing until the page has hydrated: press until the menu is open
-  await expect(async () => {
-    if (!(await menu.evaluate((el) => el.classList.contains('is-open')))) {
-      await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click({ timeout: 1000 });
-    }
-    await expect(menu).toHaveClass(/is-open/, { timeout: 500 });
-  }).toPass();
+  await page.locator('.hd__util').getByRole('button', { name: 'Menu' }).click();
+  await expect(menu).toHaveClass(/is-open/);
   await expect(menu.getByRole('tab', { name: 'Factory' })).toHaveAttribute('aria-selected', 'true');
 });
 

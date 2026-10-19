@@ -6,16 +6,23 @@ import { QuickAddButton } from '@/components/shop/QuickAdd';
 import { Soon } from '@/components/soon';
 import { PlateRow, Tile } from '@/components/tiles';
 import { AxisH, AxisV, Coming, Diag, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, OutPlate, Plate, Redact, SectionAA, ShopPoint, Steps, TitleBlock, Kick } from '@/components/ui';
+import { pieces, workCount } from '@/lib/counts';
 import { getCatalog } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
 
-const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 
 /** CAMPAIGNS index (sheet 18) */
-export function CampaignsPage() {
+export async function CampaignsPage() {
+  const cat = await getCatalog();
+  const fashionN = pieces(cat, 'fashion');
+  const scanN = pieces(cat, 'scan');
+  const ciN = workCount('ci');
+  const lpN = workCount('lp');
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
@@ -31,7 +38,7 @@ export function CampaignsPage() {
         </Plate>
         <div className="camp-cap">
           <div><Kick>( 01 )&nbsp;&nbsp;Autumn 2026</Kick><h2 className="title title--m">[ campaign title ]</h2></div>
-          <div><p className="camp-cap__p">Eighteen pieces, cut like a section, worn against concrete, glass and steel.</p><p className="camp-cap__l"><A href="/campaigns/01/">Enter the campaign&nbsp;&nbsp;→</A><br /><A href="/atelier/fashion/">Shop the 18 pieces&nbsp;&nbsp;→</A></p></div>
+          <div><p className="camp-cap__p">{fashionN} pieces, cut like a section, worn against concrete, glass and steel.</p><p className="camp-cap__l"><A href="/campaigns/01/">Enter the campaign&nbsp;&nbsp;→</A><br /><A href="/atelier/fashion/">Shop the {fashionN} pieces&nbsp;&nbsp;→</A></p></div>
         </div>
       </Sp>
       <Sp s="l">
@@ -51,13 +58,13 @@ export function CampaignsPage() {
         </Plate>
         <div className="camp-cap">
           <div><Kick>( 02 )&nbsp;&nbsp;Scan Series</Kick><h2 className="title title--m">The objects, at home</h2></div>
-          <div><p className="camp-cap__p">Fifteen ceramic objects, photographed where they are used rather than where they were made.</p><p className="camp-cap__l"><A href="/campaigns/02/">Enter the campaign&nbsp;&nbsp;→</A></p></div>
+          <div><p className="camp-cap__p">{scanN} ceramic objects, photographed where they are used rather than where they were made.</p><p className="camp-cap__l"><A href="/campaigns/02/">Enter the campaign&nbsp;&nbsp;→</A></p></div>
         </div>
       </Sp>
       <Sp s="l">
         <Hair left="Editorials" right="From the Studio · art, not product" />
         <div className="g2 q-idx edit">
-          {[['art/CI-detail', 'Conceptual Interference', '15 plates — chance treated as a layer of authorship', '/studio/conceptual-interference/'], ['art/LP-detail', 'Layer Paintings', '4 triptychs — three states of the same set of layers', '/studio/layer-paintings/']].map(([s, t, d, h]) => (
+          {[['art/CI-detail', 'Conceptual Interference', `${ciN} plates — chance treated as a layer of authorship`, '/studio/conceptual-interference/'], ['art/LP-detail', 'Layer Paintings', `${lpN} triptychs — three states of the same set of layers`, '/studio/layer-paintings/']].map(([s, t, d, h]) => (
             <article key={t}><A href={h}><Img slot={s} ratio="612/600" w={612} sizes="(min-width:1440px) 612px, 50vw" /></A><p className="tile__t"><b>{t}</b></p><p className="tile__s">{d} &nbsp; <A className="link-u" href={h}>View&nbsp;&nbsp;→</A></p></article>
           ))}
         </div>
@@ -66,10 +73,10 @@ export function CampaignsPage() {
       <Sp s="l">
         <Hair left="Index" right="All campaigns and editorials" />
         <Rows rows={[
-          { no: '01', title: '[ campaign title ]', meta: 'Fashion · Autumn 2026 · [ place ] · 18 pieces', go: <>Enter&nbsp;&nbsp;→</>, href: '/campaigns/01/' },
-          { no: '02', title: 'The objects, at home', meta: 'Scan Series · 2026 · interiors · 15 objects', go: <>Enter&nbsp;&nbsp;→</>, href: '/campaigns/02/' },
-          { no: 'E1', title: 'Conceptual Interference', meta: 'Studio · 2025 · 15 plates', go: <>View&nbsp;&nbsp;→</>, href: '/studio/conceptual-interference/' },
-          { no: 'E2', title: 'Layer Paintings', meta: 'Studio · 2025 · 4 triptychs', go: <>View&nbsp;&nbsp;→</>, href: '/studio/layer-paintings/' },
+          { no: '01', title: '[ campaign title ]', meta: `Fashion · Autumn 2026 · [ place ] · ${fashionN} pieces`, go: <>Enter&nbsp;&nbsp;→</>, href: '/campaigns/01/' },
+          { no: '02', title: 'The objects, at home', meta: `Scan Series · 2026 · interiors · ${scanN} objects`, go: <>Enter&nbsp;&nbsp;→</>, href: '/campaigns/02/' },
+          { no: 'E1', title: 'Conceptual Interference', meta: `Studio · 2025 · ${ciN} plates`, go: <>View&nbsp;&nbsp;→</>, href: '/studio/conceptual-interference/' },
+          { no: 'E2', title: 'Layer Paintings', meta: `Studio · 2025 · ${lpN} triptychs`, go: <>View&nbsp;&nbsp;→</>, href: '/studio/layer-paintings/' },
           { no: '03', title: '( )', meta: 'Spring 2027 — not yet', go: <>Notify&nbsp;&nbsp;→</>, href: '/contact/?subject=notify-campaign', red: true }
         ]} />
       </Sp>
@@ -89,7 +96,7 @@ export async function Campaign01() {
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
-      <QOpen kick="Campaign ( 01 )" meta="18 pieces · [ place ] · photography [ name ]" title="[ campaign title ]">
+      <QOpen kick="Campaign ( 01 )" meta={`${pieces(cat, 'fashion')} pieces · [ place ] · photography [ name ]`} title="[ campaign title ]">
         Nothing here was built for the picture.<br /><span className="g">The clothes were taken to a place that already had the geometry.</span>
       </QOpen>
       <Sp s="l">
@@ -136,9 +143,9 @@ export async function Campaign01() {
         </div>
       </Sp>
       <Sp s="l" id="shop">
-        <Hair left="Shop the campaign" right="18 pieces · ships in 5 days" />
+        <Hair left="Shop the campaign" right={`${pieces(cat, 'fashion')} pieces · ships in 5 days`} />
         <div className="g4 q-idx">{shop4.map((p) => <Tile key={p.id} p={p} ratio="1/1.42" w={290} />)}</div>
-        <p className="viewall"><A href="/atelier/fashion/">View all 18&nbsp;&nbsp;→</A></p>
+        <p className="viewall"><A href="/atelier/fashion/">View all {pieces(cat, 'fashion')}&nbsp;&nbsp;→</A></p>
       </Sp>
       <Sp s="l"><Ghost><Narrate size="l">The window is laid over the body.<br /><span className="g">The body does not move for it.</span></Narrate></Ghost></Sp>
       <Sp s="xl"><OutPlate slot="campaign-02/cover" pos="50% 56%" title="Campaign ( 02 ) — the objects, at home" line="Enter  →" href="/campaigns/02/" ratio="1248/620" /></Sp>
@@ -159,7 +166,7 @@ export async function Campaign02() {
   return (
     <div className="q">
       <Sp s="l" className="q-top" />
-      <QOpen kick="Campaign ( 02 )" meta="Scan Series · 2026 · interiors · 15 objects" title="The objects, at home">
+      <QOpen kick="Campaign ( 02 )" meta={`Scan Series · 2026 · interiors · ${pieces(cat, 'scan')} objects`} title="The objects, at home">
         Photographed where they are used,<br /><span className="g">not where they were made.</span>
       </QOpen>
       <Sp s="l">
@@ -174,9 +181,9 @@ export async function Campaign02() {
       </div>
       <Sp s="xl"><Narrate size="l">Identical was the promise.<br /><span className="g">Identical is now the cheapest thing we own.</span></Narrate></Sp>
       <Sp s="l">
-        <Hair left="Shop the campaign" right="Scan Series · 15 objects" />
+        <Hair left="Shop the campaign" right={`Scan Series · ${pieces(cat, 'scan')} objects`} />
         <div className="g4 q-idx">{cat.pick(['OB-011', 'OB-021', 'OB-031', 'OB-034']).map((p) => <Tile key={p.id} p={p} ratio="1/1.2" w={290} ground sub={p.name} />)}</div>
-        <p className="viewall"><A href="/atelier/scan-series/">All fifteen&nbsp;&nbsp;→</A></p>
+        <p className="viewall"><A href="/atelier/scan-series/">All {pieces(cat, 'scan')}&nbsp;&nbsp;→</A></p>
       </Sp>
       <Sp s="xl"><OutPlate slot="campaign-01/cover" pos="50% 22%" title="Campaign ( 01 )" line="Autumn 2026  →" href="/campaigns/01/" ratio="1248/620" /></Sp>
       <Sp s="s"><QEnd sheet="Campaign ( 02 )" index="a" thesis="T02" crumb={[{ label: 'Campaigns', href: '/campaigns/' }, { label: '( 02 ) The objects, at home' }]} /></Sp>

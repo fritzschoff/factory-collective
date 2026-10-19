@@ -8,6 +8,18 @@ test('studio: exhibitions, sound, scenography, architecture are coming soon', as
   await expect(page.locator('a[href*="/studio/exhibitions/"], a[href*="/studio/sound/"]')).toHaveCount(0);
 });
 
+test('exhibitions and sound offer a notify link that preselects the contact subject', async ({ page }) => {
+  await gotoReady(page, '/studio/');
+  const box = (name: RegExp) => page.locator('.coming', { has: page.getByRole('heading', { name }) });
+  await expect(box(/Exhibitions/)).toContainText('The show is over');
+  await expect(box(/Exhibitions/).getByRole('link', { name: /Notify me/ })).toHaveAttribute('href', '/contact/?subject=notify-exhibition');
+  await expect(box(/^Sound/)).toContainText('Not yet published');
+  await expect(box(/^Sound/).getByRole('link', { name: /Notify me/ })).toHaveAttribute('href', '/contact/?subject=notify-sound');
+  await box(/Exhibitions/).getByRole('link', { name: /Notify me/ }).click();
+  await expect(page).toHaveURL(/\/contact\/\?subject=notify-exhibition$/);
+  await expect(page.locator('.cform').getByLabel('Subject')).toHaveValue('notify');
+});
+
 test('a layer painting: choose a state, add the archival print', async ({ page }) => {
   await gotoReady(page, '/studio/layer-paintings/lp-02/');
   await page.locator('#states').getByText('State 03').click();
@@ -34,7 +46,7 @@ test('enquiring about an original says it is not connected yet', async ({ page }
   await dialog.getByLabel('Name').fill('A. Person');
   await dialog.getByLabel('E-mail').fill('a@example.com');
   await dialog.getByRole('button', { name: 'Send enquiry' }).click();
-  await expect(dialog.getByRole('status')).toHaveText('Sending messages is not connected yet.');
+  await expect(dialog.getByRole('status')).toHaveText(process.env.NEXT_PUBLIC_API_BASE ? 'Thank you. We write back within two working days.' : 'Sending messages is not connected yet.');
 });
 
 test('Esc closes the enquiry dialog and focus returns to the button', async ({ page }) => {

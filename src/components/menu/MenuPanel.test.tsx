@@ -36,6 +36,20 @@ afterEach(() => {
 /** The files in the window of the Atelier panel (jsdom writes url("…") with quotes). */
 const pictures = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('#mp-atelier .bwin__img')].map((e) => e.style.backgroundImage.replace(/^url\("?|"?\)$/g, ''));
 
+describe('MenuPanel: the rooms', () => {
+  it('arrow keys move to the next room and keep that tab focused', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'open' }));
+    const atelier = screen.getByRole('tab', { name: 'Atelier' });
+    expect(atelier).toHaveAttribute('tabindex', '0');
+    fireEvent.keyDown(atelier, { key: 'ArrowRight' });
+    const factory = screen.getByRole('tab', { name: 'Factory' });
+    expect(factory).toHaveAttribute('aria-selected', 'true');
+    expect(factory).toHaveFocus();
+    expect(atelier).toHaveAttribute('tabindex', '-1');
+  });
+});
+
 describe('MenuPanel: the window', () => {
   it('loads no pictures while the menu is closed, the room\'s own once it is open', () => {
     const { container } = show();

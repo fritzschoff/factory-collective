@@ -40,14 +40,17 @@ describe('BagView', () => {
   it('ignores a second click on Checkout while the first request is on its way (Ruling P39)', async () => {
     vi.stubEnv('NEXT_PUBLIC_API_BASE', 'https://api.test');
     let resolve!: (r: Response) => void;
-    const fetchMock = vi.fn(() => new Promise<Response>((r) => { resolve = r; }));
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method !== 'POST') return new Response(JSON.stringify({ products: [], items: {} }), { status: 200 });
+      return new Promise<Response>((r) => { resolve = r; });
+    });
     vi.stubGlobal('fetch', fetchMock);
     localStorage.setItem('cfc.bag.v1', JSON.stringify([{ id: 'OB-011', qty: 1, opts: {} }]));
     renderWithChrome(<BagView products={products} />);
     const button = screen.getByRole('button', { name: 'Checkout' });
     fireEvent.click(button);
     fireEvent.click(button);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(fetchMock.mock.calls.filter((call) => call[1]?.method === 'POST')).toHaveLength(1));
     expect(screen.getByRole('button', { name: 'One moment …' })).toBeDisabled();
     resolve(new Response(JSON.stringify({ error: 'Sold out.' }), { status: 409 }));
     expect(await screen.findByText('Sold out.')).toBeInTheDocument();

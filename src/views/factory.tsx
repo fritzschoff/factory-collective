@@ -9,11 +9,14 @@ import { Tile } from '@/components/tiles';
 import { AxisV, Crumb, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, Opening, Pill, Plate, Rule, SectionAA, Kick, Register, cx } from '@/components/ui';
 import { T01, T02, GLOSSARY } from '@/content/texts';
 import type { SoonKey } from '@/content/soon';
+import { paren, pieces } from '@/lib/counts';
 import { getCatalog } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice } from '@/lib/format';
+import { mediaUrl } from '@/lib/images';
 import { toSummary } from '@/lib/products/summary';
 
-const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 const TEXTS: { no: string; t: string; d: string; min: string; href?: string; soon?: SoonKey; slot: string; pos: string }[] = [
@@ -67,7 +70,7 @@ export async function FactoryPage() {
         <div className="g4 q-idx">
           {came.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio="1/1.2" pos={p.pos} ground={p.ground} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
               <p className="micro tile__c"><b>{p.code}</b><span>Thesis {THESIS[p.id]}</span></p>
               <p className="tile__s">{p.name} &nbsp; {fmtPrice(p.priceCents)}</p>
             </article>
@@ -127,14 +130,14 @@ export async function TextT01() {
         <div className="g4 q-idx">
           {works.map((p) => (
             <article className="tile tile--idx" key={p.id}>
-              <A className="tile__a" href={p.href}><Img slot={p.images[0]} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
+              <A className="tile__a" href={p.href}><Img slot={p.images[0]} src={mediaUrl(p.media, p.images[0])} ratio="1/1.45" pos={p.pos} w={290} alt={p.code} sizes="(min-width:1440px) 290px, 45vw" /></A>
               <p className="micro tile__c"><b>{p.code}</b></p>
               <p className="tile__s">{p.name} &nbsp; {SUB[p.id]}</p>
               <p className="tile__b"><span>{fmtPrice(p.priceCents)}</span><QuickAddButton product={toSummary(p)} /></p>
             </article>
           ))}
         </div>
-        <div className="pills pills--after"><Pill href="/atelier/fashion/">Shop Fashion&nbsp;&nbsp;( 18 )&nbsp;&nbsp;→</Pill><Pill href="/atelier/bags/">Shop Bags&nbsp;&nbsp;( 4 )&nbsp;&nbsp;→</Pill><Pill href="/atelier/" ghost>The whole Atelier&nbsp;&nbsp;→</Pill></div>
+        <div className="pills pills--after"><Pill href="/atelier/fashion/">Shop Fashion&nbsp;&nbsp;{paren(pieces(cat, 'fashion'))}&nbsp;&nbsp;→</Pill><Pill href="/atelier/bags/">Shop Bags&nbsp;&nbsp;{paren(pieces(cat, 'bag'))}&nbsp;&nbsp;→</Pill><Pill href="/atelier/" ghost>The whole Atelier&nbsp;&nbsp;→</Pill></div>
       </Sp>
       <Reader items={READER.map((x, i) => ({ ...x, here: i === 0 }))} />
       <Sp s="m"><QEnd sheet="Text T01" index="a" thesis="T01 // profile" crumb={[{ label: 'Factory', href: '/factory/' }, { label: 'Texts' }, { label: 'Tectonics without origin' }]} /></Sp>
@@ -163,8 +166,8 @@ export async function TextT02() {
       <Sp s="m"><Prose a={T02.a1} b={T02.a2} /></Sp>
       <Sp s="l">
         <div className="g2 routes">
-          <figure><Img slot="jewellery/hero" ratio="612/560" pos="50% 42%" w={612} sizes="(min-width:1440px) 612px, 50vw" /><figcaption><b>Route one — reforged</b><span>Found → measured → cast → riveted → set.<br />One object. The hand is in the whole of it.</span><Pill href="/atelier/jewellery/">Shop the Jewellery&nbsp;&nbsp;( 5 )&nbsp;&nbsp;→</Pill></figcaption></figure>
-          <figure><Img slot="scan/OB-021" ratio="612/560" ground w={612} sizes="(min-width:1440px) 612px, 50vw" /><figcaption><b>Route two — reproduced</b><span>Found → scanned → printed → glazed.<br />Any number of bodies. The hand is only in the surface.</span><Pill href="/atelier/scan-series/">Shop the Scan Series&nbsp;&nbsp;( 15 )&nbsp;&nbsp;→</Pill></figcaption></figure>
+          <figure><Img slot="jewellery/hero" ratio="612/560" pos="50% 42%" w={612} sizes="(min-width:1440px) 612px, 50vw" /><figcaption><b>Route one — reforged</b><span>Found → measured → cast → riveted → set.<br />One object. The hand is in the whole of it.</span><Pill href="/atelier/jewellery/">Shop the Jewellery&nbsp;&nbsp;{paren(pieces(cat, 'jewellery'))}&nbsp;&nbsp;→</Pill></figcaption></figure>
+          <figure><Img slot="scan/OB-021" ratio="612/560" ground w={612} sizes="(min-width:1440px) 612px, 50vw" /><figcaption><b>Route two — reproduced</b><span>Found → scanned → printed → glazed.<br />Any number of bodies. The hand is only in the surface.</span><Pill href="/atelier/scan-series/">Shop the Scan Series&nbsp;&nbsp;{paren(pieces(cat, 'scan'))}&nbsp;&nbsp;→</Pill></figcaption></figure>
         </div>
       </Sp>
       <Sp s="xl"><Statement>The copy is perfect.<br /><span className="g">The glaze is not — and that is the point.</span></Statement></Sp>
@@ -174,7 +177,7 @@ export async function TextT02() {
         <div className="g4">{works.map((p) => <Tile key={p.id} p={p} ratio="1/1.2" w={290} ground={p.ground} sub={p.sub} />)}</div>
       </Sp>
       <Sp s="l">
-        <Rule title="Source objects" note="( 5 )  // jewellery" />
+        <Rule title="Source objects" note={`${paren(pieces(cat, 'jewellery'))}  // jewellery`} />
         <Register rows={SOURCES.map((s, i) => ({ no: String(i + 1).padStart(2, '0'), name: s.name, meta: <>{s.de} → {s.code} {s.made}</>, href: `/atelier/jewellery/${['br-c', 'br-b', 'br-e', 'br-d', 'br-a'][i]}/`, link: 'View' }))} />
       </Sp>
       <Sp s="m"><QEnd sheet="Text T02" index="a" thesis="T02 // ordinary object" cf={<>Cf.&nbsp;&nbsp;<span>Tectonics without origin</span>&nbsp;&nbsp;<A href="/factory/tectonics-without-origin/">Read&nbsp;&nbsp;→</A>&nbsp;&nbsp;&nbsp;<span>Layer Paintings — repetition and variation, in the Studio</span>&nbsp;&nbsp;<A href="/studio/layer-paintings/">View&nbsp;&nbsp;→</A></>} crumb={[{ label: 'Factory', href: '/factory/' }, { label: 'Texts' }, { label: 'Ordinary Objects' }]} /></Sp>

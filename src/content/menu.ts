@@ -1,4 +1,5 @@
 import { NAV, type CountOf, type NavEntry, type NavWorld } from '@/content/nav';
+import { pieces, workCount } from '@/lib/counts';
 import { SOON, soonHref, soonLabel } from '@/content/soon';
 import type { Catalog } from '@/lib/data/catalog';
 import { optimizedSrc } from '@/lib/image-url';
@@ -22,7 +23,7 @@ const WINDOW_WIDTH = 640;
  */
 const urls = (slots: readonly string[] | undefined): string[] =>
   (slots ?? []).map(slotSrc).filter((s): s is string => s !== null).map((s) => optimizedSrc(s, WINDOW_WIDTH));
-const countOf = (cat: Catalog, c: CountOf): number => (c.group ? cat.group(c.kind, c.group) : cat.shop(c.kind)).length;
+const countOf = (cat: Catalog, c: CountOf): number => 'series' in c ? workCount(c.series) : pieces(cat, c.kind, c.group);
 
 /** A coming-soon entry stays red until it is live and has a page; then it is an ordinary row. */
 export function menuEntry(cat: Catalog, e: NavEntry): MenuEntry {

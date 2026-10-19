@@ -32,16 +32,24 @@ function write(items: BagLine[]): void {
   window.dispatchEvent(new Event(EVENT));
 }
 function subscribe(onChange: () => void): () => void {
-  const onStorage = (e: StorageEvent) => { if (e.key === KEY) onChange(); };
+  const onStorage = (e: StorageEvent) => { if (e.key === KEY || e.key === null) onChange(); };
   window.addEventListener(EVENT, onChange);
   window.addEventListener('storage', onStorage);
   return () => { window.removeEventListener(EVENT, onChange); window.removeEventListener('storage', onStorage); };
 }
 
-export function useBag() {
-  const items = useSyncExternalStore(subscribe, read, () => EMPTY);
+function useBagActions() {
   const add = useCallback((id: string, opts: BagOptions, qty = 1) => write(addLine(read(), id, opts, qty)), []);
   const set = useCallback((key: string, qty: number) => write(setQty(read(), key, qty)), []);
   const clear = useCallback(() => write([]), []);
-  return { items, count: countItems(items), add, set, clear };
+  return { add, set, clear };
+}
+
+export function useBag() {
+  const items = useSyncExternalStore(subscribe, read, () => EMPTY);
+  return { items, count: countItems(items), ...useBagActions() };
+}
+
+export function useBagWrite() {
+  return useBagActions();
 }

@@ -5,10 +5,11 @@ import { useChrome } from '@/components/chrome/ChromeProvider';
 import type { SearchEntry } from '@/lib/search/index';
 import { renderWithChrome } from '@/test/chrome';
 
+const push = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/navigation')>()),
   usePathname: () => '/',
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push }),
 }));
 import { Search } from './Search';
 
@@ -33,9 +34,9 @@ describe('Search: the arrow keys', () => {
   });
 
   const type = (value: string) => {
-    renderWithChrome(<><Open /><Search index={INDEX} /></>);
+    renderWithChrome(<><Open /><Search index={INDEX} quick={[]} /></>);
     fireEvent.click(screen.getByRole('button', { name: 'open' }));
-    const input = screen.getByRole('searchbox', { name: 'Search the site' });
+    const input = screen.getByRole('combobox', { name: 'Search the site' });
     fireEvent.change(input, { target: { value } });
     return input;
   };
@@ -46,6 +47,7 @@ describe('Search: the arrow keys', () => {
     expect(scrolled).not.toHaveBeenCalled();
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     expect(rows()[0]).toHaveClass('is-sel');
+    expect(input).toHaveAttribute('aria-activedescendant', rows()[0].id);
     expect(scrolled).toHaveBeenLastCalledWith({ block: 'nearest' });
     expect(scrolled.mock.contexts.at(-1)).toBe(rows()[0]);
     fireEvent.keyDown(input, { key: 'ArrowDown' });
@@ -69,5 +71,13 @@ describe('Search: the arrow keys', () => {
     fireEvent.change(input, { target: { value: 'jacket 0' } });
     expect(document.querySelector('.is-sel')).toBeNull();
     expect(scrolled).not.toHaveBeenCalled();
+  });
+
+  it('Enter during composition does not open a row', () => {
+    const input = type('jacket');
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+    expect(push).not.toHaveBeenCalled();
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith(INDEX[0].h);
   });
 });

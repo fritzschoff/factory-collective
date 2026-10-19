@@ -5,10 +5,13 @@ import { SOURCES } from '@/components/source';
 import { Soon } from '@/components/soon';
 import { ComingTile, IndexGrid, PlateRow } from '@/components/tiles';
 import { AxisV, Coming, Diag, Hair, Img, Lens, LevelMark, MarkBar, Micro, Narrate, NotIn, Opening, OutPlate, Plate, RunOff, SectionAA } from '@/components/ui';
+import { pieces } from '@/lib/counts';
 import { getCatalog } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice, Word } from '@/lib/format';
+import { mediaUrl } from '@/lib/images';
 
-const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 
@@ -50,7 +53,7 @@ export async function BagsPage() {
       <Sp s="l"><Lens slot="bags/carried" ratio="1248/720" pos="50% 42%" fx={48} fy={58} cw={43} ch={23} blur={14} caption="Campaign ( 01 )  —  carried: only what lies inside the brackets is in focus" /></Sp>
       <Sp s="l" id="series"><Hair left="The series" right={`( ${shown} of ${drawn} drawn )`} /></Sp>
       <div className="g5 q-idx">
-        {bags.map((b) => <article className="tile tile--idx" key={b.id}><A className="tile__a" href={b.href}><Img slot={b.images[0]} ratio="1/1.2" pos={b.pos} w={230} alt={b.code} sizes="(min-width:1440px) 230px, 40vw" /></A><p className="micro tile__c"><b>{b.code}</b></p><p className="tile__s">{b.name} &nbsp; {fmtPrice(b.priceCents)}</p></article>)}
+        {bags.map((b) => <article className="tile tile--idx" key={b.id}><A className="tile__a" href={b.href}><Img slot={b.images[0]} src={mediaUrl(b.media, b.images[0])} ratio="1/1.2" pos={b.pos} w={230} alt={b.code} sizes="(min-width:1440px) 230px, 40vw" /></A><p className="micro tile__c"><b>{b.code}</b></p><p className="tile__s">{b.name} &nbsp; {fmtPrice(b.priceCents)}</p></article>)}
         <ComingTile title={`${Word(drawn - shown)} more`.toUpperCase()} line="drawn, not yet stitched" ratio="1/1.2" />
       </div>
       <Sp s="l"><Ghost word="ATELIER"><Narrate size="l">{Word(shown)} exist.<br /><span className="g">The series was drawn as fifteen.</span></Narrate></Ghost></Sp>
@@ -81,7 +84,7 @@ export async function JewelleryPage() {
         </Plate>
       </Sp>
       <Sp s="s"><QCap l="BR / 0??.a  —  after a folding clasp" r="Hinge, two locking ends, a tolerance — recast in white gold" /></Sp>
-      <Sp s="l"><Hair left="Three of the five" right="Each after a tool, at the same size" /></Sp>
+      <Sp s="l"><Hair left={`Three of the ${pieces(cat, 'jewellery')}`} right="Each after a tool, at the same size" /></Sp>
       <div className="q-rows">
         {a && <PlateRow product={a} slot={a.images[0]} ratio="768/900" code={`${a.code}  //cuff`} line="The clasp, opened out and made again in white gold. The magnets sit where the catch sat." />}
         {b && <PlateRow product={b} slot={b.images[0]} ratio="768/900" code={`${b.code}  //screw bangle`} line="A screw clamp at one to one. The thread still turns; it simply no longer clamps anything." mark={<MarkBar w="82%" win="red" caption="the sign, at the height of the thread" />} />}
@@ -91,14 +94,14 @@ export async function JewelleryPage() {
       <Sp s="l" />
       <RunOff word="ATELIER" win="ink" />
       <Sp s="l"><Lens slot="jewellery/BR-A" ratio="1248/700" pos="50% 46%" fx={46} fy={50} cw={43} ch={24} blur={14} caption="BR / 0??.a  —  the gold insert, riveted: only what lies inside the brackets is in focus" /></Sp>
-      <Sp s="l"><Hair left="All five" right="Index · made to order, 3 – 4 weeks" /></Sp>
+      <Sp s="l"><Hair left={`All ${pieces(cat, 'jewellery')}`} right="Index · made to order, 3 – 4 weeks" /></Sp>
       <IndexGrid items={all} />
       <Sp s="l"><Hair left="The source objects" right="Found, not designed" /></Sp>
       <ul className="srclist">
         {SOURCES.map((s) => <li key={s.name}><span className="srclist__n">{s.name}</span><span className="micro">{s.de}</span><span className="srclist__c">→&nbsp;&nbsp;{s.code}</span></li>)}
       </ul>
       <Sp s="l"><Coming title="Rings&nbsp;&nbsp;( )" text="The same profiles, closed small. Not yet cast." link={<><span className="sub">Six more tools are on the bench. Only the ones that survive the translation are shown.</span>&nbsp;&nbsp;&nbsp; Notify me&nbsp;&nbsp;→</>} href="/contact/?subject=notify" /></Sp>
-      <Sp s="l"><OutPlate slot="scan/life-garden" pos="50% 56%" title="Scan Series" line="Fifteen found objects, printed in ceramic and glazed by hand  →" href="/atelier/scan-series/" ratio="1248/600" /></Sp>
+      <Sp s="l"><OutPlate slot="scan/life-garden" pos="50% 56%" title="Scan Series" line={`${pieces(cat, 'scan')} found objects, printed in ceramic and glazed by hand  →`} href="/atelier/scan-series/" ratio="1248/600" /></Sp>
       <Sp s="s"><QEnd sheet="Jewellery" index="BR / 0??.a – e" thesis="T02" cf={<>Cf.&nbsp;&nbsp;<span>Ordinary Objects — the full text</span>&nbsp;&nbsp;<A href="/factory/ordinary-objects/">Read&nbsp;&nbsp;→</A></>} crumb={[{ label: 'Atelier', href: '/atelier/' }, { label: 'Jewellery' }]} /></Sp>
     </div>
   );
@@ -140,7 +143,7 @@ export async function ScanPage() {
       <div className="q-lead"><Micro>one scan&nbsp;&nbsp;→&nbsp;&nbsp;one print file&nbsp;&nbsp;→</Micro></div>
       <IndexGrid items={four} cols={4} ratio="1/1.02" />
       <Sp s="l"><Lens slot="scan/life-window" ratio="1248/760" pos="50% 42%" fx={52} fy={46} cw={45} ch={23} blur={15} caption="OB / 011, in use  —  the window as a lens: the object is sharp, the room is not" /></Sp>
-      <Sp s="l"><Hair left="All fifteen" right="Index" /></Sp>
+      <Sp s="l"><Hair left={`All ${all.length}`} right="Index" /></Sp>
       <IndexGrid items={all} ratio="1/1.08" />
       <Sp s="l"><Ghost word="ATELIER"><Narrate size="l">Identical was the promise.<br /><span className="g">Identical is now the cheapest thing we own.</span></Narrate></Ghost></Sp>
       <Sp s="xl"><Hair left="The source objects" right="Found, not designed" /></Sp>
