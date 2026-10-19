@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useChrome } from '@/components/chrome/ChromeProvider';
 import type { MenuEntry, MenuWorld } from '@/content/menu';
 import { renderWithChrome } from '@/test/chrome';
@@ -22,6 +22,17 @@ function Open() {
 }
 
 const show = () => renderWithChrome(<><Open /><MenuPanel worlds={WORLDS} /></>);
+
+// jsdom has no matchMedia: this one answers "reduce" to the reduced-motion query while `reducedMotion` is set
+let reducedMotion = false;
+beforeEach(() => {
+  vi.stubGlobal('matchMedia', (query: string) => ({ media: query, matches: reducedMotion && query.includes('prefers-reduced-motion: reduce'), addEventListener() {}, removeEventListener() {} }));
+});
+afterEach(() => {
+  reducedMotion = false;
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 /** The files in the window of the Atelier panel (jsdom writes url("…") with quotes). */
 const pictures = (container: HTMLElement) => [...container.querySelectorAll<HTMLElement>('#mp-atelier .bwin__img')].map((e) => e.style.backgroundImage.replace(/^url\("?|"?\)$/g, ''));
 
@@ -56,5 +67,32 @@ describe('MenuPanel: the window', () => {
     expect(pictures(container)).toEqual(['/atelier-1.jpg']);
     expect(panel.querySelector('.mp__ft')).toHaveTextContent('');
     expect(panel.querySelector('.mp__fc')).toHaveTextContent('the Atelier');
+  });
+});
+
+describe('MenuPanel: the cross-fade', () => {
+  /** The picture on show in the window of the Atelier panel, after hovering the Jackets row (two pictures). */
+  function hoverJackets() {
+    const { container } = show();
+    fireEvent.click(screen.getByRole('button', { name: 'open' }));
+    fireEvent.mouseOver(within(container.querySelector<HTMLElement>('#mp-atelier')!).getByRole('link', { name: 'Jackets' }));
+    return () => container.querySelector<HTMLElement>('#mp-atelier .bwin__img.is-on')?.style.backgroundImage;
+  }
+
+  it('moves on to the next picture every 1.2 s', () => {
+    vi.useFakeTimers();
+    const onShow = hoverJackets();
+    expect(onShow()).toContain('/jackets-1.jpg');
+    act(() => { vi.advanceTimersByTime(1200); });
+    expect(onShow()).toContain('/jackets-2.jpg');
+  });
+
+  it('stands still on the first picture when the visitor asks for reduced motion', () => {
+    reducedMotion = true;
+    vi.useFakeTimers();
+    const onShow = hoverJackets();
+    act(() => { vi.advanceTimersByTime(6000); });
+    expect(onShow()).toContain('/jackets-1.jpg');
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

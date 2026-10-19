@@ -13,12 +13,12 @@ const FADE_MS = 1200;
 /** The title and the caption of the window when there is nothing to say: a line of text all the same, so the window does not jump when one appears. */
 const BLANK = '\u00a0';
 
-/** Index of the picture on show; two to four pictures cross-fade every 1.2 s. */
+/** Index of the picture on show; two to four pictures cross-fade every 1.2 s — not when the visitor asks for reduced motion. */
 function useCrossFade(urls: string[]): number {
   const key = urls.join('|');
   const [state, setState] = useState({ key, i: 0 });
   useEffect(() => {
-    if (urls.length < 2) return;
+    if (urls.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const t = window.setInterval(() => setState((s) => ({ key, i: (s.key === key ? s.i : 0) + 1 })), FADE_MS);
     return () => window.clearInterval(t);
   }, [key, urls.length]);
