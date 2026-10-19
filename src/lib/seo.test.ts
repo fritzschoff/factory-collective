@@ -4,13 +4,33 @@ import { pageMetadata, siteUrl } from './seo';
 
 afterEach(() => vi.unstubAllEnvs());
 
+/** Sets the four variables siteUrl reads; the ones not given are unset. */
+function env(vars: { SITE_URL?: string; VERCEL_ENV?: string; VERCEL_PROJECT_PRODUCTION_URL?: string; VERCEL_URL?: string }) {
+  for (const key of ['SITE_URL', 'VERCEL_ENV', 'VERCEL_PROJECT_PRODUCTION_URL', 'VERCEL_URL'] as const) vi.stubEnv(key, vars[key]);
+}
+
+// Ruling P49: SITE_URL → the production domain on a production deployment → the deployment's own address → localhost
 describe('siteUrl', () => {
-  it('falls back to localhost when SITE_URL is unset', () => {
-    vi.stubEnv('SITE_URL', undefined);
+  it('takes SITE_URL first, on Vercel too', () => {
+    env({ SITE_URL: 'https://www.example.com', VERCEL_ENV: 'production', VERCEL_PROJECT_PRODUCTION_URL: 'cfc.vercel.app', VERCEL_URL: 'cfc-abc123.vercel.app' });
+    expect(siteUrl()).toBe('https://www.example.com');
+  });
+  it('without SITE_URL, a production deployment uses the production domain of the project', () => {
+    env({ VERCEL_ENV: 'production', VERCEL_PROJECT_PRODUCTION_URL: 'cfc.vercel.app', VERCEL_URL: 'cfc-abc123.vercel.app' });
+    expect(siteUrl()).toBe('https://cfc.vercel.app');
+  });
+  it('without SITE_URL, any other deployment uses its own address', () => {
+    env({ VERCEL_ENV: 'preview', VERCEL_PROJECT_PRODUCTION_URL: 'cfc.vercel.app', VERCEL_URL: 'cfc-git-branch.vercel.app' });
+    expect(siteUrl()).toBe('https://cfc-git-branch.vercel.app');
+  });
+  it('off Vercel and without SITE_URL, localhost', () => {
+    env({});
+    expect(siteUrl()).toBe('http://localhost:3000');
+    env({ SITE_URL: '' });
     expect(siteUrl()).toBe('http://localhost:3000');
   });
   it('drops a trailing slash', () => {
-    vi.stubEnv('SITE_URL', 'https://example.org/');
+    env({ SITE_URL: 'https://example.org/' });
     expect(siteUrl()).toBe('https://example.org');
   });
 });

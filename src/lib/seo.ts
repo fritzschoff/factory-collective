@@ -3,7 +3,18 @@ import type { PageEntry } from '@/content/pages';
 import { SITE } from '@/content/site';
 import { slotSrc } from '@/lib/images';
 
-export const siteUrl = (): string => (process.env.SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+/**
+ * The public address of the site, without a trailing slash (Ruling P49): SITE_URL; without it, on a production deployment
+ * on Vercel the project's production domain, on any other Vercel deployment its own address; off Vercel localhost.
+ */
+export function siteUrl(): string {
+  const { SITE_URL, VERCEL_ENV, VERCEL_PROJECT_PRODUCTION_URL, VERCEL_URL } = process.env;
+  const url = SITE_URL
+    || (VERCEL_ENV === 'production' && VERCEL_PROJECT_PRODUCTION_URL && `https://${VERCEL_PROJECT_PRODUCTION_URL}`)
+    || (VERCEL_URL && `https://${VERCEL_URL}`)
+    || 'http://localhost:3000';
+  return url.replace(/\/$/, '');
+}
 
 /** The head of every not-found page: its title, and never indexed. */
 export const NOT_FOUND_METADATA: Metadata = { title: 'Not found', robots: { index: false } };

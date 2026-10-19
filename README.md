@@ -47,7 +47,7 @@ npm run dev            # http://localhost:3000
 ## Launch
 
 * `IMAGES=strict` — nur eigene Bilder, keine Beispielbilder mehr.
-* `SITE_URL` auf die echte Domain setzen (z. B. `https://www.example.com`) — daraus entstehen die kanonischen URLs und die Sitemap; der Standard `http://localhost:3000` gehört nicht in Produktion.
+* `SITE_URL` auf die echte Domain setzen (z. B. `https://www.example.com`) — daraus entstehen die kanonischen URLs und die Sitemap. Ohne `SITE_URL` nimmt ein Vercel-Production-Deployment die Production-Domain des Projekts (`VERCEL_PROJECT_PRODUCTION_URL`), jedes andere Vercel-Deployment seine eigene Adresse (`VERCEL_URL`), außerhalb von Vercel `http://localhost:3000`.
 * `DEMO_PRICES` nicht setzen (oder `0`); echte Preise in `src/content/prices.json`.
 
 ## Deploy
