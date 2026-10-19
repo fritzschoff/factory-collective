@@ -59,6 +59,18 @@ test('Notify me preselects the subject of the contact form', async ({ page }) =>
   await expect(page.getByLabel('Subject')).toHaveValue('notify');
 });
 
+test('the contact form is in the server HTML; only the subject waits for the address', async ({ page, request }) => {
+  const html = await (await request.get('/contact/')).text();
+  expect(html).not.toContain('Loading the form');
+  // the enquiry dialog of the chrome has inputs of the same names: look inside the contact form only
+  const form = html.match(/<form class="cform"[\s\S]*?<\/form>/)?.[0] ?? '';
+  for (const [tag, name] of [['input', 'name'], ['input', 'email'], ['select', 'subject'], ['textarea', 'message']]) {
+    expect(form).toMatch(new RegExp(`<${tag}[^>]* name="${name}"`));
+  }
+  await gotoReady(page, '/contact/?subject=original');
+  await expect(page.locator('.cform').getByLabel('Subject')).toHaveValue('original');
+});
+
 test('the contact form says it is not connected yet', async ({ page }) => {
   await gotoReady(page, '/contact/');
   const form = page.locator('.cform'); // the enquiry dialog in the chrome has the same labels

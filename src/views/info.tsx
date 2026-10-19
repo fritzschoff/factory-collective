@@ -1,4 +1,4 @@
-import { Suspense, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Prose, Statement } from '@/components/blocks';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { A } from '@/components/link';
@@ -98,7 +98,7 @@ export function ContactPage() {
       <QOpen kick="About / Contact" meta="We answer within two working days" title="Contact">Write to us about an order, an original, a fitting, or a piece that is not yet made.</QOpen>
       <Sp s="l">
         <div className="contact">
-          <Suspense fallback={<p className="g">Loading the form …</p>}><ContactForm /></Suspense>
+          <ContactForm />
           <Museum rows={[['General', SITE.email], ['Press', 'press@[ domain ]'], ['Wholesale', 'trade@[ domain ]']]} className="contact__m" />
         </div>
       </Sp>

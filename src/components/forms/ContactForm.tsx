@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { Suspense, useState, type FormEvent } from 'react';
 import { postApi } from '@/lib/api';
 import { useHydrated } from '@/lib/use-hydrated';
 
@@ -17,9 +17,24 @@ export function subjectFromQuery(q: string | null): { key: string; full: string 
   return { key: SUBJECTS.some(([k]) => k === key) ? key : 'general', full };
 }
 
+const SubjectSelect = ({ subject }: { subject: string }) => (
+  <select name="subject" defaultValue={subject}>{SUBJECTS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+);
+
+/** The subject from the address, and the full subject as `work` for the message. */
+function SubjectFromQuery() {
+  const { key, full } = subjectFromQuery(useSearchParams().get('subject'));
+  return (
+    <>
+      {/* keyed by the query: a "Notify me" link followed on this page preselects its subject too */}
+      <SubjectSelect key={full} subject={key} />
+      <input type="hidden" name="work" value={full} />
+    </>
+  );
+}
+
 /** The contact form — also the target of every "Notify me". */
 export function ContactForm() {
-  const { key, full } = subjectFromQuery(useSearchParams().get('subject'));
   const hydrated = useHydrated();
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false); // a request is on its way: further submits are ignored
@@ -31,7 +46,7 @@ export function ContactForm() {
     setMsg('Sending …');
     setBusy(true);
     try {
-      await postApi('enquire', { ...Object.fromEntries(new FormData(form)), work: full });
+      await postApi('enquire', Object.fromEntries(new FormData(form)));
       setMsg('Thank you. We write back within two working days.');
       form.reset();
     } catch (err) {
@@ -44,8 +59,9 @@ export function ContactForm() {
     <form className="cform" noValidate aria-busy={busy} onSubmit={onSubmit}>
       <label>Name<input name="name" required autoComplete="name" /></label>
       <label>E-mail<input name="email" type="email" required autoComplete="email" /></label>
-      {/* keyed by the query: a "Notify me" link followed on this page preselects its subject too */}
-      <label>Subject<select key={full} name="subject" defaultValue={key}>{SUBJECTS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+      {/* Only the subject reads the address, so only it waits for it, in a boundary far under 500 bytes (Ruling P34):
+          the rest of the form is in the server HTML. */}
+      <label>Subject<Suspense fallback={<SubjectSelect subject="general" />}><SubjectFromQuery /></Suspense></label>
       <label>Message<textarea name="message" rows={6} required /></label>
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
       <button className="pill" type="submit" disabled={busy || !hydrated}>Send</button>
