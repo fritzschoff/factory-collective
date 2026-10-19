@@ -7,8 +7,12 @@ export interface ResolvedImage { slot: string; source: ImageSource; src: string 
 
 const REAL: Readonly<Record<string, string>> = manifest.slots;
 
-export const imageMode = (value: string | undefined = process.env.IMAGES): ImageMode =>
-  value === 'strict' || value === 'placeholders' ? value : 'local';
+/** The IMAGES setting; unset or empty is 'local'. Any other value is refused: a typo must not ship the samples (Ruling P52). */
+export function imageMode(value: string | undefined = process.env.IMAGES): ImageMode {
+  if (!value) return 'local';
+  if (value === 'local' || value === 'strict' || value === 'placeholders') return value;
+  throw new Error(`IMAGES must be local, strict or placeholders (got "${value}")`);
+}
 
 /**
  * Where the picture of a slot comes from:

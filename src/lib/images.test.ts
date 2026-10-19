@@ -26,15 +26,23 @@ describe('imageMode', () => {
     vi.unstubAllEnvs();
   });
 
-  it('reads the mode from IMAGES', () => {
+  it('reads the mode from IMAGES; unset or empty is local', () => {
     vi.stubEnv('IMAGES', 'strict');
     expect(imageMode()).toBe('strict');
     vi.stubEnv('IMAGES', '');
     expect(imageMode()).toBe('local');
+    vi.stubEnv('IMAGES', undefined);
+    expect(imageMode()).toBe('local');
   });
-  it('takes an explicit mode as given and falls back to local', () => {
+  it('takes an explicit mode as given', () => {
+    expect(imageMode('local')).toBe('local');
     expect(imageMode('strict')).toBe('strict');
     expect(imageMode('placeholders')).toBe('placeholders');
-    expect(imageMode('nonsense')).toBe('local');
+  });
+  // Ruling P52: a typo must not quietly ship the sample pictures
+  it('refuses any other value', () => {
+    expect(() => imageMode('nonsense')).toThrow('IMAGES must be local, strict or placeholders (got "nonsense")');
+    vi.stubEnv('IMAGES', 'Strict');
+    expect(() => imageMode()).toThrow('IMAGES must be local, strict or placeholders (got "Strict")');
   });
 });
