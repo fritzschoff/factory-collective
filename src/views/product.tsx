@@ -12,7 +12,7 @@ import { productPages } from '@/content/pages';
 import { getCatalog, type Catalog } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
-import { pageMetadata } from '@/lib/seo';
+import { NOT_FOUND_METADATA, pageMetadata } from '@/lib/seo';
 import type { Product, ProductKind } from '@/lib/types';
 
 /** The kinds that have a product page of their own (prints live on their work page). */
@@ -38,7 +38,7 @@ export async function productMetadata(kind: ShopKind, slug: string): Promise<Met
   const cat = await getCatalog();
   const p = cat.bySlug(kind, slug);
   const entry = p && productPages(cat).find((e) => e.path === p.href);
-  return entry ? pageMetadata(entry) : {};
+  return entry ? pageMetadata(entry) : NOT_FOUND_METADATA;
 }
 
 /** The page of a product; a slug the catalogue does not know is a 404. */

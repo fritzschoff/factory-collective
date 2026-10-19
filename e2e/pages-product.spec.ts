@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { expectNotFoundPage } from './not-found';
+import { gotoReady } from './ready';
 
 test('a product page: gallery, size guide, add to bag', async ({ page }) => {
   await page.goto('/atelier/fashion/sh-001/');
@@ -26,7 +28,8 @@ test('every series page answers', async ({ page }) => {
   }
 });
 
-test('an unknown product is a 404', async ({ page }) => {
-  const res = await page.goto('/atelier/fashion/nope/');
+test('an unknown product is a 404 inside the site chrome, once', async ({ page }) => {
+  const res = await gotoReady(page, '/atelier/fashion/nope/');
   expect(res?.status()).toBe(404);
+  await expectNotFoundPage(page);
 });

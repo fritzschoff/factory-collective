@@ -12,7 +12,7 @@ import { workPages } from '@/content/pages';
 import { WORKS, fromPrice, getCatalog, type Catalog, type Work } from '@/lib/data/catalog';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
-import { pageMetadata } from '@/lib/seo';
+import { NOT_FOUND_METADATA, pageMetadata } from '@/lib/seo';
 import type { Product } from '@/lib/types';
 
 const Ghost = ({ word = 'STUDIO', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
@@ -198,7 +198,7 @@ const findWork = (series: Work['series'], slug: string) => WORKS.find((w) => w.s
 export function workMetadata(series: Work['series'], slug: string): Metadata {
   const w = findWork(series, slug);
   const entry = w && workPages().find((e) => e.path === w.href);
-  return entry ? pageMetadata(entry) : {};
+  return entry ? pageMetadata(entry) : NOT_FOUND_METADATA;
 }
 
 /** The page of a work; a slug the series does not know is a 404. */

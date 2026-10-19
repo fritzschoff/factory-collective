@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectNotFoundPage } from './not-found';
 import { gotoReady } from './ready';
 
 test('studio: exhibitions, sound, scenography, architecture are coming soon', async ({ page }) => {
@@ -53,8 +54,9 @@ test('the series pages answer', async ({ page }) => {
   }
 });
 
-test('an unknown work is a 404', async ({ page }) => {
+test('an unknown work is a 404 inside the site chrome, once', async ({ page }) => {
   for (const path of ['/studio/layer-paintings/lp-99/', '/studio/conceptual-interference/ci-99/']) {
     expect((await gotoReady(page, path))?.status(), path).toBe(404);
+    await expectNotFoundPage(page);
   }
 });

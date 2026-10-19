@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectNotFoundPage } from './not-found';
 import { gotoReady } from './ready';
 
 test('the bag: list, quantity, remove, checkout not connected', async ({ page }) => {
@@ -107,6 +108,6 @@ test('the info pages answer; an unknown page is a 404 inside the site', async ({
   const res = await gotoReady(page, '/nowhere/');
   expect(res?.status()).toBe(404);
   await expect(page.locator('header[data-header]')).toBeVisible();
-  await expect(page.getByText('This page is drawn nowhere.')).toBeVisible();
+  await expectNotFoundPage(page);
   await expect(page.locator('.ft .tb')).toContainText('404');
 });
