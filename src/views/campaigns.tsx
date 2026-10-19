@@ -7,10 +7,11 @@ import { Soon } from '@/components/soon';
 import { PlateRow, Tile } from '@/components/tiles';
 import { AxisH, AxisV, Coming, Diag, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, OutPlate, Plate, Redact, SectionAA, ShopPoint, Steps, TitleBlock, Kick } from '@/components/ui';
 import { getCatalog } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
 
-const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'ATELIER', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 

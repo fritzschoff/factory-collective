@@ -1,9 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cx } from '@/lib/cx';
-import { signGeometry } from '@/lib/sign/geometry';
+import { signGeometry, type SignWord } from '@/lib/sign/geometry';
 
 export interface SignProps {
-  word?: string;
+  word?: SignWord;
   /** window: ink = black bar, open = see-through, red = red bar */
   win?: 'ink' | 'open' | 'red';
   className?: string;
@@ -31,7 +31,7 @@ export function Sign({ word = 'ATELIER', win = 'ink', className, style, showWord
 }
 
 /** The sign as a block in the page: bar, ghost, with a caption. */
-export function MarkBar({ word = 'ATELIER', w = '82%', win = 'ink', ghost, caption, className, style }: { word?: string; w?: string; win?: 'ink' | 'red' | 'open'; ghost?: boolean; caption?: string; className?: string; style?: CSSProperties }) {
+export function MarkBar({ word = 'ATELIER', w = '82%', win = 'ink', ghost, caption, className, style }: { word?: SignWord; w?: string; win?: 'ink' | 'red' | 'open'; ghost?: boolean; caption?: string; className?: string; style?: CSSProperties }) {
   return (
     <div className={cx('markbar', ghost && 'markbar--ghost', className)} style={style}>
       <div className="markbar__in" style={{ width: w }}><Sign word={word} win={win} /></div>
@@ -41,7 +41,7 @@ export function MarkBar({ word = 'ATELIER', w = '82%', win = 'ink', ghost, capti
 }
 
 /** The sign, large, running off the right edge of the page. */
-export function RunOff({ word = 'ATELIER', win = 'ink' }: { word?: string; win?: 'ink' | 'red' }) {
+export function RunOff({ word = 'ATELIER', win = 'ink' }: { word?: SignWord; win?: 'ink' | 'red' }) {
   return <div className="runoff" aria-hidden="true"><div className="runoff__in"><Sign word={word} win={win} /></div></div>;
 }
 

@@ -61,7 +61,7 @@ export function ContactForm() {
       <label>E-mail<input name="email" type="email" required autoComplete="email" /></label>
       {/* Only the subject reads the address, so only it waits for it, in a boundary far under 500 bytes (Ruling P34):
           the rest of the form is in the server HTML. */}
-      <label>Subject<Suspense fallback={<SubjectSelect subject="general" />}><SubjectFromQuery /></Suspense></label>
+      <label>Subject<Suspense fallback={<><SubjectSelect subject="general" /><input type="hidden" name="work" value="" /></>}><SubjectFromQuery /></Suspense></label>
       <label>Message<textarea name="message" rows={6} required /></label>
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hp" aria-hidden="true" />
       <button className="pill" type="submit" disabled={busy || !hydrated}>Send</button>

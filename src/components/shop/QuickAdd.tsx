@@ -10,10 +10,12 @@ import { cx } from '@/lib/cx';
 import { fmtPrice } from '@/lib/format';
 import { defaultValueIndex } from '@/lib/products/options';
 import type { ProductSummary } from '@/lib/products/summary';
+import { useHydrated } from '@/lib/use-hydrated';
 
 /** "Add" on a tile: adds at once, or first asks for size, colour … in a small box. */
 export function QuickAddButton({ product, label = 'Add' }: { product: ProductSummary; label?: string }) {
   const { add } = useBag();
+  const hydrated = useHydrated();
   const inBag = useInBagToast();
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
@@ -33,6 +35,7 @@ export function QuickAddButton({ product, label = 'Add' }: { product: ProductSum
       <button
         ref={button}
         type="button"
+        disabled={!hydrated}
         aria-haspopup={choices.length ? 'dialog' : undefined}
         aria-expanded={choices.length ? open : undefined}
         onClick={() => (choices.length ? setOpen((o) => !o) : commit({}))}
@@ -77,15 +80,17 @@ function QuickAddBox({ anchor, product, onAdd, onClose }: { anchor: RefObject<HT
       const to = e.relatedTarget;
       if (to instanceof Node && !box.current?.contains(to) && !anchor.current?.contains(to)) onClose();
     };
+    const start = window.scrollY;
+    const onScroll = () => { if (Math.abs(window.scrollY - start) > 48) onClose(); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     document.addEventListener('focusout', onFocusOut);
-    window.addEventListener('scroll', onClose, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('focusout', onFocusOut);
-      window.removeEventListener('scroll', onClose);
+      window.removeEventListener('scroll', onScroll);
     };
   }, [anchor, onClose]);
 

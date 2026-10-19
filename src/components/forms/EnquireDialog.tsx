@@ -42,6 +42,7 @@ function EnquireForm({ what, onClose }: { what: string; onClose: () => void }) {
 export function EnquireDialog() {
   const { enquiry, closeEnquiry } = useChrome();
   const ref = useRef<HTMLDialogElement>(null);
+  const pressedOnFrame = useRef(false);
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -49,7 +50,7 @@ export function EnquireDialog() {
     if (!enquiry.open && d.open) d.close();
   }, [enquiry.open]);
   return (
-    <dialog ref={ref} className="dlg" aria-labelledby="enq-t" onClose={closeEnquiry} onClick={(e) => { if (e.target === ref.current) closeEnquiry(); }}>
+    <dialog ref={ref} className="dlg" aria-labelledby="enq-t" onClose={closeEnquiry} onMouseDown={(e) => { pressedOnFrame.current = e.target === ref.current; }} onClick={(e) => { if (e.target === ref.current && pressedOnFrame.current) closeEnquiry(); }}>
       <EnquireForm key={enquiry.n} what={enquiry.what} onClose={closeEnquiry} />
     </dialog>
   );

@@ -109,7 +109,7 @@ export function BagView({ products }: { products: Record<string, ProductSummary>
             <div className="bi__t">
               <b>{p.code}</b>{' // '}{p.name}
               <span className="sub">{p.sub}</span>
-              <span className="sub">{Object.entries(i.opts).map(([k, v]) => `${p.options.find((o) => o.id === k)?.label ?? (k === 'state' ? 'State' : k)}: ${v.l}`).join('  ·  ')}</span>
+              <span className="sub">{Object.entries(i.opts).map(([k, v]) => `${p.options.find((o) => o.id === k)?.label ?? (k === 'state' ? 'State' : k)}: ${v.l}`).join('\u00a0\u00a0·\u00a0\u00a0')}</span>
               <span className="bi__q">
                 <button type="button" aria-label="One less" onClick={() => set(i.key, i.qty - 1)}>–</button>
                 <span>{i.qty}</span>

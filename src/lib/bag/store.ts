@@ -32,7 +32,7 @@ function write(items: BagLine[]): void {
   window.dispatchEvent(new Event(EVENT));
 }
 function subscribe(onChange: () => void): () => void {
-  const onStorage = (e: StorageEvent) => { if (e.key === KEY) onChange(); };
+  const onStorage = (e: StorageEvent) => { if (e.key === KEY || e.key === null) onChange(); };
   window.addEventListener(EVENT, onChange);
   window.addEventListener('storage', onStorage);
   return () => { window.removeEventListener(EVENT, onChange); window.removeEventListener('storage', onStorage); };

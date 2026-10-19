@@ -5,7 +5,8 @@ import metrics from './font-metrics.json';
  * All values in em of the sign's font size (scripts/measure-font.py produced the JSON).
  */
 const ADV = metrics.advEm as Record<string, number>;
-const WORDS = metrics.words as Record<string, number>;
+const WORDS = metrics.words;
+export type SignWord = keyof typeof WORDS;
 const B = metrics.bracket;
 
 /** Advances of the nine pieces, in the order the JSON lists them: C · ONCEPT · . · ( · ATELIER · ) · C · OLLECTIVE · . */
@@ -20,10 +21,10 @@ export interface SignGeometry {
   winLeft: number;
 }
 
-const advOf = (word: string) => WORDS[word.toUpperCase()] ?? ADV.ATELIER;
+const advOf = (word: SignWord) => WORDS[word];
 const BEFORE = ADV.C + ADV.ONCEPT + ADV['. '];
 
-export function signGeometry(word = 'ATELIER'): SignGeometry {
+export function signGeometry(word: SignWord = 'ATELIER'): SignGeometry {
   const w = advOf(word);
   const tot = Object.values(ADV).reduce((a, c) => a + c, 0) - ADV.ATELIER + w;
   const half = ADV['('] / 2;
@@ -52,7 +53,7 @@ export interface WindowShape {
  * The sign row as a white band with the window between the brackets cut out.
  * `bleedEm` widens the hole a little under the red glyphs so no white seam can show.
  */
-export function windowShape(word = 'ATELIER', padEm = HEADER_PAD_EM, bleedEm = 0.012): WindowShape {
+export function windowShape(word: SignWord = 'ATELIER', padEm = HEADER_PAD_EM, bleedEm = 0.012): WindowShape {
   const w = advOf(word);
   const H = B.inkHeightEm;
   const top = metrics.baselineFromTopEm + B.inkTopFromBaselineEm;

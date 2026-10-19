@@ -4,6 +4,7 @@ import { Toast } from '@/components/chrome/Toast';
 import { Footer } from '@/components/footer/Footer';
 import { EnquireDialog } from '@/components/forms/EnquireDialog';
 import { Header } from '@/components/header/Header';
+import { BagCatalog } from '@/components/shop/BagCount';
 import { MenuPanel } from '@/components/menu/MenuPanel';
 import { Search } from '@/components/search/Search';
 import { buildMenu } from '@/content/menu';
@@ -23,14 +24,16 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
   const pages = allPages(cat);
   return (
     <ChromeProvider>
-      <a className="skip" href="#main">Skip to content</a>
-      <Header />
-      <main id="main" tabIndex={-1}>{children}</main>
-      <Footer sheets={Object.fromEntries(pages.map((p) => [p.path, p.sheet]))} />
-      <MenuPanel worlds={buildMenu(cat)} />
-      <Search index={buildSearchIndex(pages, cat)} />
-      <EnquireDialog />
-      <Toast />
+      <BagCatalog ids={cat.products.map((product) => product.id)}>
+        <a className="skip" href="#main">Skip to content</a>
+        <Header />
+        <main id="main" tabIndex={-1}>{children}</main>
+        <Footer sheets={Object.fromEntries(pages.map((p) => [p.path, p.sheet]))} />
+        <MenuPanel worlds={buildMenu(cat)} />
+        <Search index={buildSearchIndex(pages, cat)} />
+        <EnquireDialog />
+        <Toast />
+      </BagCatalog>
     </ChromeProvider>
   );
 }

@@ -10,12 +10,13 @@ import { PlateRow, Tile } from '@/components/tiles';
 import { AxisV, Coming, Crumb, Dim, Elevation, Hair, Img, Lens, LevelMark, MarkBar, Micro, Museum, Narrate, NotIn, OutPlate, Pill, Plate, Rule, SectionAA, Steps, Diag, cx } from '@/components/ui';
 import { workPages } from '@/content/pages';
 import { WORKS, fromPrice, getCatalog, type Catalog, type Work } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice } from '@/lib/format';
 import { toSummary } from '@/lib/products/summary';
 import { NOT_FOUND_METADATA, pageMetadata } from '@/lib/seo';
 import type { Product } from '@/lib/types';
 
-const Ghost = ({ word = 'STUDIO', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'STUDIO', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 const ci = WORKS.filter((w) => w.series === 'ci');

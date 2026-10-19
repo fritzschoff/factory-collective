@@ -10,11 +10,12 @@ import { AxisV, Crumb, Hair, Img, LevelMark, MarkBar, Micro, Narrate, NotIn, Ope
 import { T01, T02, GLOSSARY } from '@/content/texts';
 import type { SoonKey } from '@/content/soon';
 import { getCatalog } from '@/lib/data/catalog';
+import type { SignWord } from '@/lib/sign/geometry';
 import { fmtPrice } from '@/lib/format';
 import { mediaUrl } from '@/lib/images';
 import { toSummary } from '@/lib/products/summary';
 
-const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: string; children: ReactNode; left?: number }) => (
+const Ghost = ({ word = 'FACTORY', children, left = 25 }: { word?: SignWord; children: ReactNode; left?: number }) => (
   <div className="ghostwrap"><div className="ghostwrap__g" style={{ left: `${left}%` }}><MarkBar word={word} win="red" ghost w="100%" /></div>{children}</div>
 );
 const TEXTS: { no: string; t: string; d: string; min: string; href?: string; soon?: SoonKey; slot: string; pos: string }[] = [

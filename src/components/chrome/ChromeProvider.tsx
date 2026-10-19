@@ -23,6 +23,7 @@ export interface Chrome {
 
 const ChromeContext = createContext<Chrome | null>(null);
 const TOAST_MS = 4200;
+let toastSeq = 0;
 
 /**
  * Tells the provider which page is showing, and renders nothing. It is the only reader of the address in here, and under
@@ -81,7 +82,7 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
   const closeEnquiry = useCallback(() => setEnquiry((e) => ({ ...e, open: false })), []);
   const showToast = useCallback((text: string, link?: ToastLink) => {
     window.clearTimeout(toastTimer.current);
-    setToast({ id: Date.now(), text, link });
+    setToast({ id: ++toastSeq, text, link });
     toastTimer.current = window.setTimeout(() => setToast(null), TOAST_MS);
   }, []);
 
