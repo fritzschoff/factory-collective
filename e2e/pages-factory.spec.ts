@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoReady } from './ready';
 
 test('factory: text 03, theses T03 / T04 and three side rooms are coming soon', async ({ page }) => {
   await page.goto('/factory/');
@@ -23,7 +24,7 @@ test('factory: the Menu button opens the Factory room, even when it is pressed r
 });
 
 test('T01 adds a piece from its list', async ({ page }) => {
-  await page.goto('/factory/tectonics-without-origin/');
+  await gotoReady(page, '/factory/tectonics-without-origin/');
   const add = page.locator('.tile--idx').first().getByRole('button', { name: 'Add' });
   // Any scroll closes the option box. Playwright scrolls the tile into view and clicks in the same frame, so the
   // scroll event of that jump would arrive after the box has opened and close it again: let the event pass first.

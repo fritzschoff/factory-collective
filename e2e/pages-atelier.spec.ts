@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoReady } from './ready';
 
 test('home shows the campaign, four fashion pieces and the rooms', async ({ page }) => {
   await page.goto('/');
@@ -9,7 +10,7 @@ test('home shows the campaign, four fashion pieces and the rooms', async ({ page
 });
 
 test('quick add from a home tile fills the bag', async ({ page }) => {
-  await page.goto('/');
+  await gotoReady(page, '/');
   const add = page.locator('.home__tiles .tile').first().getByRole('button', { name: 'Add' });
   // Any scroll closes the option box. Playwright scrolls the tile into view and clicks in the same frame, so the
   // scroll event of that jump would arrive after the box has opened and close it again: let the event pass first.
@@ -29,7 +30,7 @@ test('atelier lists its rooms; Furniture and Rings are coming soon', async ({ pa
 });
 
 test('fashion filter shows one group at a time', async ({ page }) => {
-  await page.goto('/atelier/fashion/');
+  await gotoReady(page, '/atelier/fashion/');
   await expect(page.locator('.fgrp .tile')).toHaveCount(18);
   await page.getByRole('button', { name: 'Shirts ( 4 )' }).click();
   await expect(page.locator('.fgrp .tile:visible')).toHaveCount(4);

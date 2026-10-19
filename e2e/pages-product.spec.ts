@@ -3,7 +3,7 @@ import { expectNotFoundPage } from './not-found';
 import { gotoReady } from './ready';
 
 test('a product page: gallery, size guide, add to bag', async ({ page }) => {
-  await page.goto('/atelier/fashion/sh-001/');
+  await gotoReady(page, '/atelier/fashion/sh-001/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('SH / 001');
   await page.getByRole('tab', { name: 'Picture 2' }).click();
   await expect(page.locator('.gal__i.is-on')).toHaveCount(1);
